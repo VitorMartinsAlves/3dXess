@@ -33,6 +33,7 @@
 
       <nav class="tabs" role="tablist">
         <button class="tab active" data-tab="quick" type="button" role="tab">Partida rápida</button>
+        <button class="tab" data-tab="bot" type="button" role="tab">Contra o bot</button>
         <button class="tab" data-tab="create" type="button" role="tab">Criar sala</button>
         <button class="tab" data-tab="join" type="button" role="tab">Entrar</button>
         <button class="tab" data-tab="public" type="button" role="tab">Salas públicas</button>
@@ -67,6 +68,57 @@
         <button id="quick-match" class="primary big-btn" type="button">Buscar partida</button>
         <button id="cancel-match" class="ghost big-btn hidden" type="button">Cancelar busca</button>
         <div id="match-status" class="match-status hidden"></div>
+      </section>
+
+      <section id="tab-bot" class="tab-panel">
+        <p class="hint">Jogue sozinho contra um bot que roda no seu navegador. Escolha o nível, o estilo e o tempo.</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="bot-level">Dificuldade</label>
+            <select id="bot-level">
+              <option value="1">Muito fácil · Patinho (~400)</option>
+              <option value="2">Fácil · Aprendiz (~800)</option>
+              <option value="3" selected>Médio · Tático (~1200)</option>
+              <option value="4">Difícil · Veterano (~1600)</option>
+              <option value="5">Muito difícil · Mestre (~2000)</option>
+              <option value="6">Mestre · Grão-mestre (~2300)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bot-style">Estilo do bot</label>
+            <select id="bot-style">
+              <option value="balanced" selected>Equilibrado</option>
+              <option value="aggressive">Agressivo</option>
+              <option value="defensive">Defensivo</option>
+              <option value="positional">Posicional</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bot-color">Sua cor</label>
+            <select id="bot-color">
+              <option value="random" selected>Aleatória</option>
+              <option value="w">Brancas</option>
+              <option value="b">Pretas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bot-tc">Controle de tempo</label>
+            <select id="bot-tc">
+              <option value="1+0">1 min</option>
+              <option value="3+0">3 min</option>
+              <option value="3+2">3 min + 2s</option>
+              <option value="5+0">5 min</option>
+              <option value="5+3">5 min + 3s</option>
+              <option value="10+0" selected>10 min</option>
+              <option value="10+5">10 min + 5s</option>
+              <option value="15+10">15 min + 10s</option>
+              <option value="unlimited">Sem tempo</option>
+            </select>
+          </div>
+        </div>
+        <div id="bot-level-desc" class="bot-desc"></div>
+        <button id="bot-play" class="primary big-btn" type="button">Jogar contra o bot</button>
+        <p class="hint small">O bot usa o mesmo motor de regras e não precisa de internet nem de conta.</p>
       </section>
 
       <section id="tab-create" class="tab-panel">
@@ -158,12 +210,17 @@
         <button id="flip-btn" class="icon-btn" type="button" title="Girar tabuleiro" aria-label="Girar tabuleiro">&#8646;</button>
         <button id="settings-btn" class="icon-btn" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
         <button id="undo-btn" class="ghost hidden" type="button" title="Desfazer">&#8630;</button>
-        <button id="new-local-btn" class="ghost hidden" type="button">Novo jogo</button>
+        <button id="new-local-btn" class="ghost hidden" type="button" title="Novo jogo" aria-label="Novo jogo"><span class="wide-label">Novo jogo</span><span class="narrow-label">&#8635;</span></button>
         <button id="leave-btn" class="ghost hidden" type="button">Sair da sala</button>
       </div>
     </header>
 
     <aside id="panel">
+      <button id="panel-toggle" class="panel-toggle" type="button" aria-label="Expandir painel" aria-expanded="false" title="Expandir painel">
+        <span class="panel-grip"></span>
+        <span class="panel-chevron">&#9662;</span>
+      </button>
+
       <div class="player-card" id="player-top">
         <span class="pdot black" id="top-dot"></span>
         <div class="pinfo">
@@ -331,6 +388,7 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
   <script src="engine.js"></script>
+  <script src="bot.js"></script>
   <script src="board3d.js"></script>
   <script src="app.js"></script>
   <script>

@@ -1,29 +1,31 @@
-# Xadrez 3D Online
+# Xadrez 3D
 
-Jogo de xadrez 3D para navegador, com partidas locais e online. O online funciona **sem servidor, sem banco de dados e sem conta**: os navegadores se conectam diretamente por WebRTC usando [Trystero](https://github.com/dmotz/trystero) e relays públicos do protocolo Nostr apenas para a descoberta inicial.
+Jogo de xadrez 3D para navegador, com partidas **locais**, **contra o bot** e **online**. O online funciona **sem servidor, sem banco de dados e sem conta**: os navegadores se conectam diretamente por WebRTC usando [Trystero](https://github.com/dmotz/trystero) e relays públicos do protocolo Nostr apenas para a descoberta inicial. O bot também roda inteiro no navegador, sem backend.
 
 O projeto é 100% estático e foi feito para rodar no **GitHub Pages**.
 
-![Xadrez 3D](https://img.shields.io/badge/3D-Three.js-6ee7b7) ![P2P](https://img.shields.io/badge/online-P2P%20WebRTC-38bdf8) ![Sem backend](https://img.shields.io/badge/backend-nenhum-fbbf24)
+![Xadrez 3D](https://img.shields.io/badge/3D-Three.js-6ee7b7) ![P2P](https://img.shields.io/badge/online-P2P%20WebRTC-38bdf8) ![Bot](https://img.shields.io/badge/bot-local-6ee7b7) ![Sem backend](https://img.shields.io/badge/backend-nenhum-fbbf24)
 
 ## Recursos
 
 - Tabuleiro 3D com peças animadas, câmera orbital e giro do tabuleiro.
 - **Partida local** no mesmo dispositivo, sem internet.
+- **Partida contra o bot** com 6 níveis de dificuldade e 4 estilos de jogo.
 - **Partida rápida** com fila automática.
 - **Salas privadas** com código de 5 caracteres e link de convite.
 - **Salas públicas** listadas enquanto o anfitrião estiver online.
 - **Espectadores** podem entrar em salas em andamento e usar o chat.
 - **Chat** entre jogadores e espectadores.
 - **Relógios** com incremento (1+0, 3+0, 3+2, 5+0, 5+3, 10+0, 10+5, 15+10 e sem tempo).
-- **Revanche** com troca automática de cores.
+- **Revanche** com troca automática de cores, inclusive contra o bot.
 - Empate por acordo, desistência, abandono e tempo esgotado.
+- **Desfazer** no modo local e contra o bot (remove também a resposta do bot).
 - **Temas** de tabuleiro: clássico, mármore, neon, floresta, pôr do sol e gelo.
 - **Skins** de peças: clássica, mármore, metal, neon, vidro e madeira.
 - **Efeitos especiais** de captura, xeque e movimento, com opção de desligar.
 - **Sons** gerados por Web Audio, com opção de desligar.
-- Configurações salvas no `localStorage` do navegador.
-- Layout responsivo para celular e desktop.
+- Configurações e preferências do bot salvas no `localStorage` do navegador.
+- Layout responsivo, com painel recolhível e tabuleiro maior no celular.
 
 ## Regras implementadas
 
@@ -37,7 +39,7 @@ O motor cobre as regras completas do xadrez:
 - Empate por material insuficiente.
 - Empate pela regra dos 50 lances.
 - Notação dos lances no painel.
-- Desfazer no modo local.
+- Desfazer no modo local e contra o bot.
 
 ## Como funciona o online
 
@@ -59,6 +61,34 @@ Navegador A (anfitrião)  <==== WebRTC (dados da partida) ====>  Navegador B
 3. Clique em uma peça e depois na casa de destino.
 
 O modo local funciona até abrindo o arquivo com `file://`, desde que o Three.js consiga ser carregado pela internet.
+
+## Jogar contra o bot
+
+1. Abra a aba **Contra o bot**.
+2. Escolha a dificuldade, o estilo, a sua cor e o controle de tempo.
+3. Clique em **Jogar contra o bot**.
+
+O bot roda no próprio navegador, sem conta e sem internet depois de carregado. A busca acontece em um **Web Worker** para não travar a interface; se o worker não estiver disponível (por exemplo, abrindo via `file://`), a busca roda na thread principal.
+
+### Níveis
+
+| Nível | Nome | Elo aprox. | Como joga |
+| --- | --- | --- | --- |
+| 1 | Patinho | ~400 | Imprevisível, às vezes entrega peças. |
+| 2 | Aprendiz | ~800 | Vê capturas simples, ainda erra tática. |
+| 3 | Tático | ~1200 | Calcula algumas jogadas e pune peças soltas. |
+| 4 | Veterano | ~1600 | Profundidade 3, erros raros. |
+| 5 | Mestre | ~2000 | Busca profunda e boa avaliação posicional. |
+| 6 | Grão-mestre | ~2300 | O nível mais forte, com mais tempo de busca. |
+
+### Estilos
+
+- **Equilibrado**: mistura ataque, defesa e posição.
+- **Agressivo**: gosta de atacar o rei e criar complicações.
+- **Defensivo**: protege o rei, os peões e evita riscos.
+- **Posicional**: valoriza casas boas, mobilidade e peões saudáveis.
+
+As preferências de nível, estilo, cor e tempo ficam salvas no `localStorage`. Durante a partida contra o bot também há relógio, empate, desistência, desfazer e revanche com troca de cores.
 
 ## Jogar online
 
@@ -93,6 +123,7 @@ A aba **Salas públicas** mostra as salas anunciadas pelos anfitriões. Salas ag
 - **Scroll/pinça** para aproximar ou afastar.
 - Botão **⇄** gira o tabuleiro.
 - Botão **⚙** abre as configurações.
+- No celular, o painel inferior começa recolhido: toque na alça para expandir e ver lances, chat e status.
 - **Esc** cancela a seleção ou fecha modais.
 
 ## Publicar no GitHub Pages
@@ -120,8 +151,10 @@ A aba **Salas públicas** mostra as salas anunciadas pelos anfitriões. Salas ag
 index.html          Interface (lobby, jogo, painel, modais)
 style.css           Estilos, temas visuais e responsividade
 engine.js           Regras do xadrez, FEN, lances legais (window.Chess)
+bot.js              Avaliação, livro e busca alfa-beta do bot (window.Bot)
+bot-worker.js       Worker que executa a busca fora da thread da interface
 board3d.js          Cena Three.js, peças, temas, skins e efeitos (window.Board3D)
-app.js              Lobby P2P, salas, relógios, chat e interface (window.__xadrez)
+app.js              Lobby P2P, bot, salas, relógios, chat e interface (window.__xadrez)
 .nojekyll           Impede o processamento Jekyll no GitHub Pages
 .github/workflows/  Publicação automática no GitHub Pages
 ```
@@ -137,9 +170,10 @@ Dependências carregadas por CDN:
 - **NAT restritivo**: alguns provedores de internet impedem a conexão direta entre dois navegadores. Nesses casos, o WebRTC pode não conectar. Não há servidor TURN incluído.
 - **O anfitrião precisa ficar online**: fechar a aba encerra a sala.
 - **Recarregar a página** durante uma partida encerra a sua participação. O anfitrião aguarda 10 segundos e depois pode encerrar por abandono.
-- **Sem persistência**: partidas, chat e configurações de sala ficam em memória. Apenas as preferências visuais ficam no `localStorage`.
+- **Sem persistência**: partidas, chat e configurações de sala ficam em memória. Apenas as preferências visuais e as do bot ficam no `localStorage`.
 - **Sem anti-cheat forte**: o anfitrião valida os lances, mas o modelo é P2P e não há árbitro externo.
 - **Relógios**: o anfitrião mede o tempo; os convidados estimam o relógio localmente a partir do último estado recebido.
+- **Bot**: a força é aproximada e limitada pelo tempo de busca no navegador. Em celulares mais fracos, os níveis 5 e 6 podem demorar um pouco mais.
 
 ### Aviso normal no console
 
@@ -170,6 +204,8 @@ Para testar o online, abra a mesma URL em dois navegadores ou em uma janela anô
 - **Não conecta com outra pessoa**: tente outra rede (celular como roteador, por exemplo). NAT restritivo pode bloquear o WebRTC.
 - **Tabuleiro não aparece**: o Three.js é carregado por CDN; sem internet ele não carrega.
 - **Chat não aparece no modo local**: o chat existe apenas em partidas online.
+- **Bot demora ou não responde**: recarregue a página. Em `file://` o worker é desativado e a busca roda na thread principal, o que pode deixar a interface lenta nos níveis mais altos.
+- **Painel ocupa muito espaço no celular**: toque na alça do painel para recolher. Ele já começa recolhido ao entrar em uma partida.
 
 ## Licença
 

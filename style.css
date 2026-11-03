@@ -67,6 +67,11 @@ button.danger-btn { background: linear-gradient(135deg, #fb7185, #ef4444); color
 button.small { padding: 6px 10px; font-size: 12px; }
 button.big-btn { width: 100%; padding: 14px; font-size: 15px; margin-top: 14px; }
 
+.wide-label { display: inline; }
+.narrow-label { display: none; }
+
+body.bot-mode #topbar .brand-icon { color: var(--accent-2); }
+
 .icon-btn {
   width: 42px;
   height: 42px;
@@ -210,6 +215,17 @@ select { cursor: pointer; }
 .hint { margin: 0 0 14px; font-size: 13px; color: var(--muted); line-height: 1.5; }
 .hint.small { margin: 12px 0 0; font-size: 11px; }
 
+.bot-desc {
+  margin-top: 14px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  color: #bae6fd;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
@@ -314,6 +330,29 @@ select { cursor: pointer; }
   z-index: 10;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
+
+.panel-toggle {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--muted);
+  cursor: pointer;
+  z-index: 2;
+}
+.panel-toggle:hover { background: rgba(255, 255, 255, 0.05); }
+.panel-grip { width: 38px; height: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.26); }
+.panel-chevron { font-size: 11px; line-height: 1; transition: transform 0.2s ease; }
+#panel.collapsed .panel-chevron { transform: rotate(180deg); }
 
 .player-card {
   display: flex;
@@ -573,53 +612,137 @@ select { cursor: pointer; }
 }
 
 @media (max-width: 720px) {
-  .screen { padding: 12px; place-items: start center; overflow-x: hidden; }
-  .lobby-wrap { min-width: 0; padding: 18px 16px; border-radius: 18px; }
-  .brand.big .brand-icon { font-size: 32px; }
-  .brand h1 { font-size: 17px; }
+  :root {
+    --panel-h: 42vh;
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+  body.panel-collapsed { --panel-h: 64px; }
+
+  .screen { padding: 10px; place-items: start center; overflow-x: hidden; }
+  .lobby-wrap { min-width: 0; padding: 16px 14px; border-radius: 16px; }
+  .brand.big .brand-icon { font-size: 30px; }
+  .brand h1 { font-size: 16px; }
   .nick-row { grid-template-columns: 1fr; gap: 6px; }
   .nick-row label { display: none; }
   .fb-status { justify-self: start; }
   .field-grid { grid-template-columns: 1fr; }
-  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 16px 0 14px; overflow: visible; }
-  .tab { min-width: 0; padding: 9px 6px; }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 14px 0 12px; overflow: visible; }
+  .tab { min-width: 0; padding: 10px 6px; font-size: 12.5px; }
+  .tabs .tab:nth-child(5) { grid-column: 1 / -1; }
+  .public-rooms { max-height: 42vh; }
+  .lobby-foot { flex-direction: column; gap: 4px; }
 
-  #app { top: 64px; bottom: 42vh; }
+  input, select { font-size: 16px; padding: 12px; }
+  .join-row input { font-size: 18px; }
 
-  #topbar { padding: 10px; gap: 6px; }
-  #topbar .brand { padding: 7px 10px; }
-  #topbar .brand h1 { font-size: 13px; }
-  #topbar .brand p { display: none; }
-  #topbar .actions { gap: 5px; }
-  #topbar .actions .icon-btn { width: 38px; height: 38px; }
-  #topbar .actions .ghost { padding: 8px 8px; font-size: 12px; }
+  #app { top: calc(56px + var(--safe-t)); bottom: calc(var(--panel-h) + 8px + var(--safe-b)); transition: bottom 0.22s ease; }
+  body.has-actions #app { bottom: calc(var(--panel-h) + 70px + var(--safe-b)); }
+
+  #topbar { padding: calc(6px + var(--safe-t)) 8px 6px; gap: 5px; }
+  #topbar .brand { padding: 8px 10px; border-radius: 12px; }
+  #topbar .brand h1, #topbar .brand p { display: none; }
+  #topbar .brand-icon { font-size: 23px; }
+  #topbar .actions { gap: 4px; }
+  #topbar .actions .icon-btn { width: 40px; height: 40px; font-size: 17px; }
+  #topbar .actions .ghost { padding: 0 11px; height: 40px; font-size: 12px; }
+  #topbar .actions .ghost .wide-label { display: none; }
+  #topbar .actions .ghost .narrow-label { display: inline; }
 
   #panel {
-    left: 10px;
-    right: 10px;
+    left: 8px;
+    right: 8px;
     top: auto;
-    bottom: 10px;
+    bottom: calc(8px + var(--safe-b));
     width: auto;
-    height: 42vh;
-    max-height: 330px;
-    padding: 10px;
+    height: var(--panel-h);
+    max-height: none;
+    padding: 36px 10px 10px;
+    gap: 6px;
+    overflow: hidden;
+    transition: height 0.22s ease, padding 0.22s ease;
+  }
+  #panel.collapsed {
+    height: var(--panel-h);
+    padding: 22px 8px 6px;
+    flex-direction: row;
+    align-items: center;
     gap: 6px;
   }
-  .player-card { padding: 7px 9px; }
-  .clock { font-size: 14px; min-width: 60px; }
-  .room-actions { left: 10px; bottom: calc(42vh + 20px); padding: 6px; }
-  .room-actions button { padding: 8px 11px; font-size: 12px; }
-  .waiting-banner { bottom: calc(42vh + 20px); width: calc(100% - 20px); justify-content: center; font-size: 11px; }
-  .toasts { top: 64px; }
+  #panel.collapsed > :not(.panel-toggle):not(.player-card) { display: none; }
+  #panel.collapsed .player-card { flex: 1; min-width: 0; padding: 4px 6px; gap: 6px; }
+  #panel.collapsed .player-card .pinfo span { display: none; }
+  #panel.collapsed .player-card .pinfo strong { font-size: 11.5px; }
+  #panel.collapsed .player-card .pdot { width: 9px; height: 9px; }
+  #panel.collapsed .clock { font-size: 12px; min-width: 52px; padding: 3px 5px; }
+  #panel.collapsed .panel-toggle { height: 20px; }
+  .panel-toggle { display: flex; }
+
+  .player-card { padding: 7px 9px; gap: 8px; }
+  .clock { font-size: 14px; min-width: 62px; padding: 5px 7px; }
+  .pinfo strong { font-size: 12.5px; }
+  .panel-mid { padding: 3px 4px 0; }
+  .status { font-size: 11px; }
+  .ptab { padding: 9px 4px; font-size: 12.5px; }
+  .move-list, .chat-messages { font-size: 12px; }
+  .chat-form input { font-size: 16px; }
+
+  .room-actions {
+    left: 8px;
+    right: 8px;
+    bottom: calc(var(--panel-h) + 10px + var(--safe-b));
+    justify-content: center;
+    padding: 6px;
+    transition: bottom 0.22s ease;
+  }
+  .room-actions button { padding: 9px 14px; font-size: 12.5px; flex: 1; }
+
+  .waiting-banner { bottom: calc(var(--panel-h) + 14px + var(--safe-b)); width: calc(100% - 16px); justify-content: center; font-size: 11px; }
+  .toasts { top: 60px; }
+  .modal-card { padding: 18px; }
+  .promo-buttons button { width: 54px; height: 54px; font-size: 28px; }
 }
 
 @media (max-width: 380px) {
-  #undo-btn { display: none; }
-  #new-local-btn { padding: 8px 6px; font-size: 11px; }
+  #topbar .actions .icon-btn { width: 36px; height: 36px; font-size: 16px; }
+  #topbar .actions .ghost { padding: 0 9px; height: 36px; }
+  .tab { font-size: 12px; }
 }
 
-@media (max-height: 620px) and (min-width: 721px) {
-  #panel { top: 76px; bottom: 10px; }
+@media (max-height: 540px) and (orientation: landscape) {
+  #app {
+    top: calc(52px + env(safe-area-inset-top, 0px));
+    bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    right: calc(min(44vw, 270px) + 16px + env(safe-area-inset-right, 0px));
+  }
+  body.has-actions #app { bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
+  #topbar {
+    padding: calc(6px + env(safe-area-inset-top, 0px)) calc(10px + env(safe-area-inset-right, 0px)) 6px calc(10px + env(safe-area-inset-left, 0px));
+  }
+  #topbar .brand h1 { font-size: 13px; }
+  #topbar .brand p { display: none; }
+  #panel {
+    left: auto;
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    top: calc(58px + env(safe-area-inset-top, 0px));
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    width: min(44vw, 270px);
+    height: auto;
+    max-height: none;
+    padding: 10px;
+    gap: 5px;
+  }
+  .panel-toggle { display: none; }
+  .room-actions {
+    top: calc(58px + env(safe-area-inset-top, 0px));
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    right: auto;
+    bottom: auto;
+    padding: 5px;
+  }
+  .room-actions button { padding: 7px 12px; font-size: 12px; }
+  .waiting-banner { bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+  .toasts { top: calc(54px + env(safe-area-inset-top, 0px)); }
   .move-list { font-size: 11px; }
 }
 

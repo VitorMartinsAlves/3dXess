@@ -598,13 +598,38 @@
     const w = containerEl ? containerEl.clientWidth : window.innerWidth;
     const h = containerEl ? containerEl.clientHeight : window.innerHeight;
     const aspect = w / Math.max(h, 1);
+
+    /* Em retrato o tabuleiro é limitado pela largura: chega bem perto
+       para ocupar quase toda a tela. */
+    if (aspect < 0.9) {
+      return Math.max(10.8, 11.4 / Math.max(aspect, 0.45));
+    }
+    /* Telas quase quadradas (painel aberto no celular): recua um pouco
+       para a perspectiva não cortar as laterais do tabuleiro. */
+    if (aspect < 1.3) {
+      return Math.max(12.8, 11.4 / aspect + 2.6);
+    }
+    /* Paisagem de celular: tabuleiro cabe inteiro na área à esquerda. */
+    if (h < 540) {
+      return Math.max(12.0, 11.4 / Math.max(aspect, 0.6) + 2.2);
+    }
     return Math.max(14.2, 12.4 / Math.max(aspect, 0.35));
   }
 
   function resetCamera() {
     const d = cameraDistance();
-    const z = orientation === 'w' ? d * 0.74 : -d * 0.74;
-    camera.position.set(0, d * 0.67, z);
+    const w = containerEl ? containerEl.clientWidth : window.innerWidth;
+    const h = containerEl ? containerEl.clientHeight : window.innerHeight;
+    const aspect = w / Math.max(h, 1);
+    const compactLandscape = h < 540 && aspect > 1;
+    const highAngle = aspect < 0.95 || compactLandscape;
+
+    /* No celular a câmera fica mais alta, deixando o tabuleiro mais
+       "de frente" e aproveitando melhor o espaço vertical. */
+    const yFactor = highAngle ? 0.86 : 0.67;
+    const zFactor = highAngle ? 0.58 : 0.74;
+    const z = orientation === 'w' ? d * zFactor : -d * zFactor;
+    camera.position.set(0, d * yFactor, z);
     controls.target.set(0, 0.4, 0);
     controls.update();
   }
@@ -656,24 +681,25 @@
   /* ------------------------------------------------------------
      RESIZE E LOOP
      ------------------------------------------------------------ */
+  let lastAspect = 0;
+
   function resize() {
     if (!renderer || !containerEl) return;
     const w = containerEl.clientWidth;
     const h = containerEl.clientHeight;
     if (!w || !h) return;
-    camera.aspect = w / h;
+    const aspect = w / Math.max(h, 1);
+    camera.aspect = aspect;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
 
-    if (w / h < 1) {
-      const required = Math.min(12.4 / Math.max(w / h, 0.35), controls.maxDistance);
-      const offset = camera.position.clone().sub(controls.target);
-      if (offset.length() < required) {
-        offset.setLength(required);
-        camera.position.copy(controls.target).add(offset);
-      }
+    /* Refaz o enquadramento quando o painel abre/fecha ou o aparelho gira. */
+    if (!lastAspect || Math.abs(aspect - lastAspect) > 0.12) {
+      lastAspect = aspect;
+      resetCamera();
+    } else {
+      controls.update();
     }
-    controls.update();
   }
 
   function animate() {
@@ -699,8 +725,9 @@
 
     camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
 
+    const compact = !!(global.matchMedia && global.matchMedia('(max-width: 720px)').matches);
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, compact ? 1.5 : 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -722,7 +749,7 @@
     const keyLight = new THREE.DirectionalLight(0xfff2dd, 2.4);
     keyLight.position.set(6, 14, 8);
     keyLight.castShadow = true;
-    keyLight.shadow.mapSize.set(2048, 2048);
+    keyLight.shadow.mapSize.set(compact ? 1024 : 2048, compact ? 1024 : 2048);
     keyLight.shadow.camera.left = -8;
     keyLight.shadow.camera.right = 8;
     keyLight.shadow.camera.top = 8;

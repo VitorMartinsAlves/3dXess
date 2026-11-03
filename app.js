@@ -13,6 +13,7 @@
   const LOBBY_ID = 'lobby-v1';
   const TRYSTERO_URL = 'https://cdn.jsdelivr.net/npm/trystero@0.26.0/+esm';
   const SETTINGS_KEY = 'xadrez3d.settings.v3';
+  const BOT_KEY = 'xadrez3d.bot.v1';
   const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
   const TIME_CONTROLS = {
@@ -52,6 +53,21 @@
     unreadChat: 0,
     lastClockBroadcast: 0,
     leaving: false,
+    bot: {
+      active: false,
+      level: 3,
+      style: 'balanced',
+      color: 'b',
+      name: 'Bot',
+      tc: '10+0',
+      thinking: false,
+      clocks: null,
+      increment: 0,
+      running: false,
+      turnStartedAt: 0,
+      requestSeq: 0,
+      pendingTimer: null,
+    },
   };
 
   /* ------------------------------------------------------------
@@ -92,6 +108,109 @@
 
   let trysteroPromise = null;
   let confirmResolver = null;
+
+  /* ------------------------------------------------------------
+     PREFERÊNCIAS DO BOT E WORKER DE BUSCA
+     ------------------------------------------------------------ */
+  const DEFAULT_BOT_PREFS = {
+    level: 3,
+    style: 'balanced',
+    color: 'random',
+    tc: '10+0',
+  };
+
+  let botPrefs = Object.assign({}, DEFAULT_BOT_PREFS);
+  let botWorker = null;
+  let botWorkerBroken = false;
+  let botWorkerSeq = 0;
+  const botPending = new Map();
+
+  function loadBotPrefs() {
+    try {
+      const raw = localStorage.getItem(BOT_KEY);
+      if (raw) botPrefs = Object.assign({}, DEFAULT_BOT_PREFS, JSON.parse(raw));
+    } catch (e) { /* ignore */ }
+    botPrefs.level = Math.min(6, Math.max(1, Math.round(Number(botPrefs.level) || 3)));
+    if (!window.Bot || !window.Bot.STYLES[botPrefs.style]) botPrefs.style = 'balanced';
+    if (['random', 'w', 'b'].indexOf(botPrefs.color) === -1) botPrefs.color = 'random';
+    if (!TIME_CONTROLS[botPrefs.tc]) botPrefs.tc = '10+0';
+  }
+
+  function saveBotPrefs() {
+    try { localStorage.setItem(BOT_KEY, JSON.stringify(botPrefs)); } catch (e) { /* ignore */ }
+  }
+
+  function rejectBotPending(error) {
+    botPending.forEach(function (entry) {
+      window.clearTimeout(entry.timeout);
+      entry.reject(error);
+    });
+    botPending.clear();
+  }
+
+  function ensureBotWorker() {
+    if (botWorker) return botWorker;
+    if (botWorkerBroken || typeof Worker === 'undefined' || location.protocol === 'file:') {
+      return null;
+    }
+
+    try {
+      botWorker = new Worker('bot-worker.js');
+      botWorker.onmessage = function (event) {
+        const data = event.data || {};
+        const entry = botPending.get(data.id);
+        if (!entry) return;
+        botPending.delete(data.id);
+        window.clearTimeout(entry.timeout);
+        if (data.ok && data.uci) entry.resolve(data);
+        else entry.reject(new Error(data.error || 'O bot não encontrou um lance.'));
+      };
+      botWorker.onerror = function () {
+        botWorkerBroken = true;
+        botWorker = null;
+        rejectBotPending(new Error('Falha ao iniciar o worker do bot.'));
+      };
+    } catch (e) {
+      botWorkerBroken = true;
+      botWorker = null;
+      return null;
+    }
+
+    return botWorker;
+  }
+
+  function requestBotMove(state, options) {
+    const fen = C.stateToFen(state);
+    const worker = ensureBotWorker();
+    if (!worker) return Promise.resolve(window.Bot.chooseMove(state, options));
+
+    return new Promise(function (resolve, reject) {
+      const id = ++botWorkerSeq;
+      const budget = Math.max(300, Number(options.timeMs) || 1000);
+      const timeout = window.setTimeout(function () {
+        botPending.delete(id);
+        reject(new Error('Tempo esgotado no bot.'));
+      }, budget + 6000);
+
+      botPending.set(id, { resolve: resolve, reject: reject, timeout: timeout });
+      try {
+        worker.postMessage({ type: 'move', id: id, fen: fen, options: options });
+      } catch (e) {
+        window.clearTimeout(timeout);
+        botPending.delete(id);
+        reject(e);
+      }
+    });
+  }
+
+  function uciToMove(st, uci) {
+    if (!uci || uci.length < 4) return null;
+    const from = { r: Number(uci[1]) - 1, f: C.FILES.indexOf(uci[0]) };
+    const to = { r: Number(uci[3]) - 1, f: C.FILES.indexOf(uci[2]) };
+    if (from.r < 0 || from.r > 7 || from.f < 0 || from.f > 7) return null;
+    if (to.r < 0 || to.r > 7 || to.f < 0 || to.f > 7) return null;
+    return C.findLegalMove(st, from, to, uci[4] || null);
+  }
 
   function hostNow() {
     return Date.now() - net.hostOffset;
@@ -155,6 +274,30 @@
 
   function normalizeCode(value) {
     return String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  }
+
+  function isMobile() {
+    return window.matchMedia('(max-width: 720px)').matches;
+  }
+
+  function isCompactLandscape() {
+    return window.matchMedia('(orientation: landscape) and (max-height: 540px)').matches;
+  }
+
+  function setPanelCollapsed(collapsed) {
+    const panel = $('panel');
+    if (!panel) return;
+    const on = !!collapsed && isMobile() && !isCompactLandscape();
+    panel.classList.toggle('collapsed', on);
+    document.body.classList.toggle('panel-collapsed', on);
+
+    const button = $('panel-toggle');
+    if (button) {
+      const label = on ? 'Expandir painel' : 'Recolher painel';
+      button.title = label;
+      button.setAttribute('aria-label', label);
+      button.setAttribute('aria-expanded', on ? 'false' : 'true');
+    }
   }
 
   function tcInfo(label) {
@@ -1417,6 +1560,11 @@
   }
 
   function enterRoom(role) {
+    clearBotRuntime();
+    app.bot.active = false;
+    app.bot.clocks = null;
+    document.body.classList.remove('bot-mode');
+
     app.mode = 'online';
     app.roomCode = net.roomId;
     app.myRole = role === 'spectator' ? 'spectator' : 'player';
@@ -1433,6 +1581,7 @@
 
     ensureBoard();
     B.setInteractive(true);
+    setPanelCollapsed(true);
 
     if (net.roomId) {
       try {
@@ -1450,6 +1599,12 @@
   function backToLobby(remote) {
     if (app.leaving) return;
     app.leaving = true;
+
+    clearBotRuntime();
+    app.bot.active = false;
+    app.bot.clocks = null;
+    document.body.classList.remove('bot-mode');
+    document.body.classList.remove('has-actions');
 
     leavePrivateRoom(true);
     stopSeekTimer();
@@ -1561,7 +1716,22 @@
     }
   }
 
+  function clearBotRuntime() {
+    app.bot.requestSeq += 1;
+    app.bot.thinking = false;
+    app.bot.running = false;
+    if (app.bot.pendingTimer) {
+      window.clearTimeout(app.bot.pendingTimer);
+      app.bot.pendingTimer = null;
+    }
+  }
+
   function resetLocalGame() {
+    clearBotRuntime();
+    app.bot.active = false;
+    app.bot.clocks = null;
+    document.body.classList.remove('bot-mode');
+
     app.game = {
       state: C.createInitialState(),
       lastMove: null,
@@ -1580,13 +1750,19 @@
 
     $('result').classList.add('hidden');
     $('promotion').classList.add('hidden');
-    B.setOrientation('w');
+    if (boardReady) B.setOrientation('w');
     renderAll(false);
   }
 
   function startLocalGame() {
+    clearBotRuntime();
+    app.bot.active = false;
+    app.bot.clocks = null;
+    document.body.classList.remove('bot-mode');
+
     app.mode = 'local';
     app.room = null;
+    app.roomCode = null;
     app.myColor = 'w';
     app.myRole = 'player';
     app.leaving = false;
@@ -1597,10 +1773,333 @@
     ensureBoard();
     B.setInteractive(true);
     resetLocalGame();
+    setPanelCollapsed(true);
 
     try {
       history.replaceState(null, '', location.pathname);
     } catch (e) { /* ignore */ }
+  }
+
+  /* ------------------------------------------------------------
+     PARTIDA CONTRA O BOT
+     ------------------------------------------------------------ */
+  function botLevelInfo(level) {
+    if (window.Bot && window.Bot.LEVELS[level]) return window.Bot.LEVELS[level];
+    return { label: 'Médio', name: 'Bot', elo: '~1200', desc: 'Bot local.', timeMs: 650, minDelay: 300, delayJitter: 300 };
+  }
+
+  function updateBotDescription() {
+    const select = $('bot-level');
+    if (!select) return;
+    const level = Math.min(6, Math.max(1, Math.round(Number(select.value) || 3)));
+    const info = botLevelInfo(level);
+    const desc = $('bot-level-desc');
+    if (desc) {
+      desc.textContent = info.label + ' · ' + info.name + ' (' + info.elo + ') — ' + info.desc;
+    }
+  }
+
+  function applyBotPrefsToForm() {
+    const level = $('bot-level');
+    if (level) level.value = String(botPrefs.level);
+    const style = $('bot-style');
+    if (style) style.value = botPrefs.style;
+    const color = $('bot-color');
+    if (color) color.value = botPrefs.color;
+    const tc = $('bot-tc');
+    if (tc) tc.value = botPrefs.tc;
+    updateBotDescription();
+  }
+
+  function startBotGame() {
+    if (!window.Bot) {
+      toast('O bot não carregou. Recarregue a página.', 'error');
+      return;
+    }
+
+    const level = Math.min(6, Math.max(1, Math.round(Number($('bot-level').value) || 3)));
+    const style = $('bot-style').value || 'balanced';
+    const colorPref = $('bot-color').value || 'random';
+    const tc = $('bot-tc').value || '10+0';
+
+    botPrefs = { level: level, style: style, color: colorPref, tc: tc };
+    saveBotPrefs();
+
+    const myColor = colorPref === 'random'
+      ? (Math.random() < 0.5 ? 'w' : 'b')
+      : colorPref;
+    const info = botLevelInfo(level);
+
+    clearBotRuntime();
+    app.mode = 'bot';
+    app.room = null;
+    app.roomCode = null;
+    app.myColor = myColor;
+    app.myRole = 'player';
+    app.leaving = false;
+    app.bot.active = true;
+    app.bot.level = level;
+    app.bot.style = style;
+    app.bot.color = C.opponent(myColor);
+    app.bot.name = info.name || 'Bot';
+    app.bot.tc = tc;
+    app.bot.lastResult = null;
+
+    $('lobby').classList.add('hidden');
+    $('game-ui').classList.remove('hidden');
+    document.body.classList.add('bot-mode');
+
+    ensureBoard();
+    B.setInteractive(true);
+    resetBotGame(false);
+    setPanelCollapsed(true);
+
+    try {
+      history.replaceState(null, '', location.pathname);
+    } catch (e) { /* ignore */ }
+
+    toast(
+      'Você joga com as ' + (myColor === 'w' ? 'brancas' : 'pretas') +
+      ' contra o bot ' + app.bot.name + '.',
+      'success',
+      4200
+    );
+  }
+
+  function resetBotGame(swapColors) {
+    if (!app.bot.active) return;
+    clearBotRuntime();
+
+    if (swapColors) {
+      app.myColor = C.opponent(app.myColor);
+      app.bot.color = C.opponent(app.myColor);
+    }
+
+    app.game = {
+      state: C.createInitialState(),
+      lastMove: null,
+      status: { over: false, check: false },
+    };
+    app.game.status = C.computeStatus(app.game.state);
+    app.localHistory = [];
+    app.selected = null;
+    app.legalForSelected = [];
+    app.pendingPromotion = null;
+    app.lastRenderedVersion = -1;
+    app.lastResultKey = '';
+    app.lastDrawPrompt = '';
+    app.unreadChat = 0;
+    app.prevRoomStatus = null;
+
+    const tc = tcInfo(app.bot.tc);
+    const initial = tc.initial ? tc.initial * 1000 : null;
+    app.bot.clocks = initial ? { w: initial, b: initial } : null;
+    app.bot.increment = (tc.inc || 0) * 1000;
+    app.bot.running = !!initial;
+    app.bot.turnStartedAt = Date.now();
+    app.bot.thinking = false;
+    app.bot.lastResult = null;
+
+    $('result').classList.add('hidden');
+    $('promotion').classList.add('hidden');
+    if (boardReady) B.setOrientation(app.myColor);
+
+    renderAll(false);
+
+    if (app.game.state.turn === app.bot.color) scheduleBotMove();
+  }
+
+  function botClockFor(color) {
+    if (!app.bot.clocks) return null;
+    let ms = Number(app.bot.clocks[color]);
+    if (!isFinite(ms)) ms = 0;
+
+    if (app.bot.running && app.game.state.turn === color && !app.game.status.over) {
+      ms -= Math.max(0, Date.now() - app.bot.turnStartedAt);
+    }
+    return Math.max(0, ms);
+  }
+
+  function updateBotClocks() {
+    if (app.mode !== 'bot' || !app.bot.active) return;
+
+    const st = app.game.state;
+    const bottomColor = app.myColor || 'w';
+    const topColor = C.opponent(bottomColor);
+    setClockEl($('top-clock'), botClockFor(topColor));
+    setClockEl($('bottom-clock'), botClockFor(bottomColor));
+
+    if (app.bot.running && app.bot.clocks && !app.game.status.over) {
+      const active = st.turn;
+      if (botClockFor(active) <= 0) {
+        finishBotGame('timeout', C.opponent(active));
+      }
+    }
+  }
+
+  function cancelBotThinking() {
+    app.bot.requestSeq += 1;
+    app.bot.thinking = false;
+    if (app.bot.pendingTimer) {
+      window.clearTimeout(app.bot.pendingTimer);
+      app.bot.pendingTimer = null;
+    }
+  }
+
+  function scheduleBotMove() {
+    if (app.mode !== 'bot' || !app.bot.active) return;
+    if (app.game.status.over || app.game.state.turn !== app.bot.color) return;
+    if (app.bot.thinking) return;
+
+    const requestId = app.bot.requestSeq + 1;
+    app.bot.requestSeq = requestId;
+    app.bot.thinking = true;
+    renderHUD();
+
+    const level = app.bot.level;
+    const info = botLevelInfo(level);
+    const remaining = app.bot.clocks ? botClockFor(app.bot.color) : null;
+
+    if (remaining !== null && remaining <= 0) {
+      finishBotGame('timeout', C.opponent(app.bot.color));
+      return;
+    }
+
+    const budget = remaining === null
+      ? info.timeMs
+      : Math.max(60, Math.min(info.timeMs, remaining - 120));
+    const state = C.cloneState(app.game.state);
+    const started = Date.now();
+    const minDelay = (info.minDelay || 300) + Math.random() * (info.delayJitter || 300);
+
+    function applyResult(result) {
+      if (requestId !== app.bot.requestSeq) return;
+      if (app.mode !== 'bot' || !app.bot.active) return;
+      if (app.game.status.over || app.game.state.turn !== app.bot.color) return;
+
+      const move = uciToMove(app.game.state, result.uci);
+      if (!move) throw new Error('Lance inválido do bot.');
+
+      const wait = Math.max(0, minDelay - (Date.now() - started));
+      app.bot.pendingTimer = window.setTimeout(function () {
+        app.bot.pendingTimer = null;
+        if (requestId !== app.bot.requestSeq) return;
+        if (app.mode !== 'bot' || !app.bot.active) return;
+        if (app.game.status.over || app.game.state.turn !== app.bot.color) return;
+
+        if (app.bot.clocks && botClockFor(app.bot.color) <= 0) {
+          finishBotGame('timeout', C.opponent(app.bot.color));
+          return;
+        }
+
+        app.bot.thinking = false;
+        commitLocal(move);
+      }, wait);
+    }
+
+    function fallback() {
+      if (requestId !== app.bot.requestSeq) return;
+      try {
+        const result = window.Bot.chooseMove(state, {
+          level: level,
+          style: app.bot.style,
+          timeMs: Math.min(budget, 800),
+        });
+        if (!result) throw new Error('Sem lance.');
+        applyResult(result);
+      } catch (e) {
+        if (requestId !== app.bot.requestSeq) return;
+        app.bot.thinking = false;
+        toast('O bot não conseguiu calcular um lance.', 'error');
+        renderHUD();
+      }
+    }
+
+    requestBotMove(state, { level: level, style: app.bot.style, timeMs: budget })
+      .then(applyResult)
+      .catch(function (err) {
+        if (requestId !== app.bot.requestSeq) return;
+        console.warn('Bot worker:', err && err.message ? err.message : err);
+        fallback();
+      });
+  }
+
+  function botAfterMove(mover) {
+    if (app.mode !== 'bot' || !app.bot.active) return;
+
+    if (app.bot.clocks && app.bot.running) {
+      const elapsed = Math.max(0, Date.now() - app.bot.turnStartedAt);
+      app.bot.clocks[mover] = Math.max(0, app.bot.clocks[mover] - elapsed);
+      if (app.bot.clocks[mover] > 0) app.bot.clocks[mover] += app.bot.increment;
+      app.bot.turnStartedAt = Date.now();
+    }
+
+    if (app.game.status.over) {
+      app.bot.running = false;
+      return;
+    }
+
+    if (app.bot.clocks && app.bot.clocks[mover] <= 0) {
+      finishBotGame('timeout', C.opponent(mover));
+      return;
+    }
+
+    if (app.game.state.turn === app.bot.color) scheduleBotMove();
+  }
+
+  function finishBotGame(reason, winner) {
+    if (app.mode !== 'bot' || !app.bot.active) return;
+    if (app.game.status.over) return;
+
+    cancelBotThinking();
+    app.bot.running = false;
+    app.game.status = {
+      over: true,
+      type: reason,
+      winner: winner || null,
+      check: C.isInCheck(app.game.state, app.game.state.turn),
+    };
+    app.bot.lastResult = { reason: reason, winner: winner || null, at: Date.now() };
+
+    renderAll(false);
+    maybeShowLocalResult();
+  }
+
+  function onBotResign() {
+    if (app.mode !== 'bot' || app.game.status.over) return;
+    confirmDialog('Desistir da partida?', 'Você vai perder esta partida.', 'Desistir')
+      .then(function (ok) {
+        if (!ok) return;
+        finishBotGame('resign', app.bot.color);
+      });
+  }
+
+  function onBotDraw() {
+    if (app.mode !== 'bot' || app.game.status.over) return;
+
+    const score = window.Bot
+      ? window.Bot.evaluateState(app.game.state, { style: app.bot.style })
+      : 0;
+    const botScore = app.bot.color === 'w' ? score : -score;
+    const accept = app.bot.level <= 2 || botScore <= 40;
+
+    if (accept) {
+      finishBotGame('agreement', null);
+      toast('O bot aceitou o empate.', 'success');
+    } else {
+      toast('O bot recusou o empate.', 'error');
+    }
+  }
+
+  function requestBotRematch() {
+    if (app.mode !== 'bot' || !app.bot.active || !app.game.status.over) return;
+    resetBotGame(true);
+    toast('Revanche! As cores foram trocadas.', 'success');
+  }
+
+  function newGame() {
+    if (app.mode === 'bot') resetBotGame(false);
+    else resetLocalGame();
   }
 
   function selectSquare(r, f) {
@@ -1639,6 +2138,10 @@
       if (!app.room || app.room.meta.status !== 'playing' || app.game.status.over) return;
       if (!app.myColor || app.myRole !== 'player') return;
       if (app.game.state.turn !== app.myColor) return;
+    } else if (app.mode === 'bot') {
+      if (app.game.status.over || !app.bot.active) return;
+      if (app.game.state.turn !== app.myColor) return;
+      if (app.bot.thinking) return;
     } else if (app.game.status.over) {
       return;
     }
@@ -1675,7 +2178,7 @@
   function playMove(mv) {
     if (!mv) return;
 
-    if (app.mode === 'local') {
+    if (app.mode === 'local' || app.mode === 'bot') {
       commitLocal(mv);
       return;
     }
@@ -1726,9 +2229,50 @@
     announceMove(mv, prevState, app.game.status);
     renderAll(true);
     maybeShowLocalResult();
+
+    if (app.mode === 'bot') botAfterMove(prevState.turn);
+  }
+
+  function undoBotMove() {
+    if (!app.bot.active || app.localHistory.length === 0) return;
+
+    cancelBotThinking();
+
+    let entry = app.localHistory.pop();
+    app.game.state = entry.state;
+    app.game.lastMove = entry.lastMove;
+
+    /* Remove também a resposta do bot até voltar a vez do jogador. */
+    let guard = 0;
+    while (app.game.state.turn !== app.myColor && app.localHistory.length && guard < 6) {
+      entry = app.localHistory.pop();
+      app.game.state = entry.state;
+      app.game.lastMove = entry.lastMove;
+      guard += 1;
+    }
+
+    app.game.status = C.computeStatus(app.game.state);
+    app.selected = null;
+    app.legalForSelected = [];
+    app.pendingPromotion = null;
+    app.lastResultKey = '';
+    app.bot.lastResult = null;
+    app.bot.turnStartedAt = Date.now();
+    if (app.bot.clocks) app.bot.running = true;
+
+    closePromotion();
+    $('result').classList.add('hidden');
+    renderAll(false);
+
+    if (app.game.state.turn === app.bot.color) scheduleBotMove();
+    else toast('Jogada desfeita.');
   }
 
   function undoLocalMove() {
+    if (app.mode === 'bot') {
+      undoBotMove();
+      return;
+    }
     if (app.mode !== 'local' || app.localHistory.length === 0) return;
 
     const entry = app.localHistory.pop();
@@ -1876,11 +2420,16 @@
   function setClockEl(el, ms) {
     if (!el) return;
     el.textContent = formatClock(ms);
-    const playing = app.room && app.room.meta.status === 'playing';
+    const playing = (app.mode === 'bot' && app.bot.active && !app.game.status.over) ||
+      (app.room && app.room.meta.status === 'playing');
     el.classList.toggle('low', ms !== null && ms <= 20000 && !!playing);
   }
 
   function updateClocks() {
+    if (app.mode === 'bot') {
+      updateBotClocks();
+      return;
+    }
     if (app.mode !== 'online' || !app.room) return;
     const st = app.game.state;
     const bottomColor = app.myColor || 'w';
@@ -1891,13 +2440,17 @@
 
   function renderHUD() {
     const online = app.mode === 'online' && !!app.room;
+    const botMode = app.mode === 'bot' && !!app.bot.active;
     const room = online ? app.room : null;
     const st = app.game.state;
     const status = app.game.status;
-    const bottomColor = online ? (app.myColor || 'w') : 'w';
+    const bottomColor = online ? (app.myColor || 'w') : botMode ? (app.myColor || 'w') : 'w';
     const topColor = C.opponent(bottomColor);
 
     function nameFor(color) {
+      if (botMode) {
+        return color === app.myColor ? myName() : app.bot.name + ' (bot)';
+      }
       if (!room) return color === 'w' ? 'Brancas' : 'Pretas';
       const p = room.players && room.players[color];
       return p && p.name ? p.name : (color === 'w' ? 'Brancas' : 'Pretas');
@@ -1910,7 +2463,11 @@
     if (topName) topName.textContent = nameFor(topColor);
     if (bottomName) bottomName.textContent = nameFor(bottomColor);
 
-    if (!room) {
+    if (botMode) {
+      const info = botLevelInfo(app.bot.level);
+      if (topRole) topRole.textContent = 'bot · ' + info.label;
+      if (bottomRole) bottomRole.textContent = 'você';
+    } else if (!room) {
       if (topRole) topRole.textContent = 'adversário local';
       if (bottomRole) bottomRole.textContent = 'você';
     } else if (room.meta.status === 'waiting') {
@@ -1940,6 +2497,8 @@
 
     if (online) {
       updateClocks();
+    } else if (botMode) {
+      updateBotClocks();
     } else {
       setClockEl($('top-clock'), null);
       setClockEl($('bottom-clock'), null);
@@ -1952,7 +2511,10 @@
       let label = st.turn === 'w' ? 'Vez das brancas' : 'Vez das pretas';
       if (status.over) label = 'Fim de jogo';
       else if (room && room.meta.status === 'waiting') label = 'Aguardando adversário';
-      else if (online && app.myRole === 'player' && app.myColor) {
+      else if (botMode) {
+        if (app.bot.thinking) label = 'Bot pensando…';
+        else label += st.turn === app.myColor ? ' · sua vez' : ' · bot';
+      } else if (online && app.myRole === 'player' && app.myColor) {
         label += st.turn === app.myColor ? ' · sua vez' : ' · adversário';
       }
       turnText.textContent = label;
@@ -1967,6 +2529,14 @@
         text = resultText(room.result.reason, room.result.winner);
       } else if (online && app.myRole === 'spectator') {
         text = 'Você está assistindo. O tabuleiro é atualizado em tempo real.';
+      } else if (botMode && status.type === 'resign' && status.over) {
+        text = status.winner === app.myColor
+          ? 'O bot desistiu. Você venceu!'
+          : 'Você desistiu. O bot venceu.';
+      } else if (botMode && app.bot.thinking && !status.over) {
+        text = 'Bot pensando…';
+      } else if (botMode && st.turn === app.myColor && !status.over && !status.check) {
+        text = 'Sua vez. Selecione uma peça.';
       } else {
         text = statusLabel(status);
       }
@@ -1982,7 +2552,8 @@
 
     const subtitle = $('game-subtitle');
     if (subtitle) {
-      if (!online) subtitle.textContent = 'Modo local · mesmo dispositivo';
+      if (botMode) subtitle.textContent = 'Contra o bot · ' + botLevelInfo(app.bot.level).label;
+      else if (!online) subtitle.textContent = 'Modo local · mesmo dispositivo';
       else if (room.meta.status === 'waiting') subtitle.textContent = 'Sala aguardando adversário';
       else if (room.meta.status === 'finished') subtitle.textContent = 'Partida encerrada · P2P';
       else if (app.myRole === 'spectator') subtitle.textContent = 'Assistindo · P2P';
@@ -2010,17 +2581,21 @@
     const undoBtn = $('undo-btn');
     const newLocalBtn = $('new-local-btn');
     const leaveBtn = $('leave-btn');
-    if (undoBtn) undoBtn.classList.toggle('hidden', online);
+    if (undoBtn) {
+      undoBtn.classList.toggle('hidden', online);
+      undoBtn.disabled = botMode && (!app.localHistory.length || app.game.status.over);
+    }
     if (newLocalBtn) newLocalBtn.classList.toggle('hidden', online);
     if (leaveBtn) leaveBtn.classList.toggle('hidden', !online);
 
     const actions = $('room-actions');
-    const showActions = online && app.myRole === 'player' &&
-      (room.meta.status === 'playing' || room.meta.status === 'finished');
+    const showActions = botMode || (online && app.myRole === 'player' &&
+      (room.meta.status === 'playing' || room.meta.status === 'finished'));
     if (actions) actions.classList.toggle('hidden', !showActions);
+    document.body.classList.toggle('has-actions', showActions);
 
     if (showActions) {
-      const playing = room.meta.status === 'playing';
+      const playing = botMode ? !status.over : room.meta.status === 'playing';
       const drawBtn = $('draw-btn');
       const resignBtn = $('resign-btn');
       const rematchBtn = $('rematch-btn');
@@ -2029,10 +2604,14 @@
         drawBtn.classList.toggle('hidden', !playing);
         drawBtn.disabled = !playing;
         if (playing) {
-          const offer = room.drawOffer;
-          drawBtn.textContent = offer
-            ? (offer.by === app.myColor ? 'Cancelar empate' : 'Aceitar empate')
-            : 'Empate';
+          if (botMode) {
+            drawBtn.textContent = 'Empate';
+          } else {
+            const offer = room.drawOffer;
+            drawBtn.textContent = offer
+              ? (offer.by === app.myColor ? 'Cancelar empate' : 'Aceitar empate')
+              : 'Empate';
+          }
         }
       }
 
@@ -2042,12 +2621,19 @@
       }
 
       if (rematchBtn) {
-        const canRematch = room.meta.status === 'finished' && room.players.w && room.players.b;
+        const canRematch = botMode
+          ? status.over
+          : (room.meta.status === 'finished' && room.players.w && room.players.b);
         rematchBtn.classList.toggle('hidden', !canRematch);
         if (canRematch) {
-          const waiting = !!(room.rematch && room.rematch[app.myColor]);
-          rematchBtn.textContent = waiting ? 'Aguardando revanche…' : 'Revanche';
-          rematchBtn.disabled = waiting;
+          if (botMode) {
+            rematchBtn.textContent = 'Revanche';
+            rematchBtn.disabled = false;
+          } else {
+            const waiting = !!(room.rematch && room.rematch[app.myColor]);
+            rematchBtn.textContent = waiting ? 'Aguardando revanche…' : 'Revanche';
+            rematchBtn.disabled = waiting;
+          }
         }
       }
     }
@@ -2151,13 +2737,12 @@
   }
 
   function maybeShowLocalResult() {
-    if (app.mode !== 'local') return;
+    if (app.mode !== 'local' && app.mode !== 'bot') return;
     const status = app.game.status;
     if (!status.over) return;
-    if (status.type !== 'checkmate' && status.type !== 'stalemate' &&
-        status.type !== 'insufficient' && status.type !== 'fifty') return;
 
-    const key = 'local|' + status.type + '|' + (status.winner || '') + '|' +
+    const botMode = app.mode === 'bot';
+    const key = (botMode ? 'bot|' : 'local|') + status.type + '|' + (status.winner || '') + '|' +
       app.game.state.fullmove + '|' + app.localHistory.length;
     if (app.lastResultKey === key) return;
     app.lastResultKey = key;
@@ -2165,9 +2750,30 @@
     const title = $('result-title');
     const text = $('result-text');
     const rematch = $('result-rematch');
-    if (title) title.textContent = status.type === 'checkmate' ? 'Xeque-mate' : 'Empate';
-    if (text) text.textContent = resultText(status.type, status.winner);
-    if (rematch) rematch.classList.add('hidden');
+
+    if (title) {
+      if (status.type === 'checkmate') title.textContent = 'Xeque-mate';
+      else if (status.type === 'stalemate' || status.type === 'insufficient' ||
+               status.type === 'fifty' || status.type === 'agreement') title.textContent = 'Empate';
+      else title.textContent = 'Fim de jogo';
+    }
+
+    if (text) {
+      if (botMode && status.type === 'resign') {
+        text.textContent = status.winner === app.myColor
+          ? 'O bot desistiu. Você venceu!'
+          : 'Você desistiu. O bot venceu.';
+      } else {
+        text.textContent = resultText(status.type, status.winner);
+      }
+    }
+
+    if (rematch) {
+      rematch.classList.toggle('hidden', !botMode);
+      rematch.disabled = false;
+      rematch.textContent = 'Revanche';
+    }
+
     $('result').classList.remove('hidden');
     Sound.end();
   }
@@ -2330,6 +2936,10 @@
   }
 
   function requestRematch() {
+    if (app.mode === 'bot') {
+      requestBotRematch();
+      return;
+    }
     if (app.mode !== 'online' || !app.room || app.room.meta.status !== 'finished') return;
     if (!app.myColor) return;
 
@@ -2340,6 +2950,10 @@
   }
 
   function onResign() {
+    if (app.mode === 'bot') {
+      onBotResign();
+      return;
+    }
     if (app.mode !== 'online' || !app.room || app.room.meta.status !== 'playing') return;
     if (!app.myColor || app.myRole !== 'player') return;
 
@@ -2356,6 +2970,10 @@
   }
 
   function onDrawClick() {
+    if (app.mode === 'bot') {
+      onBotDraw();
+      return;
+    }
     if (app.mode !== 'online' || !app.room || app.room.meta.status !== 'playing') return;
     if (!app.myColor || app.myRole !== 'player') return;
 
@@ -2448,6 +3066,30 @@
     on('create-room', 'click', createRoom);
     on('join-btn', 'click', joinByCode);
     on('local-play', 'click', startLocalGame);
+    on('bot-play', 'click', startBotGame);
+
+    on('bot-level', 'change', function () {
+      botPrefs.level = Math.min(6, Math.max(1, Math.round(Number(this.value) || 3)));
+      saveBotPrefs();
+      updateBotDescription();
+    });
+    on('bot-style', 'change', function () {
+      botPrefs.style = this.value;
+      saveBotPrefs();
+    });
+    on('bot-color', 'change', function () {
+      botPrefs.color = this.value;
+      saveBotPrefs();
+    });
+    on('bot-tc', 'change', function () {
+      botPrefs.tc = this.value;
+      saveBotPrefs();
+    });
+
+    on('panel-toggle', 'click', function () {
+      const panel = $('panel');
+      setPanelCollapsed(!panel.classList.contains('collapsed'));
+    });
 
     on('join-code', 'keydown', function (event) {
       if (event.key === 'Enter') {
@@ -2505,7 +3147,7 @@
     });
 
     on('undo-btn', 'click', undoLocalMove);
-    on('new-local-btn', 'click', resetLocalGame);
+    on('new-local-btn', 'click', newGame);
     on('leave-btn', 'click', leaveRoom);
     on('draw-btn', 'click', onDrawClick);
     on('resign-btn', 'click', onResign);
@@ -2517,6 +3159,8 @@
     on('result-rematch', 'click', function () {
       if (app.mode === 'online' && app.room) {
         requestRematch();
+      } else if (app.mode === 'bot') {
+        requestBotRematch();
       } else {
         $('result').classList.add('hidden');
         resetLocalGame();
@@ -2593,13 +3237,19 @@
     }
 
     loadSettings();
+    loadBotPrefs();
     populateSettingsOptions();
+    applyBotPrefsToForm();
     renderLobbyIdentity();
     applyVisualSettings();
     setQuickUi(false);
     wireEvents();
     switchTab('quick');
     handleInviteFromUrl();
+
+    window.addEventListener('resize', function () {
+      if (!isMobile() || isCompactLandscape()) setPanelCollapsed(false);
+    });
 
     window.setInterval(function () {
       updateClocks();
@@ -2612,7 +3262,12 @@
     net: net,
     settings: function () { return settings; },
     startLocalGame: startLocalGame,
+    startBotGame: startBotGame,
     resetLocalGame: resetLocalGame,
+    resetBotGame: resetBotGame,
+    requestBotRematch: requestBotRematch,
+    updateBotDescription: updateBotDescription,
+    setPanelCollapsed: setPanelCollapsed,
     playMove: playMove,
     handleSquareClick: handleSquareClick,
     renderAll: renderAll,
