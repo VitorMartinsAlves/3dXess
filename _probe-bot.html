@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+
+  <title>Xadrez 3D Online — Jogue Xadrez Grátis no Navegador</title>
+  <meta name="description" content="Jogue xadrez 3D online grátis no navegador: partidas contra o bot, salas com amigos por link e modo local. Sem cadastro, sem instalação e sem download." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow, max-image-preview:large" />
+  <meta name="author" content="Vitor Martins Alves" />
+  <link rel="canonical" href="https://vitormartinsalves.github.io/3dXess/" />
+  <link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/" />
+  <link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Xadrez 3D Online" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:url" content="https://vitormartinsalves.github.io/3dXess/" />
+  <meta property="og:title" content="Xadrez 3D Online — Jogue Xadrez Grátis no Navegador" />
+  <meta property="og:description" content="Partidas contra o bot, salas com amigos por link e modo local em um tabuleiro 3D. Grátis, sem cadastro e sem instalar nada." />
+  <meta property="og:image" content="https://vitormartinsalves.github.io/3dXess/og-image.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Tabuleiro de xadrez 3D com o texto Xadrez 3D Online" />
+
+  <!-- Twitter/X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Xadrez 3D Online — Jogue Xadrez Grátis no Navegador" />
+  <meta name="twitter:description" content="Partidas contra o bot, salas com amigos por link e modo local em um tabuleiro 3D. Grátis e sem cadastro." />
+  <meta name="twitter:image" content="https://vitormartinsalves.github.io/3dXess/og-image.png" />
+  <meta name="twitter:image:alt" content="Tabuleiro de xadrez 3D com o texto Xadrez 3D Online" />
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="style.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://vitormartinsalves.github.io/3dXess/#website",
+        "url": "https://vitormartinsalves.github.io/3dXess/",
+        "name": "Xadrez 3D Online",
+        "inLanguage": "pt-BR"
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://vitormartinsalves.github.io/3dXess/#app",
+        "name": "Xadrez 3D Online",
+        "url": "https://vitormartinsalves.github.io/3dXess/",
+        "description": "Jogo de xadrez 3D no navegador com partidas contra o bot, salas online com amigos por link, modo local e relógio de xadrez.",
+        "applicationCategory": "GameApplication",
+        "applicationSubCategory": "Xadrez",
+        "operatingSystem": "Qualquer navegador moderno (Windows, macOS, Linux, Android, iOS)",
+        "browserRequirements": "Requer JavaScript e WebGL",
+        "inLanguage": "pt-BR",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "BRL"
+        },
+        "featureList": [
+          "Xadrez 3D com tabuleiro giratório",
+          "Partidas online com amigos por link ou código de sala",
+          "Jogar contra o bot em 6 níveis de dificuldade",
+          "Modo local para dois jogadores no mesmo dispositivo",
+          "Relógio com controles de tempo e incremento",
+          "Funciona no celular, tablet e computador sem instalar nada"
+        ],
+        "screenshot": "https://vitormartinsalves.github.io/3dXess/og-image.png",
+        "image": "https://vitormartinsalves.github.io/3dXess/og-image.png",
+        "author": {
+          "@type": "Person",
+          "name": "Vitor Martins Alves",
+          "url": "https://github.com/VitorMartinsAlves"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://vitormartinsalves.github.io/3dXess/#faq",
+        "inLanguage": "pt-BR",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "O Xadrez 3D Online é grátis?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sim. O jogo é totalmente gratuito, não tem anúncios, não exige cadastro e não pede nenhum dado pessoal."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Preciso criar conta para jogar?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Não. Basta abrir o site e escolher um nome. Não há login, senha nem cadastro."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Como jogar xadrez online com um amigo?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Abra a aba Criar sala, escolha o controle de tempo e envie o link de convite ou o código de 5 caracteres para o seu amigo. Os dois precisam estar online ao mesmo tempo."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Funciona no celular?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sim. O tabuleiro 3D funciona em celulares e tablets com navegador moderno, com controles de toque para girar a câmera e mover as peças."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Preciso instalar algum aplicativo?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Não. O jogo roda direto no navegador. Também é possível adicionar à tela inicial do celular para abrir como um aplicativo."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Dá para jogar sozinho contra o computador?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sim. Na aba Contra o bot você escolhe o nível de dificuldade, o estilo de jogo, a cor e o controle de tempo. O bot roda no próprio navegador, então não precisa de internet."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- ================= LOBBY ================= -->
+  <div id="lobby" class="screen">
+    <div class="lobby-wrap">
+      <header class="lobby-head">
+        <div class="brand big">
+          <span class="brand-icon">&#9822;</span>
+          <div>
+            <h1>Xadrez 3D <span class="tag">Online</span></h1>
+            <p>Salas, partidas rápidas e links de convite</p>
+          </div>
+        </div>
+        <button id="open-settings-lobby" class="icon-btn" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
+      </header>
+
+      <div class="live-stats" id="live-stats" aria-label="Atividade agora no site">
+        <span class="live-item" title="Pessoas com o jogo aberto agora">
+          <span class="live-dot"></span><strong id="live-online">—</strong>&nbsp;online
+        </span>
+        <span class="live-item" title="Pessoas procurando partida rápida agora">
+          <span class="live-dot searching"></span><strong id="live-searching">—</strong>&nbsp;na fila
+        </span>
+        <span class="live-item" title="Partidas em andamento agora">
+          <span class="live-dot playing"></span><strong id="live-playing">—</strong>&nbsp;em partida
+        </span>
+      </div>
+
+      <div class="nick-row">
+        <label for="nickname">Seu nome</label>
+        <input id="nickname" type="text" maxlength="20" placeholder="Jogador" autocomplete="nickname" />
+        <span id="net-status" class="fb-status" title="Status da conexão P2P">conectando P2P…</span>
+      </div>
+
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="quick" type="button" role="tab">Partida rápida</button>
+        <button class="tab" data-tab="bot" type="button" role="tab">Contra o bot</button>
+        <button class="tab" data-tab="create" type="button" role="tab">Criar sala</button>
+        <button class="tab" data-tab="join" type="button" role="tab">Entrar</button>
+        <button class="tab" data-tab="public" type="button" role="tab">Salas públicas</button>
+      </nav>
+
+      <section id="tab-quick" class="tab-panel active">
+        <p class="hint">Encontre um adversário automaticamente. Os dois precisam estar online ao mesmo tempo — a conexão é direta entre os navegadores.</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="quick-tc">Controle de tempo</label>
+            <select id="quick-tc">
+              <option value="1+0">1 min</option>
+              <option value="3+0">3 min</option>
+              <option value="3+2">3 min + 2s</option>
+              <option value="5+0">5 min</option>
+              <option value="5+3" selected>5 min + 3s</option>
+              <option value="10+0">10 min</option>
+              <option value="10+5">10 min + 5s</option>
+              <option value="15+10">15 min + 10s</option>
+              <option value="unlimited">Sem tempo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="quick-color">Cor</label>
+            <select id="quick-color">
+              <option value="random" selected>Aleatória</option>
+              <option value="w">Brancas</option>
+              <option value="b">Pretas</option>
+            </select>
+          </div>
+        </div>
+        <button id="quick-match" class="primary big-btn" type="button">Buscar partida</button>
+        <button id="cancel-match" class="ghost big-btn hidden" type="button">Cancelar busca</button>
+        <div id="match-status" class="match-status hidden"></div>
+      </section>
+
+      <section id="tab-bot" class="tab-panel">
+        <p class="hint">Jogue sozinho contra um bot que roda no seu navegador. Escolha o nível, o estilo e o tempo.</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="bot-level">Dificuldade</label>
+            <select id="bot-level">
+              <option value="1">Muito fácil · Patinho (~400)</option>
+              <option value="2">Fácil · Aprendiz (~800)</option>
+              <option value="3" selected>Médio · Tático (~1200)</option>
+              <option value="4">Difícil · Veterano (~1600)</option>
+              <option value="5">Muito difícil · Mestre (~2000)</option>
+              <option value="6">Mestre · Grão-mestre (~2300)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bot-style">Estilo do bot</label>
+            <select id="bot-style">
+              <option value="balanced" selected>Equilibrado</option>
+              <option value="aggressive">Agressivo</option>
+              <option value="defensive">Defensivo</option>
+              <option value="positional">Posicional</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bot-color">Sua cor</label>
+            <select id="bot-color">
+              <option value="random" selected>Aleatória</option>
+              <option value="w">Brancas</option>
+              <option value="b">Pretas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bot-tc">Controle de tempo</label>
+            <select id="bot-tc">
+              <option value="1+0">1 min</option>
+              <option value="3+0">3 min</option>
+              <option value="3+2">3 min + 2s</option>
+              <option value="5+0">5 min</option>
+              <option value="5+3">5 min + 3s</option>
+              <option value="10+0" selected>10 min</option>
+              <option value="10+5">10 min + 5s</option>
+              <option value="15+10">15 min + 10s</option>
+              <option value="unlimited">Sem tempo</option>
+            </select>
+          </div>
+        </div>
+        <div id="bot-level-desc" class="bot-desc"></div>
+        <button id="bot-play" class="primary big-btn" type="button">Jogar contra o bot</button>
+        <p class="hint small">O bot usa o mesmo motor de regras e não precisa de internet nem de conta.</p>
+      </section>
+
+      <section id="tab-create" class="tab-panel">
+        <div class="field-grid">
+          <div class="field">
+            <label for="create-name">Nome da sala</label>
+            <input id="create-name" type="text" maxlength="30" placeholder="Sala do campeonato" />
+          </div>
+          <div class="field">
+            <label for="create-tc">Controle de tempo</label>
+            <select id="create-tc">
+              <option value="1+0">1 min</option>
+              <option value="3+0">3 min</option>
+              <option value="3+2">3 min + 2s</option>
+              <option value="5+0">5 min</option>
+              <option value="5+3" selected>5 min + 3s</option>
+              <option value="10+0">10 min</option>
+              <option value="10+5">10 min + 5s</option>
+              <option value="15+10">15 min + 10s</option>
+              <option value="unlimited">Sem tempo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="create-color">Sua cor</label>
+            <select id="create-color">
+              <option value="random" selected>Aleatória</option>
+              <option value="w">Brancas</option>
+              <option value="b">Pretas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="create-visibility">Visibilidade</label>
+            <select id="create-visibility">
+              <option value="public" selected>Pública (aparece na lista)</option>
+              <option value="private">Privada (só por link)</option>
+            </select>
+          </div>
+        </div>
+        <button id="create-room" class="primary big-btn" type="button">Criar sala</button>
+        <p class="hint small">Você recebe um código e um link para convidar quem quiser.</p>
+      </section>
+
+      <section id="tab-join" class="tab-panel">
+        <p class="hint">Digite o código de 5 caracteres ou abra o link de convite. Quem criou a sala precisa estar online.</p>
+        <div class="join-row">
+          <input id="join-code" type="text" maxlength="8" placeholder="CÓDIGO" autocapitalize="characters" spellcheck="false" />
+          <button id="join-btn" class="primary" type="button">Entrar</button>
+        </div>
+        <div class="divider"><span>ou</span></div>
+        <button id="local-play" class="ghost big-btn" type="button">Jogar local (mesmo dispositivo)</button>
+        <p class="hint small">O modo local não precisa de internet nem de conta.</p>
+      </section>
+
+      <section id="tab-public" class="tab-panel">
+        <div class="public-head">
+          <span id="public-count">Carregando salas…</span>
+          <button id="refresh-public" class="icon-btn small" type="button" title="Atualizar">&#8635;</button>
+        </div>
+        <div id="public-rooms" class="public-rooms">
+          <div class="empty-state">As salas aparecem aqui enquanto o anfitrião estiver online.</div>
+        </div>
+      </section>
+
+      <footer class="lobby-foot">
+        <span>100% navegador · conexão P2P (WebRTC)</span>
+        <span id="uid-label" class="muted"></span>
+      </footer>
+
+      <!-- Conteúdo estático para buscadores e para quem quer entender o jogo -->
+      <section class="about" aria-labelledby="about-title">
+        <details>
+          <summary>Sobre o jogo, como jogar e perguntas frequentes</summary>
+          <div class="about-body">
+            <h2 id="about-title">Xadrez 3D online grátis, direto no navegador</h2>
+            <p>
+              O Xadrez 3D Online é um jogo de xadrez completo que roda no seu navegador, sem instalar
+              nada e sem criar conta. O tabuleiro é tridimensional e pode ser girado com o mouse ou com
+              o dedo, o que ajuda a enxergar lances, diagonais e ameaças de peões com mais clareza.
+              Você pode jogar sozinho contra o bot, disputar partidas online com amigos por link ou
+              código de sala, ou jogar no modo local com duas pessoas no mesmo dispositivo.
+            </p>
+            <p>
+              Todas as regras do xadrez são aplicadas automaticamente: roque, en passant, promoção de
+              peão, xeque, xeque-mate, afogamento e empates por repetição, material insuficiente e
+              regra dos 50 lances. As partidas online usam conexão direta entre os navegadores (P2P via
+              WebRTC), então não existe servidor guardando suas jogadas.
+            </p>
+
+            <h3>Como jogar xadrez online com um amigo</h3>
+            <ol>
+              <li>Escolha um nome no campo <strong>Seu nome</strong>.</li>
+              <li>Abra a aba <strong>Criar sala</strong> e selecione o controle de tempo e a sua cor.</li>
+              <li>Envie o link de convite ou o código de 5 caracteres para o seu amigo.</li>
+              <li>Quando os dois estiverem conectados, a partida começa automaticamente.</li>
+            </ol>
+            <p>
+              Para jogar contra o computador, use a aba <strong>Contra o bot</strong> e escolha entre
+              seis níveis de dificuldade, de iniciante a grão-mestre. O bot roda no próprio navegador
+              e não precisa de internet.
+            </p>
+
+            <h3>Perguntas frequentes</h3>
+            <h4>O Xadrez 3D Online é grátis?</h4>
+            <p>Sim. O jogo é totalmente gratuito, não tem anúncios, não exige cadastro e não pede nenhum dado pessoal.</p>
+
+            <h4>Preciso criar conta para jogar?</h4>
+            <p>Não. Basta abrir o site e escolher um nome. Não há login, senha nem cadastro.</p>
+
+            <h4>Como jogar xadrez online com um amigo?</h4>
+            <p>
+              Abra a aba Criar sala, escolha o controle de tempo e envie o link de convite ou o código
+              de 5 caracteres para o seu amigo. Os dois precisam estar online ao mesmo tempo.
+            </p>
+
+            <h4>Funciona no celular?</h4>
+            <p>
+              Sim. O tabuleiro 3D funciona em celulares e tablets com navegador moderno, com controles
+              de toque para girar a câmera e mover as peças.
+            </p>
+
+            <h4>Preciso instalar algum aplicativo?</h4>
+            <p>
+              Não. O jogo roda direto no navegador. Também é possível adicionar à tela inicial do
+              celular para abrir como um aplicativo.
+            </p>
+
+            <h4>Dá para jogar sozinho contra o computador?</h4>
+            <p>
+              Sim. Na aba Contra o bot você escolhe o nível de dificuldade, o estilo de jogo, a cor e o
+              controle de tempo. O bot roda no próprio navegador, então não precisa de internet.
+            </p>
+
+            <p class="about-source">
+              Projeto de código aberto:
+              <a href="https://github.com/VitorMartinsAlves/3dXess" target="_blank" rel="noopener">github.com/VitorMartinsAlves/3dXess</a>
+            </p>
+          </div>
+        </details>
+      </section>
+    </div>
+  </div>
+
+  <!-- ================= JOGO ================= -->
+  <div id="game-ui" class="hidden">
+    <header id="topbar">
+      <button id="home-btn" class="brand compact" type="button" title="Voltar ao lobby">
+        <span class="brand-icon">&#9822;</span>
+        <div>
+          <span class="game-title">Xadrez 3D</span>
+          <p id="game-subtitle">Modo local</p>
+        </div>
+      </button>
+
+      <div class="room-chip hidden" id="room-chip">
+        <span class="muted">Sala</span>
+        <strong id="room-code">-----</strong>
+        <button id="copy-invite" class="icon-btn small" type="button" title="Copiar link de convite">&#128279;</button>
+      </div>
+
+      <div class="actions">
+        <button id="flip-btn" class="icon-btn" type="button" title="Girar tabuleiro" aria-label="Girar tabuleiro">&#8646;</button>
+        <button id="settings-btn" class="icon-btn" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
+        <button id="undo-btn" class="ghost hidden" type="button" title="Desfazer">&#8630;</button>
+        <button id="new-local-btn" class="ghost hidden" type="button" title="Novo jogo" aria-label="Novo jogo"><span class="wide-label">Novo jogo</span><span class="narrow-label">&#8635;</span></button>
+        <button id="leave-btn" class="ghost hidden" type="button">Sair da sala</button>
+      </div>
+    </header>
+
+    <aside id="panel">
+      <button id="panel-toggle" class="panel-toggle" type="button" aria-label="Expandir painel" aria-expanded="false" title="Expandir painel">
+        <span class="panel-grip"></span>
+        <span class="panel-chevron">&#9662;</span>
+      </button>
+
+      <div class="player-card" id="player-top">
+        <span class="pdot black" id="top-dot"></span>
+        <div class="pinfo">
+          <strong id="top-name">Pretas</strong>
+          <span id="top-role" class="muted">aguardando…</span>
+        </div>
+        <span class="clock" id="top-clock">--:--</span>
+      </div>
+
+      <div class="panel-mid">
+        <div id="turn" class="turn-line">
+          <span id="turn-dot" class="dot white"></span>
+          <span id="turn-text">Vez das brancas</span>
+        </div>
+        <div id="status" class="status">Selecione uma peça para começar.</div>
+        <div id="spectators" class="muted tiny hidden"></div>
+      </div>
+
+      <div class="panel-tabs">
+        <button class="ptab active" data-ptab="moves" type="button">Lances</button>
+        <button class="ptab" data-ptab="chat" type="button">Chat <span id="chat-badge" class="badge hidden">0</span></button>
+      </div>
+
+      <div id="pane-moves" class="pane active">
+        <div id="move-list" class="move-list">
+          <div class="empty">Nenhum lance ainda</div>
+        </div>
+      </div>
+
+      <div id="pane-chat" class="pane">
+        <div id="chat-messages" class="chat-messages">
+          <div class="empty">Sem mensagens.</div>
+        </div>
+        <form id="chat-form" class="chat-form" autocomplete="off">
+          <input id="chat-input" type="text" maxlength="300" placeholder="Escreva uma mensagem…" />
+          <button class="primary" type="submit" title="Enviar">&#10148;</button>
+        </form>
+      </div>
+
+      <div class="player-card" id="player-bottom">
+        <span class="pdot white" id="bottom-dot"></span>
+        <div class="pinfo">
+          <strong id="bottom-name">Brancas</strong>
+          <span id="bottom-role" class="muted">você</span>
+        </div>
+        <span class="clock" id="bottom-clock">--:--</span>
+      </div>
+    </aside>
+
+    <div id="room-actions" class="room-actions hidden">
+      <button id="draw-btn" class="ghost" type="button">Empate</button>
+      <button id="resign-btn" class="ghost danger" type="button">Desistir</button>
+      <button id="rematch-btn" class="primary hidden" type="button">Revanche</button>
+    </div>
+
+    <div id="waiting-banner" class="waiting-banner hidden">
+      <span class="pulse-dot"></span>
+      <span id="waiting-text">Aguardando o adversário entrar…</span>
+      <button id="copy-invite-2" class="ghost small" type="button">Copiar convite</button>
+    </div>
+  </div>
+
+  <!-- ================= MODAIS ================= -->
+  <div id="promotion" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2>Promoção</h2>
+      <p>Escolha a peça para promover</p>
+      <div class="promo-buttons">
+        <button type="button" data-piece="q" aria-label="Dama">&#9813;</button>
+        <button type="button" data-piece="r" aria-label="Torre">&#9814;</button>
+        <button type="button" data-piece="b" aria-label="Bispo">&#9815;</button>
+        <button type="button" data-piece="n" aria-label="Cavalo">&#9816;</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settings" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card wide">
+      <div class="modal-head">
+        <h2>Configurações</h2>
+        <button id="close-settings" class="icon-btn small" type="button" aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="settings-group">
+        <label class="switch-row">
+          <span>Efeitos especiais</span>
+          <input id="opt-effects" type="checkbox" checked />
+          <span class="switch"></span>
+        </label>
+        <label class="switch-row">
+          <span>Sons</span>
+          <input id="opt-sound" type="checkbox" checked />
+          <span class="switch"></span>
+        </label>
+        <label class="switch-row">
+          <span>Girar automático para a minha cor</span>
+          <input id="opt-autofocus" type="checkbox" checked />
+          <span class="switch"></span>
+        </label>
+        <label class="switch-row">
+          <span>Aparecer no contador online<small class="switch-note">Usa uma conexão P2P, como o resto do jogo</small></span>
+          <input id="opt-presence" type="checkbox" checked />
+          <span class="switch"></span>
+        </label>
+      </div>
+
+      <div class="settings-group">
+        <div class="field">
+          <label for="opt-theme">Tema do tabuleiro</label>
+          <select id="opt-theme"></select>
+        </div>
+        <div class="field">
+          <label for="opt-skin">Skin das peças</label>
+          <select id="opt-skin"></select>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="field">
+          <label for="opt-nickname">Seu nome</label>
+          <input id="opt-nickname" type="text" maxlength="20" placeholder="Jogador" />
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button id="reset-camera" class="ghost" type="button">Centralizar câmera</button>
+        <button id="save-settings" class="primary" type="button">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2 id="result-title">Fim de jogo</h2>
+      <p id="result-text"></p>
+      <div class="modal-foot center">
+        <button id="result-rematch" class="primary hidden" type="button">Revanche</button>
+        <button id="result-close" class="ghost" type="button">Ver tabuleiro</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2 id="confirm-title">Confirmar</h2>
+      <p id="confirm-text"></p>
+      <div class="modal-foot center">
+        <button id="confirm-no" class="ghost" type="button">Cancelar</button>
+        <button id="confirm-yes" class="primary danger-btn" type="button">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="loader" class="modal hidden">
+    <div class="loader-card">
+      <div class="spinner"></div>
+      <p id="loader-text">Conectando…</p>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <div id="load-error" hidden>
+    <div>
+      <h2>Não foi possível carregar o jogo</h2>
+      <p>Seu navegador precisa de JavaScript e WebGL habilitados. Ative a aceleração de hardware e recarregue a página.</p>
+    </div>
+  </div>
+
+  <script src="vendor/three.min.js" defer></script>
+  <script src="vendor/OrbitControls.js" defer></script>
+  <script src="engine.js" defer></script>
+  <script src="bot.js" defer></script>
+  <script src="board3d.js" defer></script>
+  <script src="app.js" defer></script>
+  <script>
+    window.addEventListener('load', function () {
+      if (!window.THREE || !window.THREE.OrbitControls) {
+        document.getElementById('load-error').hidden = false;
+      }
+    });
+  </script>
+</body>
+</html>
+<script>
+window.addEventListener('load', function () {
+  setTimeout(function () {
+    try { window.__xadrez.startBotGame(); document.title = 'STARTED-BOT'; }
+    catch (e) { document.title = 'ERR: ' + (e && e.message); }
+  }, 250);
+});
+</script>

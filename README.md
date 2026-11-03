@@ -14,6 +14,7 @@ O projeto é 100% estático e foi feito para rodar no **GitHub Pages**.
 - **Partida rápida** com fila automática.
 - **Salas privadas** com código de 5 caracteres e link de convite.
 - **Salas públicas** listadas enquanto o anfitrião estiver online.
+- **Contador ao vivo** de pessoas online, na fila e em partida (P2P, sem servidor).
 - **Espectadores** podem entrar em salas em andamento e usar o chat.
 - **Chat** entre jogadores e espectadores.
 - **Relógios** com incremento (1+0, 3+0, 3+2, 5+0, 5+3, 10+0, 10+5, 15+10 e sem tempo).
@@ -54,13 +55,20 @@ Navegador A (anfitrião)  <==== WebRTC (dados da partida) ====>  Navegador B
 - Não existe persistência: se o anfitrião fechar a página, a sala termina.
 - Não é necessário criar conta, configurar Firebase ou subir qualquer servidor.
 
+### Contador de jogadores online
+
+- Cada aba entra numa sala P2P de presença (`presence-v1-2026`) e anuncia o próprio estado a cada 5 segundos: no lobby, na fila ou em partida.
+- O contador é uma **estimativa**: mostra as abas conectadas à sala de presença, não usuários únicos.
+- Pode ser desativado em **Configurações → Aparecer no contador online**. Com ele desligado, o site não abre a sala de presença.
+- Como toda a rede é P2P, a presença também é um mesh: em picos muito altos de público, o número de conexões cresce com o quadrado de participantes. Para escala grande, o ideal é trocar a presença por um serviço com servidor.
+
 ## Jogar localmente
 
 1. Abra o `index.html` diretamente no navegador, ou rode um servidor estático.
 2. Clique em **Entrar** → **Jogar local (mesmo dispositivo)**.
 3. Clique em uma peça e depois na casa de destino.
 
-O modo local funciona até abrindo o arquivo com `file://`, desde que o Three.js consiga ser carregado pela internet.
+O modo local funciona até abrindo o arquivo com `file://` — o Three.js é servido localmente pela pasta `vendor/`.
 
 ## Jogar contra o bot
 
@@ -156,6 +164,7 @@ engine.js           Regras do xadrez, FEN, lances legais (window.Chess)
 bot.js              Avaliação, livro e busca alfa-beta do bot (window.Bot)
 bot-worker.js       Worker que executa a busca fora da thread da interface
 board3d.js          Cena Three.js, peças, temas, skins e efeitos (window.Board3D)
+vendor/             Three.js e OrbitControls servidos localmente
 app.js              Lobby P2P, bot, salas, relógios, chat e interface (window.__xadrez)
 .nojekyll           Impede o processamento Jekyll no GitHub Pages
 robots.txt          Regras de rastreamento para buscadores
@@ -165,10 +174,10 @@ SEO.md              Checklist de indexação e divulgação
 .github/workflows/  Publicação automática no GitHub Pages
 ```
 
-Dependências carregadas por CDN:
+Dependências:
 
-- Three.js `0.155.0` e OrbitControls `0.147.0`.
-- Trystero `0.26.0` (importado dinamicamente apenas quando o online é usado).
+- Three.js `0.155.0` e OrbitControls `0.147.0`, servidos localmente em `vendor/`.
+- Trystero `0.26.0` (importado dinamicamente do CDN apenas quando o online ou o contador de presença é usado).
 
 ## Limitações importantes
 
@@ -208,7 +217,7 @@ Para testar o online, abra a mesma URL em dois navegadores ou em uma janela anô
 - **“P2P indisponível”**: verifique a internet e se o CDN `cdn.jsdelivr.net` está acessível.
 - **Sala não encontrada**: confirme o código e se o anfitrião continua com a página aberta.
 - **Não conecta com outra pessoa**: tente outra rede (celular como roteador, por exemplo). NAT restritivo pode bloquear o WebRTC.
-- **Tabuleiro não aparece**: o Three.js é carregado por CDN; sem internet ele não carrega.
+- **Tabuleiro não aparece**: confira se a pasta `vendor/` foi publicada e se o navegador tem WebGL habilitado.
 - **Chat não aparece no modo local**: o chat existe apenas em partidas online.
 - **Bot demora ou não responde**: recarregue a página. Em `file://` o worker é desativado e a busca roda na thread principal, o que pode deixar a interface lenta nos níveis mais altos.
 - **Painel ocupa muito espaço no celular**: toque na alça do painel para recolher. Ele já começa recolhido ao entrar em uma partida.

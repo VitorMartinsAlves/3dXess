@@ -162,10 +162,22 @@
         <button id="open-settings-lobby" class="icon-btn" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
       </header>
 
+      <div class="live-stats" id="live-stats" aria-label="Atividade agora no site">
+        <span class="live-item" title="Pessoas com o jogo aberto agora">
+          <span class="live-dot"></span><strong id="live-online">—</strong>&nbsp;online
+        </span>
+        <span class="live-item" title="Pessoas procurando partida rápida agora">
+          <span class="live-dot searching"></span><strong id="live-searching">—</strong>&nbsp;na fila
+        </span>
+        <span class="live-item" title="Partidas em andamento agora">
+          <span class="live-dot playing"></span><strong id="live-playing">—</strong>&nbsp;em partida
+        </span>
+      </div>
+
       <div class="nick-row">
         <label for="nickname">Seu nome</label>
         <input id="nickname" type="text" maxlength="20" placeholder="Jogador" autocomplete="nickname" />
-        <span id="net-status" class="fb-status" title="Status da conexão P2P">P2P sob demanda</span>
+        <span id="net-status" class="fb-status" title="Status da conexão P2P">conectando P2P…</span>
       </div>
 
       <nav class="tabs" role="tablist">
@@ -529,6 +541,11 @@
           <input id="opt-autofocus" type="checkbox" checked />
           <span class="switch"></span>
         </label>
+        <label class="switch-row">
+          <span>Aparecer no contador online<small class="switch-note">Usa uma conexão P2P, como o resto do jogo</small></span>
+          <input id="opt-presence" type="checkbox" checked />
+          <span class="switch"></span>
+        </label>
       </div>
 
       <div class="settings-group">
@@ -590,12 +607,12 @@
   <div id="load-error" hidden>
     <div>
       <h2>Não foi possível carregar o jogo</h2>
-      <p>O Three.js é carregado pela internet. Verifique sua conexão e recarregue a página.</p>
+      <p>Seu navegador precisa de JavaScript e WebGL habilitados. Ative a aceleração de hardware e recarregue a página.</p>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js" defer></script>
+  <script src="vendor/three.min.js" defer></script>
+  <script src="vendor/OrbitControls.js" defer></script>
   <script src="engine.js" defer></script>
   <script src="bot.js" defer></script>
   <script src="board3d.js" defer></script>
@@ -612,7 +629,7 @@
 <script>
 window.addEventListener('load', function () {
   setTimeout(function () {
-    try { window.__xadrez.startLocalGame(); document.title = 'STARTED'; }
+    try { window.__xadrez.startLocalGame(); document.title = 'STARTED-LOCAL'; }
     catch (e) { document.title = 'ERR: ' + (e && e.message); }
   }, 250);
 });

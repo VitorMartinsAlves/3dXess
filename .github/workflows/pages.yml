@@ -37,6 +37,7 @@ jobs:
             --exclude='test-*.html' \
             --exclude='*-test.html' \
             --exclude='gltest.html' \
+            --exclude='_probe*.html' \
             ./ _site/
 
       - name: Empacotar site estático

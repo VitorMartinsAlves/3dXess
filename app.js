@@ -99,6 +99,7 @@
     presenceActions: null,
     presenceTimer: null,
     presenceStates: {},
+    presenceFailed: false,
     lastPresenceAt: 0,
     quick: {
       active: false,
@@ -1231,7 +1232,8 @@
     net.lobbyActions.who.send({ at: Date.now() }).catch(function () { /* ignore */ });
   }
 
-  function renderPublicRooms() {    const list = $('public-rooms');
+  function renderPublicRooms() {
+    const list = $('public-rooms');
     if (!list) return;
 
     pruneLobby();
@@ -1272,6 +1274,195 @@
         '</button>' +
       '</div>';
     }).join('');
+  }
+
+  /* ------------------------------------------------------------
+     P2P — PRESENÇA (contador de jogadores online)
+     Sem servidor: cada aba entra numa sala Trystero e anuncia o
+     próprio estado. A contagem é uma aproximação em tempo real.
+     ------------------------------------------------------------ */
+  function presenceStatus() {
+    if (net.quick.active) return 'searching';
+    if (app.bot.active) return 'playing';
+    if (app.mode === 'online' && (net.room || net.hostRoom)) return 'playing';
+    if (!$('game-ui').classList.contains('hidden')) return 'playing';
+    return 'lobby';
+  }
+
+  function setLiveValue(id, value) {
+    const el = $(id);
+    if (!el) return;
+    const next = String(value);
+    if (el.textContent === next) return;
+    el.textContent = next;
+    el.classList.remove('bump');
+    void el.offsetWidth;
+    el.classList.add('bump');
+  }
+
+  function renderPresence() {
+    const box = $('live-stats');
+    if (!box) return;
+
+    if (!settings.showPresence || net.presenceFailed) {
+      box.classList.add('hidden');
+      return;
+    }
+    box.classList.remove('hidden');
+
+    if (!net.presence) {
+      box.classList.add('is-connecting');
+      setLiveValue('live-online', '—');
+      setLiveValue('live-searching', '—');
+      setLiveValue('live-playing', '—');
+      return;
+    }
+    box.classList.remove('is-connecting');
+
+    const now = Date.now();
+    const self = presenceStatus();
+    let searching = self === 'searching' ? 1 : 0;
+    let playing = self === 'playing' ? 1 : 0;
+
+    Object.keys(net.presenceStates).forEach(function (peerId) {
+      const state = net.presenceStates[peerId];
+      if (!state || now - (Number(state.at) || 0) > PRESENCE_TTL) return;
+      if (state.s === 'searching') searching += 1;
+      else if (state.s === 'playing') playing += 1;
+    });
+
+    // getPeers() é a fonte mais confiável para "online".
+    const online = Object.keys(net.presence.getPeers() || {}).length + 1;
+
+    setLiveValue('live-online', online);
+    setLiveValue('live-searching', searching);
+    setLiveValue('live-playing', playing);
+  }
+
+  function prunePresence() {
+    const now = Date.now();
+    Object.keys(net.presenceStates).forEach(function (peerId) {
+      const state = net.presenceStates[peerId];
+      if (!state || now - (Number(state.at) || 0) > PRESENCE_TTL) {
+        delete net.presenceStates[peerId];
+      }
+    });
+  }
+
+  function sendPresence(force, target) {
+    if (!net.presenceActions) return;
+    const now = Date.now();
+    if (!force && now - (Number(net.lastPresenceAt) || 0) < 2500) return;
+    net.lastPresenceAt = now;
+    const options = target ? { target: target } : undefined;
+    net.presenceActions.state.send({ s: presenceStatus(), at: now }, options)
+      .catch(function () { /* ignore */ });
+  }
+
+  function ensurePresence() {
+    if (!settings.showPresence) {
+      renderPresence();
+      return Promise.resolve(null);
+    }
+    if (net.presence) {
+      sendPresence(true);
+      renderPresence();
+      return Promise.resolve(net.presence);
+    }
+
+    net.presenceFailed = false;
+    return loadTrystero().then(function (mod) {
+      if (net.presence) return net.presence;
+
+      const room = mod.joinRoom(trysteroConfig(), PRESENCE_ID);
+      net.presence = room;
+
+      const state = room.makeAction('state');
+      net.presenceActions = { state: state };
+
+      state.onMessage = function (data, ctx) {
+        if (!data || !data.s) return;
+        net.presenceStates[ctx.peerId] = { s: data.s, at: Date.now() };
+        renderPresence();
+      };
+
+      room.onPeerJoin = function (peerId) {
+        sendPresence(true, peerId);
+        renderPresence();
+      };
+
+      room.onPeerLeave = function (peerId) {
+        delete net.presenceStates[peerId];
+        renderPresence();
+      };
+
+      if (net.presenceTimer) window.clearInterval(net.presenceTimer);
+      net.presenceTimer = window.setInterval(function () {
+        prunePresence();
+        sendPresence(false);
+        renderPresence();
+      }, PRESENCE_HEARTBEAT);
+
+      sendPresence(true);
+      renderPresence();
+      return room;
+    }).catch(function (err) {
+      console.error('Presença P2P:', err);
+      net.presence = null;
+      net.presenceActions = null;
+      net.presenceFailed = true;
+      renderPresence();
+      return null;
+    });
+  }
+
+  function leavePresence() {
+    if (net.presence) {
+      try { net.presence.leave(); } catch (e) { /* ignore */ }
+    }
+    net.presence = null;
+    net.presenceActions = null;
+    net.presenceStates = {};
+    net.lastPresenceAt = 0;
+    if (net.presenceTimer) {
+      window.clearInterval(net.presenceTimer);
+      net.presenceTimer = null;
+    }
+    renderPresence();
+  }
+
+  function schedulePresence() {
+    if (!settings.showPresence) {
+      setNetStatus('', 'P2P sob demanda', 'Contador online desativado nas configurações.');
+      renderPresence();
+      return;
+    }
+
+    const start = function () {
+      ensurePresence().then(function (room) {
+        if (room) {
+          setNetStatus('ok', 'P2P pronto', 'Conectado à rede P2P. A conexão é direta entre os navegadores.');
+        }
+      });
+    };
+
+    // Espera a página carregar para não competir com o tabuleiro 3D.
+    if (document.readyState === 'complete') {
+      window.setTimeout(start, 1500);
+    } else {
+      window.addEventListener('load', function () {
+        window.setTimeout(start, 1500);
+      }, { once: true });
+    }
+  }
+
+  function watchPresenceUi() {
+    const gameUi = $('game-ui');
+    if (!gameUi || !window.MutationObserver) return;
+    new MutationObserver(function () {
+      sendPresence(true);
+      renderPresence();
+    }).observe(gameUi, { attributes: true, attributeFilter: ['class'] });
   }
 
   function resolveColors(mine, theirs) {
@@ -1440,6 +1631,8 @@
           ' · a conexão é direta entre os navegadores';
       }
     }
+    sendPresence(true);
+    renderPresence();
   }
 
   function tryQuickMatch() {
@@ -1720,7 +1913,16 @@
     } catch (err) {
       boardReady = false;
       console.error('Board3D:', err);
-      toast('Não foi possível iniciar o tabuleiro 3D. Recarregue a página.', 'error', 6000);
+      const error = $('load-error');
+      if (error) {
+        const text = error.querySelector('p');
+        if (text) {
+          text.textContent = 'Seu navegador não conseguiu iniciar o WebGL, necessário para o tabuleiro 3D. Ative a aceleração de hardware e recarregue a página.';
+        }
+        error.hidden = false;
+      } else {
+        toast('Não foi possível iniciar o tabuleiro 3D. Recarregue a página.', 'error', 6000);
+      }
     }
   }
 
@@ -2888,6 +3090,8 @@
     if (effects) effects.checked = !!settings.effects;
     if (sound) sound.checked = !!settings.sound;
     if (autofocus) autofocus.checked = !!settings.autoFocus;
+    const presence = $('opt-presence');
+    if (presence) presence.checked = settings.showPresence !== false;
     if (theme) theme.value = settings.theme;
     if (skin) skin.value = settings.skin;
     if (nick) nick.value = myName();
@@ -2924,6 +3128,7 @@
     const effects = $('opt-effects');
     const sound = $('opt-sound');
     const autofocus = $('opt-autofocus');
+    const presence = $('opt-presence');
 
     settings.nickname = cleanName(nick ? nick.value : settings.nickname);
     settings.theme = theme ? theme.value : settings.theme;
@@ -2932,10 +3137,27 @@
     settings.sound = sound ? !!sound.checked : settings.sound;
     settings.autoFocus = autofocus ? !!autofocus.checked : settings.autoFocus;
 
+    const wantedPresence = presence ? !!presence.checked : settings.showPresence;
+    const presenceChanged = settings.showPresence !== wantedPresence;
+    settings.showPresence = wantedPresence;
+
     saveSettings();
     applyVisualSettings();
     renderLobbyIdentity();
     announceName();
+
+    if (presenceChanged) {
+      if (settings.showPresence) {
+        ensurePresence().then(function (room) {
+          if (room) {
+            setNetStatus('ok', 'P2P pronto', 'Conectado à rede P2P. A conexão é direta entre os navegadores.');
+          }
+        }).catch(function () { /* ignore */ });
+      } else {
+        leavePresence();
+        setNetStatus('', 'P2P sob demanda', 'Contador online desativado nas configurações.');
+      }
+    }
 
     if (settings.autoFocus && app.myColor && boardReady) B.setOrientation(app.myColor);
 
@@ -3252,6 +3474,8 @@
     applyVisualSettings();
     setQuickUi(false);
     wireEvents();
+    watchPresenceUi();
+    schedulePresence();
     switchTab('quick');
     handleInviteFromUrl();
 

@@ -164,7 +164,7 @@ select { cursor: pointer; }
   flex: none;
   border-radius: 50%;
   background: var(--accent);
-  animation: pulse 2.4s infinite;
+  animation: livePulse 2.4s infinite;
 }
 .live-dot.searching { background: var(--warning); animation-duration: 1.3s; }
 .live-dot.playing { background: var(--accent-2); }
@@ -173,6 +173,17 @@ select { cursor: pointer; }
 @keyframes liveBump {
   from { opacity: 0.25; transform: translateY(-2px); }
   to { opacity: 1; transform: none; }
+}
+@keyframes livePulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3); }
+  70% { box-shadow: 0 0 0 7px rgba(255, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-dot, .live-item strong.bump { animation: none; }
+}
+@media (max-width: 420px) {
+  .live-stats { border-radius: 14px; gap: 5px 12px; }
 }
 
 .brand {
