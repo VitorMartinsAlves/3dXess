@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Xadrez 3D Online</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%E2%99%9E%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- ================= LOBBY ================= -->
+  <div id="lobby" class="screen">
+    <div class="lobby-wrap">
+      <header class="lobby-head">
+        <div class="brand big">
+          <span class="brand-icon">&#9822;</span>
+          <div>
+            <h1>Xadrez 3D <span class="tag">Online</span></h1>
+            <p>Salas, partidas rápidas e links de convite</p>
+          </div>
+        </div>
+        <button id="open-settings-lobby" class="icon-btn" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
+      </header>
+
+      <div class="nick-row">
+        <label for="nickname">Seu nome</label>
+        <input id="nickname" type="text" maxlength="20" placeholder="Jogador" autocomplete="nickname" />
+        <span id="net-status" class="fb-status" title="Status da conexão P2P">P2P sob demanda</span>
+      </div>
+
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="quick" type="button" role="tab">Partida rápida</button>
+        <button class="tab" data-tab="create" type="button" role="tab">Criar sala</button>
+        <button class="tab" data-tab="join" type="button" role="tab">Entrar</button>
+        <button class="tab" data-tab="public" type="button" role="tab">Salas públicas</button>
+      </nav>
+
+      <section id="tab-quick" class="tab-panel active">
+        <p class="hint">Encontre um adversário automaticamente. Os dois precisam estar online ao mesmo tempo — a conexão é direta entre os navegadores.</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="quick-tc">Controle de tempo</label>
+            <select id="quick-tc">
+              <option value="1+0">1 min</option>
+              <option value="3+0">3 min</option>
+              <option value="3+2">3 min + 2s</option>
+              <option value="5+0">5 min</option>
+              <option value="5+3" selected>5 min + 3s</option>
+              <option value="10+0">10 min</option>
+              <option value="10+5">10 min + 5s</option>
+              <option value="15+10">15 min + 10s</option>
+              <option value="unlimited">Sem tempo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="quick-color">Cor</label>
+            <select id="quick-color">
+              <option value="random" selected>Aleatória</option>
+              <option value="w">Brancas</option>
+              <option value="b">Pretas</option>
+            </select>
+          </div>
+        </div>
+        <button id="quick-match" class="primary big-btn" type="button">Buscar partida</button>
+        <button id="cancel-match" class="ghost big-btn hidden" type="button">Cancelar busca</button>
+        <div id="match-status" class="match-status hidden"></div>
+      </section>
+
+      <section id="tab-create" class="tab-panel">
+        <div class="field-grid">
+          <div class="field">
+            <label for="create-name">Nome da sala</label>
+            <input id="create-name" type="text" maxlength="30" placeholder="Sala do campeonato" />
+          </div>
+          <div class="field">
+            <label for="create-tc">Controle de tempo</label>
+            <select id="create-tc">
+              <option value="1+0">1 min</option>
+              <option value="3+0">3 min</option>
+              <option value="3+2">3 min + 2s</option>
+              <option value="5+0">5 min</option>
+              <option value="5+3" selected>5 min + 3s</option>
+              <option value="10+0">10 min</option>
+              <option value="10+5">10 min + 5s</option>
+              <option value="15+10">15 min + 10s</option>
+              <option value="unlimited">Sem tempo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="create-color">Sua cor</label>
+            <select id="create-color">
+              <option value="random" selected>Aleatória</option>
+              <option value="w">Brancas</option>
+              <option value="b">Pretas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="create-visibility">Visibilidade</label>
+            <select id="create-visibility">
+              <option value="public" selected>Pública (aparece na lista)</option>
+              <option value="private">Privada (só por link)</option>
+            </select>
+          </div>
+        </div>
+        <button id="create-room" class="primary big-btn" type="button">Criar sala</button>
+        <p class="hint small">Você recebe um código e um link para convidar quem quiser.</p>
+      </section>
+
+      <section id="tab-join" class="tab-panel">
+        <p class="hint">Digite o código de 5 caracteres ou abra o link de convite. Quem criou a sala precisa estar online.</p>
+        <div class="join-row">
+          <input id="join-code" type="text" maxlength="8" placeholder="CÓDIGO" autocapitalize="characters" spellcheck="false" />
+          <button id="join-btn" class="primary" type="button">Entrar</button>
+        </div>
+        <div class="divider"><span>ou</span></div>
+        <button id="local-play" class="ghost big-btn" type="button">Jogar local (mesmo dispositivo)</button>
+        <p class="hint small">O modo local não precisa de internet nem de conta.</p>
+      </section>
+
+      <section id="tab-public" class="tab-panel">
+        <div class="public-head">
+          <span id="public-count">Carregando salas…</span>
+          <button id="refresh-public" class="icon-btn small" type="button" title="Atualizar">&#8635;</button>
+        </div>
+        <div id="public-rooms" class="public-rooms">
+          <div class="empty-state">As salas aparecem aqui enquanto o anfitrião estiver online.</div>
+        </div>
+      </section>
+
+      <footer class="lobby-foot">
+        <span>100% navegador · conexão P2P (WebRTC)</span>
+        <span id="uid-label" class="muted"></span>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ================= JOGO ================= -->
+  <div id="game-ui" class="hidden">
+    <header id="topbar">
+      <button id="home-btn" class="brand compact" type="button" title="Voltar ao lobby">
+        <span class="brand-icon">&#9822;</span>
+        <div>
+          <h1>Xadrez 3D</h1>
+          <p id="game-subtitle">Modo local</p>
+        </div>
+      </button>
+
+      <div class="room-chip hidden" id="room-chip">
+        <span class="muted">Sala</span>
+        <strong id="room-code">-----</strong>
+        <button id="copy-invite" class="icon-btn small" type="button" title="Copiar link de convite">&#128279;</button>
+      </div>
+
+      <div class="actions">
+        <button id="flip-btn" class="icon-btn" type="button" title="Girar tabuleiro" aria-label="Girar tabuleiro">&#8646;</button>
+        <button id="settings-btn" class="icon-btn" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
+        <button id="undo-btn" class="ghost hidden" type="button" title="Desfazer">&#8630;</button>
+        <button id="new-local-btn" class="ghost hidden" type="button">Novo jogo</button>
+        <button id="leave-btn" class="ghost hidden" type="button">Sair da sala</button>
+      </div>
+    </header>
+
+    <aside id="panel">
+      <div class="player-card" id="player-top">
+        <span class="pdot black" id="top-dot"></span>
+        <div class="pinfo">
+          <strong id="top-name">Pretas</strong>
+          <span id="top-role" class="muted">aguardando…</span>
+        </div>
+        <span class="clock" id="top-clock">--:--</span>
+      </div>
+
+      <div class="panel-mid">
+        <div id="turn" class="turn-line">
+          <span id="turn-dot" class="dot white"></span>
+          <span id="turn-text">Vez das brancas</span>
+        </div>
+        <div id="status" class="status">Selecione uma peça para começar.</div>
+        <div id="spectators" class="muted tiny hidden"></div>
+      </div>
+
+      <div class="panel-tabs">
+        <button class="ptab active" data-ptab="moves" type="button">Lances</button>
+        <button class="ptab" data-ptab="chat" type="button">Chat <span id="chat-badge" class="badge hidden">0</span></button>
+      </div>
+
+      <div id="pane-moves" class="pane active">
+        <div id="move-list" class="move-list">
+          <div class="empty">Nenhum lance ainda</div>
+        </div>
+      </div>
+
+      <div id="pane-chat" class="pane">
+        <div id="chat-messages" class="chat-messages">
+          <div class="empty">Sem mensagens.</div>
+        </div>
+        <form id="chat-form" class="chat-form" autocomplete="off">
+          <input id="chat-input" type="text" maxlength="300" placeholder="Escreva uma mensagem…" />
+          <button class="primary" type="submit" title="Enviar">&#10148;</button>
+        </form>
+      </div>
+
+      <div class="player-card" id="player-bottom">
+        <span class="pdot white" id="bottom-dot"></span>
+        <div class="pinfo">
+          <strong id="bottom-name">Brancas</strong>
+          <span id="bottom-role" class="muted">você</span>
+        </div>
+        <span class="clock" id="bottom-clock">--:--</span>
+      </div>
+    </aside>
+
+    <div id="room-actions" class="room-actions hidden">
+      <button id="draw-btn" class="ghost" type="button">Empate</button>
+      <button id="resign-btn" class="ghost danger" type="button">Desistir</button>
+      <button id="rematch-btn" class="primary hidden" type="button">Revanche</button>
+    </div>
+
+    <div id="waiting-banner" class="waiting-banner hidden">
+      <span class="pulse-dot"></span>
+      <span id="waiting-text">Aguardando o adversário entrar…</span>
+      <button id="copy-invite-2" class="ghost small" type="button">Copiar convite</button>
+    </div>
+  </div>
+
+  <!-- ================= MODAIS ================= -->
+  <div id="promotion" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2>Promoção</h2>
+      <p>Escolha a peça para promover</p>
+      <div class="promo-buttons">
+        <button type="button" data-piece="q" aria-label="Dama">&#9813;</button>
+        <button type="button" data-piece="r" aria-label="Torre">&#9814;</button>
+        <button type="button" data-piece="b" aria-label="Bispo">&#9815;</button>
+        <button type="button" data-piece="n" aria-label="Cavalo">&#9816;</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settings" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card wide">
+      <div class="modal-head">
+        <h2>Configurações</h2>
+        <button id="close-settings" class="icon-btn small" type="button" aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="settings-group">
+        <label class="switch-row">
+          <span>Efeitos especiais</span>
+          <input id="opt-effects" type="checkbox" checked />
+          <span class="switch"></span>
+        </label>
+        <label class="switch-row">
+          <span>Sons</span>
+          <input id="opt-sound" type="checkbox" checked />
+          <span class="switch"></span>
+        </label>
+        <label class="switch-row">
+          <span>Girar automático para a minha cor</span>
+          <input id="opt-autofocus" type="checkbox" checked />
+          <span class="switch"></span>
+        </label>
+      </div>
+
+      <div class="settings-group">
+        <div class="field">
+          <label for="opt-theme">Tema do tabuleiro</label>
+          <select id="opt-theme"></select>
+        </div>
+        <div class="field">
+          <label for="opt-skin">Skin das peças</label>
+          <select id="opt-skin"></select>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="field">
+          <label for="opt-nickname">Seu nome</label>
+          <input id="opt-nickname" type="text" maxlength="20" placeholder="Jogador" />
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button id="reset-camera" class="ghost" type="button">Centralizar câmera</button>
+        <button id="save-settings" class="primary" type="button">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2 id="result-title">Fim de jogo</h2>
+      <p id="result-text"></p>
+      <div class="modal-foot center">
+        <button id="result-rematch" class="primary hidden" type="button">Revanche</button>
+        <button id="result-close" class="ghost" type="button">Ver tabuleiro</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2 id="confirm-title">Confirmar</h2>
+      <p id="confirm-text"></p>
+      <div class="modal-foot center">
+        <button id="confirm-no" class="ghost" type="button">Cancelar</button>
+        <button id="confirm-yes" class="primary danger-btn" type="button">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="loader" class="modal hidden">
+    <div class="loader-card">
+      <div class="spinner"></div>
+      <p id="loader-text">Conectando…</p>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <div id="load-error" hidden>
+    <div>
+      <h2>Não foi possível carregar o jogo</h2>
+      <p>O Three.js é carregado pela internet. Verifique sua conexão e recarregue a página.</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="engine.js"></script>
+  <script src="board3d.js"></script>
+  <script src="app.js"></script>
+  <script>
+    window.addEventListener('load', function () {
+      if (!window.THREE || !window.THREE.OrbitControls) {
+        document.getElementById('load-error').hidden = false;
+      }
+    });
+  </script>
+</body>
+</html>
