@@ -682,6 +682,7 @@
      RESIZE E LOOP
      ------------------------------------------------------------ */
   let lastAspect = 0;
+  let animationFrameId = null;
 
   function resize() {
     if (!renderer || !containerEl) return;
@@ -703,13 +704,31 @@
   }
 
   function animate() {
-    if (!renderer) return;
+    animationFrameId = null;
+    if (!renderer || document.hidden) return;
+
     const dt = Math.min(clock.getDelta(), 0.05);
     updateAnimations(dt);
     updateEffects(dt);
     controls.update();
     renderer.render(scene, camera);
-    requestAnimationFrame(animate);
+    animationFrameId = requestAnimationFrame(animate);
+  }
+
+  function handleVisibilityChange() {
+    if (document.hidden) {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      if (clock) clock.stop();
+      return;
+    }
+
+    if (clock) clock.start();
+    if (renderer && animationFrameId === null) {
+      animationFrameId = requestAnimationFrame(animate);
+    }
   }
 
   /* ------------------------------------------------------------
@@ -827,6 +846,7 @@
     setupInteraction();
 
     window.addEventListener('resize', resize);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     if (global.ResizeObserver) new global.ResizeObserver(resize).observe(container);
 
     animate();
