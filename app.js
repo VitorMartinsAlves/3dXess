@@ -1917,7 +1917,7 @@
       lastMove: null,
       status: { over: false, check: false },
     };
-    app.game.status = C.computeStatus(app.game.state);
+    app.game.status = C.computeStatus(app.game.state, app.game.positionCounts);
 
     const seq = ++net.joinSeq;
     net.lastJoinError = '';
