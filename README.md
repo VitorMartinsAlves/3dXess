@@ -164,7 +164,7 @@ engine.js           Regras do xadrez, FEN, lances legais (window.Chess)
 bot.js              Avaliação, livro e busca alfa-beta do bot (window.Bot)
 bot-worker.js       Worker que executa a busca fora da thread da interface
 board3d.js          Cena Three.js, peças, temas, skins e efeitos (window.Board3D)
-vendor/             Three.js e OrbitControls servidos localmente
+vendor/             Three.js, OrbitControls e Trystero servidos localmente
 app.js              Lobby P2P, bot, salas, relógios, chat e interface (window.__xadrez)
 .nojekyll           Impede o processamento Jekyll no GitHub Pages
 robots.txt          Regras de rastreamento para buscadores
@@ -177,18 +177,31 @@ SEO.md              Checklist de indexação e divulgação
 Dependências:
 
 - Three.js `0.155.0` e OrbitControls `0.147.0`, servidos localmente em `vendor/`.
-- Trystero `0.26.0` (importado dinamicamente do CDN apenas quando o online ou o contador de presença é usado).
+- Trystero `0.26.0` (estratégia Nostr, com `@trystero-p2p/core` e `@noble/secp256k1` embutidos), servido localmente em `vendor/trystero/trystero.js`. Se o arquivo local falhar, o app tenta o CDN do jsDelivr como reserva.
+- A configuração de ICE inclui STUN do Google/Cloudflare e relays TURN públicos de melhor esforço (free-solutions, p2pd, BetterCrewLink e QuickBlox), definidos em `TURN_SERVERS` no início de `app.js`. Todos foram validados com uma alocação TURN real.
 
 ## Limitações importantes
 
 - **Sem servidor próprio**: a disponibilidade depende dos relays públicos do Trystero. Se um relay bloquear eventos, o Trystero tenta outros automaticamente.
-- **NAT restritivo**: alguns provedores de internet impedem a conexão direta entre dois navegadores. Nesses casos, o WebRTC pode não conectar. Não há servidor TURN incluído.
+- **NAT restritivo**: alguns provedores (especialmente CGNAT de internet móvel) impedem a conexão direta entre dois navegadores. O app tenta relays TURN públicos, mas eles têm limite de tráfego e podem falhar. Para uso intenso, troque `TURN_SERVERS` por um TURN próprio (coturn) ou por credenciais temporárias de um provedor.
 - **O anfitrião precisa ficar online**: fechar a aba encerra a sala.
 - **Recarregar a página** durante uma partida encerra a sua participação. O anfitrião aguarda 10 segundos e depois pode encerrar por abandono.
 - **Sem persistência**: partidas, chat e configurações de sala ficam em memória. Apenas as preferências visuais e as do bot ficam no `localStorage`.
 - **Sem anti-cheat forte**: o anfitrião valida os lances, mas o modelo é P2P e não há árbitro externo.
 - **Relógios**: o anfitrião mede o tempo; os convidados estimam o relógio localmente a partir do último estado recebido.
 - **Bot**: a força é aproximada e limitada pelo tempo de busca no navegador. Em celulares mais fracos, os níveis 5 e 6 podem demorar um pouco mais.
+
+### Se a entrada na sala não completar
+
+O carregamento agora tem limite e mostra um erro com **Tentar novamente** e **Voltar ao lobby** em vez de girar para sempre. Se o erro aparecer:
+
+1. Confirme com o anfitrião que a sala continua aberta e que o código está correto.
+2. Desative VPN, bloqueadores de anúncio e o modo econômico do navegador.
+3. Troque de rede: Wi-Fi ↔ dados móveis. Redes corporativas e escolares costumam bloquear WebRTC.
+4. Se estiverem em redes diferentes, o relay TURN é o caminho; ele pode demorar alguns segundos.
+5. Em último caso, os dois podem usar a mesma rede Wi-Fi para confirmar que o problema é o NAT do provedor.
+
+O console do navegador (`F12` → Console) mostra mensagens `WebRTC:` com o motivo exato da falha de ICE.
 
 ### Aviso normal no console
 

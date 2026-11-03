@@ -14,7 +14,36 @@
   const PRESENCE_ID = 'presence-v1-2026';
   const PRESENCE_HEARTBEAT = 5000;
   const PRESENCE_TTL = 15000;
-  const TRYSTERO_URL = 'https://cdn.jsdelivr.net/npm/trystero@0.26.0/+esm';
+  const TRYSTERO_CDN = 'https://cdn.jsdelivr.net/npm/trystero@0.26.0/+esm';
+  const TRYSTERO_TIMEOUT_MS = 15000;
+
+  // STUN/TURN: o STUN descobre o endereço público; o TURN retransmite os
+  // pacotes quando o NAT/CGNAT do provedor impede a conexão direta.
+  //
+  // A lista usa relays públicos de melhor esforço. Dois deles aceitam
+  // alocação anônima; os outros usam credenciais estáticas publicadas por
+  // projetos abertos. Todos foram testados com alocação TURN real.
+  // Para uso intenso, troque por um TURN próprio (coturn) ou por credenciais
+  // temporárias de um provedor. O relay não vê o conteúdo: o WebRTC já é
+  // criptografado ponta a ponta.
+  const TURN_SERVERS = [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun.cloudflare.com:3478' },
+    // alocação anônima (o navegador exige usuário/senha mesmo assim)
+    { urls: 'turn:webrtc.free-solutions.org:3478', username: 'free', credential: 'free' },
+    { urls: 'turn:ovh1.p2pd.net:4589', username: 'free', credential: 'free' },
+    // credenciais públicas de projetos abertos
+    {
+      urls: 'turn:turn.bettercrewl.ink:3478',
+      username: 'M9DRVaByiujoXeuYAAAG',
+      credential: 'TpHR9HQNZ8taxjb3',
+    },
+    {
+      urls: 'turn:turn.quickblox.com:3478',
+      username: 'quickblox',
+      credential: 'baccb97ba2d92d71e26eb9886da5f1e0',
+    },
+  ];
   const SETTINGS_KEY = 'xadrez3d.settings.v3';
   const BOT_KEY = 'xadrez3d.bot.v1';
   const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -89,7 +118,11 @@
     roomTimer: null,
     hostTicker: null,
     hostGraceTimer: null,
+    waitHintTimer: null,
+    waitingSince: 0,
     graceTimers: {},
+    joinSeq: 0,
+    lastJoinError: '',
     lobby: null,
     lobbyActions: null,
     lobbyTimer: null,
@@ -117,6 +150,7 @@
 
   let trysteroPromise = null;
   let confirmResolver = null;
+  let loaderRetry = null;
 
   /* ------------------------------------------------------------
      PREFERÊNCIAS DO BOT E WORKER DE BUSCA
@@ -379,13 +413,50 @@
     }, ms || 3200);
   }
 
+  function resetLoaderUi() {
+    const loader = $('loader');
+    if (!loader) return;
+    const card = loader.querySelector('.loader-card');
+    if (card) card.classList.remove('error');
+    const hint = $('loader-hint');
+    if (hint) {
+      hint.textContent = '';
+      hint.classList.add('hidden');
+    }
+    const extra = $('loader-extra');
+    if (extra) extra.classList.add('hidden');
+    loaderRetry = null;
+  }
+
   function showLoader(text) {
     $('loader-text').textContent = text || 'Conectando…';
+    resetLoaderUi();
     $('loader').classList.remove('hidden');
   }
 
   function hideLoader() {
-    $('loader').classList.add('hidden');
+    const loader = $('loader');
+    if (loader) loader.classList.add('hidden');
+    resetLoaderUi();
+  }
+
+  function showConnectError(title, hint, retry) {
+    const loader = $('loader');
+    if (!loader) return;
+    $('loader-text').textContent = title || 'Não foi possível conectar';
+    const card = loader.querySelector('.loader-card');
+    if (card) card.classList.add('error');
+    const hintEl = $('loader-hint');
+    if (hintEl) {
+      hintEl.textContent = hint || '';
+      hintEl.classList.toggle('hidden', !hint);
+    }
+    const extra = $('loader-extra');
+    if (extra) extra.classList.remove('hidden');
+    const retryBtn = $('loader-retry');
+    if (retryBtn) retryBtn.classList.toggle('hidden', !retry);
+    loaderRetry = retry || null;
+    loader.classList.remove('hidden');
   }
 
   function confirmDialog(title, text, yesLabel) {
@@ -490,12 +561,31 @@
   /* ------------------------------------------------------------
      P2P — CARREGAMENTO DO TRYSTERO
      ------------------------------------------------------------ */
+  function importTrystero() {
+    // Preferência: pacote servido pelo próprio site (não depende de CDN).
+    let local = 'vendor/trystero/trystero.js';
+    try { local = new URL(local, document.baseURI).href; } catch (e) { /* ignore */ }
+    return import(local).catch(function (err) {
+      console.warn('Trystero local indisponível, tentando CDN:', err);
+      return import(TRYSTERO_CDN);
+    });
+  }
+
   function loadTrystero() {
     if (net.mod) return Promise.resolve(net.mod);
     if (trysteroPromise) return trysteroPromise;
 
     setNetStatus('', 'carregando P2P…');
-    trysteroPromise = import(TRYSTERO_URL).then(function (mod) {
+
+    let timeoutId = null;
+    const timeout = new Promise(function (_, reject) {
+      timeoutId = window.setTimeout(function () {
+        reject(new Error('Tempo esgotado ao carregar a biblioteca P2P.'));
+      }, TRYSTERO_TIMEOUT_MS);
+    });
+
+    trysteroPromise = Promise.race([importTrystero(), timeout]).then(function (mod) {
+      window.clearTimeout(timeoutId);
       net.mod = mod;
       net.selfId = mod.selfId;
       setNetStatus('ok', 'P2P pronto', 'WebRTC carregado. A conexão é direta entre os navegadores.');
@@ -503,6 +593,7 @@
       if (uidEl) uidEl.textContent = 'Peer ' + String(net.selfId).slice(0, 6) + '…';
       return mod;
     }).catch(function (err) {
+      window.clearTimeout(timeoutId);
       trysteroPromise = null;
       setNetStatus('off', 'P2P indisponível', 'Não foi possível carregar a biblioteca P2P. Verifique a internet.');
       console.error('Trystero:', err);
@@ -515,6 +606,7 @@
     return {
       appId: APP_ID,
       relayConfig: { warnOnRelayFailure: false },
+      turnConfig: TURN_SERVERS,
     };
   }
 
@@ -638,8 +730,22 @@
       leavePrivateRoom(true);
       net.roomId = code;
       net.isHost = isHost;
+      const joinSeq = net.joinSeq;
 
-      const room = mod.joinRoom(trysteroConfig(), 'room-' + code);
+      const room = mod.joinRoom(trysteroConfig(), 'room-' + code, {
+        onJoinError: function (info) {
+          const detail = info && info.error ? String(info.error) : 'Falha ao abrir a conexão WebRTC.';
+          net.lastJoinError = detail;
+          console.warn('WebRTC:', detail);
+          if (net.isHost) return;
+          const seq = joinSeq;
+          const roomCode = code;
+          window.setTimeout(function () {
+            if (seq !== net.joinSeq || app.room || net.isHost) return;
+            guestConnectFailed(seq, roomCode, detail);
+          }, 700);
+        },
+      });
       net.room = room;
 
       const actions = {
@@ -729,6 +835,10 @@
     }
     stopHostTicker();
     stopMatchRetry();
+    if (net.waitHintTimer) {
+      window.clearTimeout(net.waitHintTimer);
+      net.waitHintTimer = null;
+    }
     net.quick.matchPeer = null;
     net.quick.matchPayload = null;
     Object.keys(net.graceTimers).forEach(function (key) {
@@ -1709,8 +1819,26 @@
       toast('Sala ' + code + ' criada. Convide alguém com o link.', 'success');
     }).catch(function (err) {
       console.error('Criar sala:', err);
-      hideLoader();
-      toast('Não foi possível criar a sala. Verifique a internet.', 'error');
+      showConnectError(
+        'Não foi possível criar a sala',
+        'A rede P2P não iniciou. Verifique sua internet, desative VPN/bloqueadores e tente novamente.',
+        function () { createRoom(); }
+      );
+    });
+  }
+
+  function guestConnectFailed(seq, code, detail) {
+    if (seq !== net.joinSeq || app.room || net.isHost) return;
+    if (net.roomTimer) {
+      window.clearTimeout(net.roomTimer);
+      net.roomTimer = null;
+    }
+    const isTurn = /turn/i.test(detail || '');
+    const hint = isTurn
+      ? 'A conexão direta falhou e o servidor de relay (TURN) não respondeu. Tente outra rede — Wi-Fi ou dados móveis —, desative a VPN e evite redes corporativas.'
+      : 'Confirme se o anfitrião continua com a sala aberta. Redes diferentes às vezes bloqueiam a conexão direta: tente o mesmo Wi-Fi, desative a VPN ou troque de navegador.';
+    showConnectError('Não foi possível conectar à sala ' + (code || ''), hint, function () {
+      joinAsGuest(code, false);
     });
   }
 
@@ -1730,24 +1858,48 @@
     };
     app.game.status = C.computeStatus(app.game.state);
 
-    showLoader(fromMatch ? 'Conectando ao adversário…' : 'Entrando na sala ' + clean + '…');
+    const seq = ++net.joinSeq;
+    net.lastJoinError = '';
+
+    showLoader(fromMatch ? 'Conectando ao adversário…' : 'Conectando à rede P2P…');
 
     joinPrivateRoom(clean, false).then(function () {
+      if (seq !== net.joinSeq) return;
       enterRoom('guest');
       sendHelloToAll();
+      showLoader('Aguardando o anfitrião · sala ' + clean + '…');
 
       if (net.roomTimer) window.clearTimeout(net.roomTimer);
-      net.roomTimer = window.setTimeout(function () {
-        if (app.room) return;
-        hideLoader();
-        toast('Sala não encontrada ou anfitrião offline.', 'error', 5000);
-        backToLobby(true);
-      }, 15000);
+
+      const startedAt = Date.now();
+      const tick = function () {
+        net.roomTimer = null;
+        if (seq !== net.joinSeq || app.room) return;
+
+        const elapsed = Date.now() - startedAt;
+        if (elapsed >= 25000) {
+          guestConnectFailed(seq, clean, net.lastJoinError);
+          return;
+        }
+
+        const hintEl = $('loader-hint');
+        if (hintEl) {
+          hintEl.textContent = elapsed < 10000
+            ? 'Procurando o anfitrião nos relays públicos…'
+            : 'Conexão em andamento. Redes diferentes podem bloquear o P2P; o relay (TURN) está sendo tentado.';
+          hintEl.classList.remove('hidden');
+        }
+        net.roomTimer = window.setTimeout(tick, 5000);
+      };
+      net.roomTimer = window.setTimeout(tick, 5000);
     }).catch(function (err) {
+      if (seq !== net.joinSeq) return;
       console.error('Entrar na sala:', err);
-      hideLoader();
-      toast('Não foi possível entrar na sala.', 'error');
-      backToLobby(true);
+      showConnectError(
+        'Não foi possível iniciar a conexão',
+        'A biblioteca P2P não carregou. Verifique sua internet, desative bloqueadores de anúncio/VPN e tente novamente.',
+        function () { joinAsGuest(clean, fromMatch); }
+      );
     });
   }
 
@@ -1792,6 +1944,15 @@
 
     if (net.isHost && net.hostRoom) {
       applyRoom(net.hostRoom, false);
+      if (net.hostRoom.meta.status === 'waiting') {
+        net.waitingSince = Date.now();
+        if (net.waitHintTimer) window.clearTimeout(net.waitHintTimer);
+        net.waitHintTimer = window.setTimeout(function () {
+          net.waitHintTimer = null;
+          if (!net.isHost || !net.hostRoom || net.hostRoom.meta.status !== 'waiting') return;
+          renderHUD();
+        }, 45000);
+      }
     } else {
       renderAll(false);
     }
@@ -1800,6 +1961,9 @@
   function backToLobby(remote) {
     if (app.leaving) return;
     app.leaving = true;
+
+    net.joinSeq += 1;
+    net.lastJoinError = '';
 
     clearBotRuntime();
     app.bot.active = false;
@@ -2853,7 +3017,13 @@
     if (waitingBanner) waitingBanner.classList.toggle('hidden', !waiting);
     const waitingText = $('waiting-text');
     if (waitingText && waiting) {
-      waitingText.textContent = 'Aguardando o adversário entrar · sala ' + (net.roomId || '-----');
+      if (!net.waitingSince) net.waitingSince = Date.now();
+      const waited = Date.now() - net.waitingSince;
+      waitingText.textContent = waited > 45000
+        ? 'Ainda aguardando · se a pessoa não conseguir entrar, tente o mesmo Wi-Fi, desative a VPN ou use dados móveis'
+        : 'Aguardando o adversário entrar · sala ' + (net.roomId || '-----');
+    } else if (!waiting) {
+      net.waitingSince = 0;
     }
 
     const chatInput = $('chat-input');
@@ -3297,6 +3467,19 @@
     on('join-btn', 'click', joinByCode);
     on('local-play', 'click', startLocalGame);
     on('bot-play', 'click', startBotGame);
+
+    on('loader-retry', 'click', function () {
+      const retry = loaderRetry;
+      if (!retry) return;
+      loaderRetry = null;
+      hideLoader();
+      retry();
+    });
+    on('loader-cancel', 'click', function () {
+      net.joinSeq += 1;
+      hideLoader();
+      backToLobby(true);
+    });
 
     on('bot-level', 'change', function () {
       botPrefs.level = Math.min(6, Math.max(1, Math.round(Number(this.value) || 3)));

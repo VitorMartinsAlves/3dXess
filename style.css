@@ -636,7 +636,20 @@ select { cursor: pointer; }
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   font-size: 13px;
+  max-width: min(400px, calc(100vw - 32px));
 }
+.loader-hint {
+  margin: 0;
+  max-width: 320px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.loader-extra { width: 100%; }
+.loader-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.loader-card.error .spinner { display: none; }
+.loader-card.error #loader-text { color: var(--warning); }
 .spinner {
   width: 34px; height: 34px;
   border-radius: 50%;
