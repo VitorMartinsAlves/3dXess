@@ -139,6 +139,42 @@ select { cursor: pointer; }
   gap: 14px;
 }
 
+/* Contador de atividade (presença P2P) */
+.live-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 14px 0 0;
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+.live-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.live-item strong { color: var(--text); font-weight: 650; font-variant-numeric: tabular-nums; }
+.live-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2.4s infinite;
+}
+.live-dot.searching { background: var(--warning); animation-duration: 1.3s; }
+.live-dot.playing { background: var(--accent-2); }
+.live-stats.is-connecting .live-item strong { color: var(--muted); }
+.live-item strong.bump { animation: liveBump 0.3s ease; }
+@keyframes liveBump {
+  from { opacity: 0.25; transform: translateY(-2px); }
+  to { opacity: 1; transform: none; }
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -554,6 +590,7 @@ select { cursor: pointer; }
 .settings-group .field { gap: 5px; }
 
 .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; cursor: pointer; position: relative; }
+.switch-note { display: block; margin-top: 2px; font-size: 10.5px; color: var(--muted); font-weight: 400; }
 .switch-row input { position: absolute; opacity: 0; width: 0; height: 0; }
 .switch {
   width: 42px;

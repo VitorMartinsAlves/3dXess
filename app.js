@@ -11,6 +11,9 @@
 
   const APP_ID = 'xadrez3d-online-v1-2026';
   const LOBBY_ID = 'lobby-v1';
+  const PRESENCE_ID = 'presence-v1-2026';
+  const PRESENCE_HEARTBEAT = 5000;
+  const PRESENCE_TTL = 15000;
   const TRYSTERO_URL = 'https://cdn.jsdelivr.net/npm/trystero@0.26.0/+esm';
   const SETTINGS_KEY = 'xadrez3d.settings.v3';
   const BOT_KEY = 'xadrez3d.bot.v1';
@@ -92,6 +95,11 @@
     lobbyTimer: null,
     lobbyAds: {},
     lobbySeekers: {},
+    presence: null,
+    presenceActions: null,
+    presenceTimer: null,
+    presenceStates: {},
+    lastPresenceAt: 0,
     quick: {
       active: false,
       tc: '5+3',
@@ -226,6 +234,7 @@
     effects: true,
     sound: true,
     autoFocus: true,
+    showPresence: true,
   };
 
   let settings = Object.assign({}, DEFAULT_SETTINGS);
@@ -1222,8 +1231,7 @@
     net.lobbyActions.who.send({ at: Date.now() }).catch(function () { /* ignore */ });
   }
 
-  function renderPublicRooms() {
-    const list = $('public-rooms');
+  function renderPublicRooms() {    const list = $('public-rooms');
     if (!list) return;
 
     pruneLobby();
