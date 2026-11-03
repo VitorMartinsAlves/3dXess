@@ -38,7 +38,9 @@ O motor cobre as regras completas do xadrez:
 - Captura en passant.
 - Promoção com escolha de dama, torre, bispo ou cavalo.
 - Empate por material insuficiente.
-- Empate pela regra dos 50 lances.
+- Reivindicação de empate por repetição tripla.
+- Reivindicação de empate após 50 lances sem captura ou movimento de peão.
+- Empate automático após 75 lances sem captura ou movimento de peão ou repetição quíntupla.
 - Notação dos lances no painel.
 - Desfazer no modo local e contra o bot.
 
@@ -212,6 +214,16 @@ Trystero: relay failure ... blocked: event kind 22209 not allowed
 ```
 
 Isso é normal: significa que um relay público recusou um tipo de evento, e o Trystero continuou por outros relays.
+
+## Testes automatizados
+
+O motor de xadrez possui testes com o runner nativo do Node.js:
+
+```bash
+npm test
+```
+
+O workflow do GitHub Actions executa essa suíte antes de publicar no GitHub Pages.
 
 ## Desenvolvimento local
 

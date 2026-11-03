@@ -1,0 +1,11 @@
+{
+  "name": "3dxess",
+  "private": true,
+  "scripts": {
+    "check": "node --check app.js && node --check engine.js && node --check bot.js && node --check bot-worker.js && node --check board3d.js",
+    "test": "npm run check && node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

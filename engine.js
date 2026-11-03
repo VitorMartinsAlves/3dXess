@@ -390,10 +390,19 @@ function insufficientMaterial(board) {
   return false;
 }
 
-function computeStatus(st) {
+function positionKey(st) {
+  const fields = stateToFen(st).split(' ');
+  // En passant só diferencia a posição quando a captura é legal.
+  const hasLegalEnPassant = !!st.enPassant && legalMoves(st).some((mv) => mv.enPassant);
+  const ep = hasLegalEnPassant ? fields[3] : '-';
+  return [fields[0], fields[1], fields[2], ep].join(' ');
+}
+
+function computeStatus(st, positionCounts) {
   const moves = legalMoves(st);
   const inCheck = isInCheck(st, st.turn);
 
+  // Xeque-mate e afogamento têm precedência sobre empates automáticos.
   if (moves.length === 0) {
     return inCheck
       ? { over: true, type: 'checkmate', winner: opponent(st.turn), check: true }
@@ -404,11 +413,23 @@ function computeStatus(st) {
     return { over: true, type: 'insufficient', check: inCheck };
   }
 
-  if (st.halfmove >= 100) {
-    return { over: true, type: 'fifty', check: inCheck };
+  const repetitions = positionCounts
+    ? Math.max(0, Number(positionCounts[positionKey(st)]) || 0)
+    : 0;
+
+  if (st.halfmove >= 150) {
+    return { over: true, type: 'seventyfive', check: inCheck };
+  }
+  if (repetitions >= 5) {
+    return { over: true, type: 'fivefold', check: inCheck };
   }
 
-  return { over: false, check: inCheck };
+  return {
+    over: false,
+    check: inCheck,
+    canClaimFiftyMove: st.halfmove >= 100,
+    canClaimThreefold: repetitions >= 3,
+  };
 }
 
 function moveNotation(st, mv) {
@@ -552,6 +573,7 @@ function moveNotation(st, mv) {
     legalMoves,
     insufficientMaterial,
     computeStatus,
+    positionKey,
     moveNotation,
     stateToFen,
     fenToState,
