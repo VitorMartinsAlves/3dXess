@@ -4,9 +4,146 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0b0f14" />
-  <title>Xadrez 3D Online</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%E2%99%9E%3C/text%3E%3C/svg%3E" />
+
+  <title>Xadrez 3D Online — Jogue Xadrez Grátis no Navegador</title>
+  <meta name="description" content="Jogue xadrez 3D online grátis no navegador: partidas contra o bot, salas com amigos por link e modo local. Sem cadastro, sem instalação e sem download." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow, max-image-preview:large" />
+  <meta name="author" content="Vitor Martins Alves" />
+  <link rel="canonical" href="https://vitormartinsalves.github.io/3dXess/" />
+  <link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/" />
+  <link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Xadrez 3D Online" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:url" content="https://vitormartinsalves.github.io/3dXess/" />
+  <meta property="og:title" content="Xadrez 3D Online — Jogue Xadrez Grátis no Navegador" />
+  <meta property="og:description" content="Partidas contra o bot, salas com amigos por link e modo local em um tabuleiro 3D. Grátis, sem cadastro e sem instalar nada." />
+  <meta property="og:image" content="https://vitormartinsalves.github.io/3dXess/og-image.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Tabuleiro de xadrez 3D com o texto Xadrez 3D Online" />
+
+  <!-- Twitter/X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Xadrez 3D Online — Jogue Xadrez Grátis no Navegador" />
+  <meta name="twitter:description" content="Partidas contra o bot, salas com amigos por link e modo local em um tabuleiro 3D. Grátis e sem cadastro." />
+  <meta name="twitter:image" content="https://vitormartinsalves.github.io/3dXess/og-image.png" />
+  <meta name="twitter:image:alt" content="Tabuleiro de xadrez 3D com o texto Xadrez 3D Online" />
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="stylesheet" href="style.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://vitormartinsalves.github.io/3dXess/#website",
+        "url": "https://vitormartinsalves.github.io/3dXess/",
+        "name": "Xadrez 3D Online",
+        "inLanguage": "pt-BR"
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://vitormartinsalves.github.io/3dXess/#app",
+        "name": "Xadrez 3D Online",
+        "url": "https://vitormartinsalves.github.io/3dXess/",
+        "description": "Jogo de xadrez 3D no navegador com partidas contra o bot, salas online com amigos por link, modo local e relógio de xadrez.",
+        "applicationCategory": "GameApplication",
+        "applicationSubCategory": "Xadrez",
+        "operatingSystem": "Qualquer navegador moderno (Windows, macOS, Linux, Android, iOS)",
+        "browserRequirements": "Requer JavaScript e WebGL",
+        "inLanguage": "pt-BR",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "BRL"
+        },
+        "featureList": [
+          "Xadrez 3D com tabuleiro giratório",
+          "Partidas online com amigos por link ou código de sala",
+          "Jogar contra o bot em 6 níveis de dificuldade",
+          "Modo local para dois jogadores no mesmo dispositivo",
+          "Relógio com controles de tempo e incremento",
+          "Funciona no celular, tablet e computador sem instalar nada"
+        ],
+        "screenshot": "https://vitormartinsalves.github.io/3dXess/og-image.png",
+        "image": "https://vitormartinsalves.github.io/3dXess/og-image.png",
+        "author": {
+          "@type": "Person",
+          "name": "Vitor Martins Alves",
+          "url": "https://github.com/VitorMartinsAlves"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://vitormartinsalves.github.io/3dXess/#faq",
+        "inLanguage": "pt-BR",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "O Xadrez 3D Online é grátis?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sim. O jogo é totalmente gratuito, não tem anúncios, não exige cadastro e não pede nenhum dado pessoal."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Preciso criar conta para jogar?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Não. Basta abrir o site e escolher um nome. Não há login, senha nem cadastro."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Como jogar xadrez online com um amigo?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Abra a aba Criar sala, escolha o controle de tempo e envie o link de convite ou o código de 5 caracteres para o seu amigo. Os dois precisam estar online ao mesmo tempo."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Funciona no celular?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sim. O tabuleiro 3D funciona em celulares e tablets com navegador moderno, com controles de toque para girar a câmera e mover as peças."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Preciso instalar algum aplicativo?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Não. O jogo roda direto no navegador. Também é possível adicionar à tela inicial do celular para abrir como um aplicativo."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Dá para jogar sozinho contra o computador?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sim. Na aba Contra o bot você escolhe o nível de dificuldade, o estilo de jogo, a cor e o controle de tempo. O bot roda no próprio navegador, então não precisa de internet."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <div id="app"></div>
@@ -186,6 +323,78 @@
         <span>100% navegador · conexão P2P (WebRTC)</span>
         <span id="uid-label" class="muted"></span>
       </footer>
+
+      <!-- Conteúdo estático para buscadores e para quem quer entender o jogo -->
+      <section class="about" aria-labelledby="about-title">
+        <details>
+          <summary>Sobre o jogo, como jogar e perguntas frequentes</summary>
+          <div class="about-body">
+            <h2 id="about-title">Xadrez 3D online grátis, direto no navegador</h2>
+            <p>
+              O Xadrez 3D Online é um jogo de xadrez completo que roda no seu navegador, sem instalar
+              nada e sem criar conta. O tabuleiro é tridimensional e pode ser girado com o mouse ou com
+              o dedo, o que ajuda a enxergar lances, diagonais e ameaças de peões com mais clareza.
+              Você pode jogar sozinho contra o bot, disputar partidas online com amigos por link ou
+              código de sala, ou jogar no modo local com duas pessoas no mesmo dispositivo.
+            </p>
+            <p>
+              Todas as regras do xadrez são aplicadas automaticamente: roque, en passant, promoção de
+              peão, xeque, xeque-mate, afogamento e empates por repetição, material insuficiente e
+              regra dos 50 lances. As partidas online usam conexão direta entre os navegadores (P2P via
+              WebRTC), então não existe servidor guardando suas jogadas.
+            </p>
+
+            <h3>Como jogar xadrez online com um amigo</h3>
+            <ol>
+              <li>Escolha um nome no campo <strong>Seu nome</strong>.</li>
+              <li>Abra a aba <strong>Criar sala</strong> e selecione o controle de tempo e a sua cor.</li>
+              <li>Envie o link de convite ou o código de 5 caracteres para o seu amigo.</li>
+              <li>Quando os dois estiverem conectados, a partida começa automaticamente.</li>
+            </ol>
+            <p>
+              Para jogar contra o computador, use a aba <strong>Contra o bot</strong> e escolha entre
+              seis níveis de dificuldade, de iniciante a grão-mestre. O bot roda no próprio navegador
+              e não precisa de internet.
+            </p>
+
+            <h3>Perguntas frequentes</h3>
+            <h4>O Xadrez 3D Online é grátis?</h4>
+            <p>Sim. O jogo é totalmente gratuito, não tem anúncios, não exige cadastro e não pede nenhum dado pessoal.</p>
+
+            <h4>Preciso criar conta para jogar?</h4>
+            <p>Não. Basta abrir o site e escolher um nome. Não há login, senha nem cadastro.</p>
+
+            <h4>Como jogar xadrez online com um amigo?</h4>
+            <p>
+              Abra a aba Criar sala, escolha o controle de tempo e envie o link de convite ou o código
+              de 5 caracteres para o seu amigo. Os dois precisam estar online ao mesmo tempo.
+            </p>
+
+            <h4>Funciona no celular?</h4>
+            <p>
+              Sim. O tabuleiro 3D funciona em celulares e tablets com navegador moderno, com controles
+              de toque para girar a câmera e mover as peças.
+            </p>
+
+            <h4>Preciso instalar algum aplicativo?</h4>
+            <p>
+              Não. O jogo roda direto no navegador. Também é possível adicionar à tela inicial do
+              celular para abrir como um aplicativo.
+            </p>
+
+            <h4>Dá para jogar sozinho contra o computador?</h4>
+            <p>
+              Sim. Na aba Contra o bot você escolhe o nível de dificuldade, o estilo de jogo, a cor e o
+              controle de tempo. O bot roda no próprio navegador, então não precisa de internet.
+            </p>
+
+            <p class="about-source">
+              Projeto de código aberto:
+              <a href="https://github.com/VitorMartinsAlves/3dXess" target="_blank" rel="noopener">github.com/VitorMartinsAlves/3dXess</a>
+            </p>
+          </div>
+        </details>
+      </section>
     </div>
   </div>
 
@@ -195,7 +404,7 @@
       <button id="home-btn" class="brand compact" type="button" title="Voltar ao lobby">
         <span class="brand-icon">&#9822;</span>
         <div>
-          <h1>Xadrez 3D</h1>
+          <span class="game-title">Xadrez 3D</span>
           <p id="game-subtitle">Modo local</p>
         </div>
       </button>
@@ -385,12 +594,12 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="engine.js"></script>
-  <script src="bot.js"></script>
-  <script src="board3d.js"></script>
-  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js" defer></script>
+  <script src="engine.js" defer></script>
+  <script src="bot.js" defer></script>
+  <script src="board3d.js" defer></script>
+  <script src="app.js" defer></script>
   <script>
     window.addEventListener('load', function () {
       if (!window.THREE || !window.THREE.OrbitControls) {

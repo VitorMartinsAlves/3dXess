@@ -145,6 +145,8 @@ A aba **Salas públicas** mostra as salas anunciadas pelos anfitriões. Salas ag
 
 > O modo online precisa de **HTTPS** (ou `localhost`). O GitHub Pages já fornece HTTPS.
 
+Para indexação no Google (Search Console, sitemap, backlinks e expectativas), veja [SEO.md](SEO.md).
+
 ## Estrutura do projeto
 
 ```text
@@ -156,6 +158,10 @@ bot-worker.js       Worker que executa a busca fora da thread da interface
 board3d.js          Cena Three.js, peças, temas, skins e efeitos (window.Board3D)
 app.js              Lobby P2P, bot, salas, relógios, chat e interface (window.__xadrez)
 .nojekyll           Impede o processamento Jekyll no GitHub Pages
+robots.txt          Regras de rastreamento para buscadores
+sitemap.xml         Mapa do site para o Google e o Bing
+site.webmanifest    Metadados de aplicativo instalável (PWA)
+SEO.md              Checklist de indexação e divulgação
 .github/workflows/  Publicação automática no GitHub Pages
 ```
 
