@@ -71,6 +71,7 @@
     myRole: 'player',           // 'player' | 'spectator'
     game: {
       state: C.createInitialState(),
+      positionCounts: createPositionCounts(C.createInitialState()),
       lastMove: null,
       status: { over: false, check: false },
     },
@@ -121,6 +122,7 @@
     waitHintTimer: null,
     waitingSince: 0,
     graceTimers: {},
+    chatRate: {},
     joinSeq: 0,
     lastJoinError: '',
     lobby: null,
@@ -305,6 +307,12 @@
     return String(value || '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 20) || 'Jogador';
   }
 
+  function createPositionCounts(state) {
+    const counts = {};
+    counts[C.positionKey(state)] = 1;
+    return counts;
+  }
+
   /* ------------------------------------------------------------
      UTILITÁRIOS
      ------------------------------------------------------------ */
@@ -376,7 +384,10 @@
       case 'abandonment': return 'Vitória ' + (side || '') + ' por abandono.';
       case 'stalemate': return 'Empate por afogamento: o rei não tem lances legais.';
       case 'insufficient': return 'Empate por material insuficiente.';
-      case 'fifty': return 'Empate pela regra dos 50 lances.';
+      case 'fifty': return 'Empate reivindicado pela regra dos 50 lances.';
+      case 'threefold': return 'Empate reivindicado por repetição tripla.';
+      case 'seventyfive': return 'Empate automático pela regra dos 75 lances.';
+      case 'fivefold': return 'Empate automático por repetição quíntupla.';
       case 'agreement': return 'Empate por acordo entre os jogadores.';
       default: return 'Fim de jogo.';
     }
@@ -389,9 +400,14 @@
       }
       if (status.type === 'stalemate') return 'Empate por afogamento.';
       if (status.type === 'insufficient') return 'Empate por material insuficiente.';
-      if (status.type === 'fifty') return 'Empate pela regra dos 50 lances.';
+      if (status.type === 'fifty') return 'Empate reivindicado pela regra dos 50 lances.';
+      if (status.type === 'threefold') return 'Empate reivindicado por repetição tripla.';
+      if (status.type === 'seventyfive') return 'Empate automático pela regra dos 75 lances.';
+      if (status.type === 'fivefold') return 'Empate automático por repetição quíntupla.';
       return 'Fim de jogo.';
     }
+    if (status.canClaimThreefold) return 'Empate reivindicável por repetição tripla.';
+    if (status.canClaimFiftyMove) return 'Empate reivindicável pela regra dos 50 lances.';
     if (status.check) return 'Xeque! Proteja o rei.';
     return 'Selecione uma peça para jogar.';
   }
@@ -687,9 +703,11 @@
 
   function hostStartGame(room) {
     const initial = Number(room.meta.initial) || 0;
+    const initialState = C.createInitialState();
     room.meta.status = 'playing';
     room.game = {
-      fen: C.stateToFen(C.createInitialState()),
+      fen: C.stateToFen(initialState),
+      positionCounts: createPositionCounts(initialState),
       lastMove: null,
       clocks: { w: initial, b: initial },
       turnStartedAt: Date.now(),
@@ -845,6 +863,7 @@
       window.clearTimeout(net.graceTimers[key]);
     });
     net.graceTimers = {};
+    net.chatRate = {};
     if (net.roomTimer) {
       window.clearTimeout(net.roomTimer);
       net.roomTimer = null;
@@ -950,6 +969,8 @@
     const room = net.hostRoom;
     const color = findColorByPeer(room, peerId);
 
+    delete net.chatRate[peerId];
+
     if (color) {
       room.players[color].connected = false;
       hostCommit(room);
@@ -1020,6 +1041,7 @@
     if (!intent.from || !intent.to) return;
 
     const st = C.fenToState(room.game.fen);
+    room.game.positionCounts = room.game.positionCounts || createPositionCounts(st);
     if (st.turn !== color) {
       sendNotice(room, color, 'Não é a sua vez.');
       return;
@@ -1060,7 +1082,9 @@
 
     const san = C.moveNotation(st, found);
     C.applyMove(st, found);
-    const status = C.computeStatus(st);
+    const position = C.positionKey(st);
+    room.game.positionCounts[position] = (Number(room.game.positionCounts[position]) || 0) + 1;
+    const status = C.computeStatus(st, room.game.positionCounts);
     const suffix = status.type === 'checkmate' ? '#' : status.check ? '+' : '';
 
     room.game.fen = C.stateToFen(st);
@@ -1106,13 +1130,36 @@
     }
   }
 
+  function allowChatMessage(peerId) {
+    const now = Date.now();
+    const recent = (net.chatRate[peerId] || []).filter(function (timestamp) {
+      return now - timestamp < 10000;
+    });
+
+    // Até cinco mensagens por dez segundos, com intervalo mínimo de 750 ms.
+    if (recent.length >= 5 || (recent.length && now - recent[recent.length - 1] < 750)) {
+      net.chatRate[peerId] = recent;
+      return false;
+    }
+
+    recent.push(now);
+    net.chatRate[peerId] = recent;
+    return true;
+  }
+
   function hostChat(room, peerId, text, color) {
-    const clean = String(text || '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 300);
+    const player = color ? room.players[color] : null;
+    const isRegisteredPlayer = !!(player && player.id === peerId);
+    const spectator = room.spectators && room.spectators[peerId];
+
+    // Somente jogadores e espectadores cadastrados pelo anfitrião podem publicar.
+    if (!isRegisteredPlayer && !spectator) return;
+    if (typeof text !== 'string' || !allowChatMessage(peerId)) return;
+
+    const clean = text.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 300);
     if (!clean) return;
 
-    const player = color ? room.players[color] : null;
-    const spectator = !color ? room.spectators[peerId] : null;
-    const name = player ? player.name : spectator ? spectator.name : 'Jogador';
+    const name = isRegisteredPlayer ? player.name : spectator.name;
 
     room.chatSeq = (Number(room.chatSeq) || 0) + 1;
     const chatId = 'c' + String(room.chatSeq).padStart(6, '0');
@@ -1135,6 +1182,19 @@
 
   function hostDraw(room, color, action) {
     if (!room || room.meta.status !== 'playing') return;
+
+    if (action === 'claim') {
+      const state = C.fenToState(room.game.fen);
+      if (state.turn !== color) return;
+      const status = C.computeStatus(state, room.game.positionCounts);
+      const reason = status.canClaimThreefold
+        ? 'threefold'
+        : status.canClaimFiftyMove ? 'fifty' : null;
+      if (!reason) return;
+      hostFinish(room, null, reason);
+      hostCommit(room);
+      return;
+    }
 
     if (action === 'offer') {
       if (room.drawOffer) return;
@@ -1853,6 +1913,7 @@
     app.room = null;
     app.game = {
       state: C.createInitialState(),
+      positionCounts: createPositionCounts(C.createInitialState()),
       lastMove: null,
       status: { over: false, check: false },
     };
@@ -2108,10 +2169,11 @@
 
     app.game = {
       state: C.createInitialState(),
+      positionCounts: createPositionCounts(C.createInitialState()),
       lastMove: null,
       status: { over: false, check: false },
     };
-    app.game.status = C.computeStatus(app.game.state);
+    app.game.status = C.computeStatus(app.game.state, app.game.positionCounts);
     app.localHistory = [];
     app.selected = null;
     app.legalForSelected = [];
@@ -2251,10 +2313,11 @@
 
     app.game = {
       state: C.createInitialState(),
+      positionCounts: createPositionCounts(C.createInitialState()),
       lastMove: null,
       status: { over: false, check: false },
     };
-    app.game.status = C.computeStatus(app.game.state);
+    app.game.status = C.computeStatus(app.game.state, app.game.positionCounts);
     app.localHistory = [];
     app.selected = null;
     app.legalForSelected = [];
@@ -2451,6 +2514,14 @@
   function onBotDraw() {
     if (app.mode !== 'bot' || app.game.status.over) return;
 
+    const claimStatus = C.computeStatus(app.game.state, app.game.positionCounts);
+    if (app.game.state.turn === app.myColor &&
+        (claimStatus.canClaimThreefold || claimStatus.canClaimFiftyMove)) {
+      finishBotGame(claimStatus.canClaimThreefold ? 'threefold' : 'fifty', null);
+      toast('Empate reivindicado.', 'success');
+      return;
+    }
+
     const score = window.Bot
       ? window.Bot.evaluateState(app.game.state, { style: app.bot.style })
       : 0;
@@ -2581,17 +2652,22 @@
   function commitLocal(mv) {
     const prevState = C.cloneState(app.game.state);
     const snapshot = C.cloneState(app.game.state);
+    const previousPositionCounts = app.game.positionCounts || createPositionCounts(prevState);
     const notation = C.moveNotation(app.game.state, mv);
     const previousLast = app.game.lastMove;
 
+    app.game.positionCounts = Object.assign({}, previousPositionCounts);
     C.applyMove(app.game.state, mv);
+    const position = C.positionKey(app.game.state);
+    app.game.positionCounts[position] = (Number(app.game.positionCounts[position]) || 0) + 1;
     app.game.lastMove = moveRecord(mv);
-    app.game.status = C.computeStatus(app.game.state);
+    app.game.status = C.computeStatus(app.game.state, app.game.positionCounts);
 
     const suffix = app.game.status.type === 'checkmate' ? '#' : app.game.status.check ? '+' : '';
 
     app.localHistory.push({
       state: snapshot,
+      positionCounts: previousPositionCounts,
       lastMove: previousLast,
       notation: notation + suffix,
     });
@@ -2614,6 +2690,7 @@
 
     let entry = app.localHistory.pop();
     app.game.state = entry.state;
+    app.game.positionCounts = entry.positionCounts || createPositionCounts(entry.state);
     app.game.lastMove = entry.lastMove;
 
     /* Remove também a resposta do bot até voltar a vez do jogador. */
@@ -2621,11 +2698,12 @@
     while (app.game.state.turn !== app.myColor && app.localHistory.length && guard < 6) {
       entry = app.localHistory.pop();
       app.game.state = entry.state;
+      app.game.positionCounts = entry.positionCounts || createPositionCounts(entry.state);
       app.game.lastMove = entry.lastMove;
       guard += 1;
     }
 
-    app.game.status = C.computeStatus(app.game.state);
+    app.game.status = C.computeStatus(app.game.state, app.game.positionCounts);
     app.selected = null;
     app.legalForSelected = [];
     app.pendingPromotion = null;
@@ -2651,8 +2729,9 @@
 
     const entry = app.localHistory.pop();
     app.game.state = entry.state;
+    app.game.positionCounts = entry.positionCounts || createPositionCounts(entry.state);
     app.game.lastMove = entry.lastMove;
-    app.game.status = C.computeStatus(app.game.state);
+    app.game.status = C.computeStatus(app.game.state, app.game.positionCounts);
 
     closePromotion();
     app.selected = null;
@@ -2707,7 +2786,7 @@
     app.game.state = st;
     app.game.lastMove = room.game.lastMove || null;
 
-    const status = C.computeStatus(st);
+    const status = C.computeStatus(st, room.game.positionCounts);
     if (room.result) {
       status.over = true;
       status.type = room.result.reason;
@@ -2978,7 +3057,12 @@
         drawBtn.classList.toggle('hidden', !playing);
         drawBtn.disabled = !playing;
         if (playing) {
-          if (botMode) {
+          const canClaimDraw = app.myRole === 'player' &&
+            st.turn === app.myColor &&
+            (status.canClaimThreefold || status.canClaimFiftyMove);
+          if (canClaimDraw) {
+            drawBtn.textContent = 'Reivindicar empate';
+          } else if (botMode) {
             drawBtn.textContent = 'Empate';
           } else {
             const offer = room.drawOffer;
@@ -3134,7 +3218,9 @@
     if (title) {
       if (status.type === 'checkmate') title.textContent = 'Xeque-mate';
       else if (status.type === 'stalemate' || status.type === 'insufficient' ||
-               status.type === 'fifty' || status.type === 'agreement') title.textContent = 'Empate';
+               status.type === 'fifty' || status.type === 'threefold' ||
+               status.type === 'seventyfive' || status.type === 'fivefold' ||
+               status.type === 'agreement') title.textContent = 'Empate';
       else title.textContent = 'Fim de jogo';
     }
 
@@ -3377,9 +3463,12 @@
     if (app.mode !== 'online' || !app.room || app.room.meta.status !== 'playing') return;
     if (!app.myColor || app.myRole !== 'player') return;
 
+    const claimStatus = C.computeStatus(app.game.state, app.room.game.positionCounts);
+    const canClaimDraw = app.game.state.turn === app.myColor &&
+      (claimStatus.canClaimThreefold || claimStatus.canClaimFiftyMove);
     const offer = app.room.drawOffer;
-    let action = 'offer';
-    if (offer) action = offer.by === app.myColor ? 'cancel' : 'accept';
+    let action = canClaimDraw ? 'claim' : 'offer';
+    if (!canClaimDraw && offer) action = offer.by === app.myColor ? 'cancel' : 'accept';
 
     if (net.isHost) hostDraw(net.hostRoom, app.myColor, action);
     else sendIntent({ type: 'draw', action: action });
