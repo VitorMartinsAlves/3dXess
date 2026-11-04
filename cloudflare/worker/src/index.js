@@ -246,9 +246,9 @@ async function verifyTotp(secret, supplied, now) {
       | ((signature[index + 2] & 255) << 8)
       | (signature[index + 3] & 255);
     const expected = String(number % 1000000).padStart(6, "0");
-    if (secureEqual(expected, code)) return true;
+    if (secureEqual(expected, code)) return counter + offset;
   }
-  return false;
+  return null;
 }
 async function encryptionKey(env) {
   if (!env.TOTP_ENCRYPTION_KEY) throw new Error("TOTP_ENCRYPTION_KEY não configurada.");
@@ -392,9 +392,10 @@ async function confirmTotp(request, env) {
   const record = await getDoc(env, "totpSecrets/" + user.uid);
   if (!record || !record.iv || !record.ciphertext) return reply({ error: "Gere primeiro o QR Code do autenticador." }, 409);
   const secret = await decryptSecret(record, env);
-  if (!(await verifyTotp(secret, body.code))) return reply({ error: "Código do autenticador inválido ou expirado." }, 400);
+  const matchedCounter = await verifyTotp(secret, body.code);
+  if (matchedCounter === null) return reply({ error: "Código do autenticador inválido ou expirado." }, 400);
   const now = new Date().toISOString();
-  await patchDoc(env, "totpSecrets/" + user.uid, { enabled: true, confirmedAt: now });
+  await patchDoc(env, "totpSecrets/" + user.uid, { enabled: true, confirmedAt: now, lastCounter: matchedCounter });
   await patchDoc(env, "users/" + user.uid, { isTotpEnabled: true, updatedAt: now });
   return reply({ success: true }, 200);
 }
@@ -415,7 +416,11 @@ async function recoverPassword(request, env) {
   const record = await getDoc(env, "totpSecrets/" + uid);
   if (!record || !record.enabled) return reply({ error: "Identificador ou código inválido." }, 400);
   const secret = await decryptSecret(record, env);
-  if (!(await verifyTotp(secret, code))) return reply({ error: "Identificador ou código inválido." }, 400);
+  const matchedCounter = await verifyTotp(secret, code);
+  if (matchedCounter === null || matchedCounter <= Number(record.lastCounter ?? -1)) {
+    return reply({ error: "Identificador ou código inválido." }, 400);
+  }
+  await patchDoc(env, "totpSecrets/" + uid, { lastCounter: matchedCounter, lastRecoveryAt: new Date().toISOString() });
   const token = await customToken(uid, env);
   const session = await identity(env, "accounts:signInWithCustomToken", {
     token: token,
