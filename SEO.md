@@ -1,80 +1,60 @@
-# SEO e indexação — Xadrez 3D Online
+# SEO e indexação — 3dXess
 
-Checklist do que já está no projeto e do que só o dono do repositório pode fazer.
+Este documento descreve a estrutura publicada e as tarefas que ainda dependem do proprietário do domínio ou da conta de ferramentas de busca.
 
-## O que já está implementado
+## Estrutura de páginas
 
-| Item | Onde |
-| --- | --- |
-| Título e descrição otimizados para busca | `index.html` (`<title>`, `meta description`) |
-| URL canônica | `index.html` (`rel="canonical"`) |
-| Open Graph e Twitter Card (prévia em WhatsApp, X, Facebook, Discord) | `index.html` + `og-image.png` |
-| Dados estruturados (WebApplication + FAQPage) | JSON-LD no `<head>` |
-| Um único `<h1>` com a palavra-chave principal | lobby |
-| Conteúdo textual estático (sobre, como jogar, FAQ) | seção “Sobre o jogo…” no lobby |
-| `sitemap.xml` com imagem | raiz |
-| `robots.txt` liberando o rastreamento e apontando o sitemap | raiz |
-| Manifest + ícones (instalável no celular) | `site.webmanifest`, `icon-*.png` |
-| Favicon | `favicon.svg`, `favicon-32.png` |
-| Carregamento adiado dos scripts e `preconnect` no CDN | `index.html` |
-| Deploy incluindo os arquivos novos | `.github/workflows/pages.yml` |
+Cada idioma tem URLs próprias, HTML independente e conteúdo no idioma correspondente. A troca de idioma é manual: o site não força redirecionamentos por IP ou idioma do navegador.
 
-## Passo 1 — Google Search Console (obrigatório)
+| Conteúdo | Português | English | Español | 简体中文 |
+| --- | --- | --- | --- | --- |
+| Início | `/` | `/en/` | `/es/` | `/zh-cn/` |
+| Sobre | `/sobre/` | `/en/about/` | `/es/acerca/` | `/zh-cn/about/` |
+| Aprender | `/aprender/` | `/en/learn/` | `/es/aprender/` | `/zh-cn/learn/` |
+| Praticar | `/praticar/` | `/en/practice/` | `/es/practica/` | `/zh-cn/practice/` |
+| Desafios | `/desafios/` | `/en/challenges/` | `/es/desafios/` | `/zh-cn/challenges/` |
+| Regras | `/regras/` | `/en/rules/` | `/es/reglas/` | `/zh-cn/rules/` |
+| Jogar | `/jogar/` | `/en/play/` | `/es/jugar/` | `/zh-cn/play/` |
 
-1. Abra <https://search.google.com/search-console>.
-2. Adicione a propriedade **Prefixo do URL**: `https://vitormartinsalves.github.io/3dXess/`.
-3. Escolha a verificação por **tag HTML** e copie a meta tag.
-4. Cole a meta tag no `<head>` do `index.html`, por exemplo:
-   ```html
-   <meta name="google-site-verification" content="SEU_CODIGO_AQUI" />
-   ```
-5. Faça commit e push, volte ao Search Console e clique em **Verificar**.
-6. Em **Sitemaps**, envie `sitemap.xml`.
-7. Em **Inspeção de URL**, cole a URL do site e peça **Solicitar indexação**.
+## Boas práticas implementadas
 
-Também vale cadastrar no [Bing Webmaster Tools](https://www.bing.com/webmasters) — ele importa direto do Search Console.
+- HTML independente por URL e idioma, com atributo `lang` correto.
+- `title`, descrição, URL canônica e metadados Open Graph/Twitter específicos por página.
+- Ligações `hreflang` recíprocas entre as versões linguísticas equivalentes e `x-default`.
+- Navegação por links HTML reais, seletor de idioma e rotas diretas compatíveis com GitHub Pages.
+- Sitemap com as 28 URLs e as respectivas anotações de idioma.
+- Conteúdo principal visível sem depender de JavaScript; scripts são usados para navegação, tabuleiro e interações.
+- Layout responsivo, estados de foco, skip link, navegação semântica e respeito a `prefers-reduced-motion`.
+- O motor de xadrez valida as jogadas dos exercícios. O progresso usa armazenamento local e não é apresentado como ranking global.
+- O modo de jogo fica em uma rota dedicada; a home funciona como portal de jogo e aprendizado.
 
-## Passo 2 — Tornar o repositório “encontrável”
+## Search Console
 
-- No GitHub, em **Settings → Topics**, adicione: `chess`, `xadrez`, `3d`, `webgl`, `threejs`, `game`, `p2p`, `webrtc`, `html5-game`.
-- O campo **About → Website** do repositório deve apontar para o site publicado.
-- Um README claro com as palavras “jogar xadrez online”, “xadrez 3D” e “grátis” ajuda o repositório a ranquear no próprio GitHub.
+1. Adicione a propriedade de prefixo de URL: `https://vitormartinsalves.github.io/3dXess/`.
+2. Faça a verificação por HTML tag ou arquivo de verificação. Isso exige acesso à conta do Google.
+3. Envie `sitemap.xml`.
+4. Use a inspeção de URL para solicitar rastreamento da home, das páginas de prática e do jogo.
+5. Confira cobertura, páginas duplicadas/canônicas e relatórios de experiência.
 
-## Passo 3 — Backlinks (o fator que mais pesa)
+Também é possível cadastrar o site no [Bing Webmaster Tools](https://www.bing.com/webmasters).
 
-Ser encontrado não depende só do código: o Google precisa ver outros sites apontando para o seu.
+## O que ainda não é automático
 
-- Publique em comunidades: Reddit (`r/xadrez`, `r/chess`, `r/InternetIsBeautiful`), fóruns de xadrez, grupos de Telegram/Discord.
-- Divulgue em agregadores: Hacker News (Show HN), Product Hunt, Indie Hackers.
-- Peça para blogs/newsletters de xadrez e de projetos open source citarem o jogo.
-- Crie conteúdo externo (um post explicando como o tabuleiro 3D foi feito) e link para o site.
-- Um link de um site com autoridade vale muito mais do que dezenas de links aleatórios.
+- O Google decide quando e como rastrear/indexar cada URL; o sitemap não garante indexação ou posição.
+- A verificação do Search Console e o envio do sitemap precisam ser feitos na conta do proprietário.
+- O GitHub Pages não fornece métricas de produto. Configure analytics com consentimento e política de privacidade apropriados se precisar medir tráfego.
+- A versão atual não tem contas, sincronização de progresso, ranking global, nem back-end de desafios competitivos.
+- A tradução do lobby do jogo cobre os principais rótulos e mensagens comuns. Mensagens novas adicionadas ao jogo precisam ser incluídas no dicionário `game-i18n.js`.
 
-## Passo 4 — Conteúdo que atrai buscas de cauda longa
+## Próximas melhorias de conteúdo
 
-As buscas mais fáceis de ganhar não são “jogar xadrez”, e sim:
+O treinador atualmente inclui quatro posições de demonstração. Para escalar a biblioteca de exercícios, mantenha um catálogo de posições FEN com metadados (tema, dificuldade, solução, variantes, idioma e fonte/licença), acrescente testes para cada posição e evite carregar toda a coleção no primeiro acesso. Um arquivo JSON versionado e carregado sob demanda é suficiente para a próxima etapa, sem introduzir um backend prematuramente.
 
-- “jogar xadrez online com amigo sem cadastro”
-- “xadrez 3D no navegador”
-- “jogar xadrez contra o computador grátis”
-- “xadrez online sem instalar aplicativo”
-- “como jogar xadrez no celular pelo navegador”
+Não publique posições copiadas de outros sites sem conferir a licença e atribuição. Dados de puzzles como o conjunto do Lichess podem ser uma fonte futura, mas a licença e os termos devem ser preservados.
 
-A seção de FAQ da página já cobre parte disso. Se quiser crescer, crie páginas separadas para cada tema (ex.: `/como-jogar.html`, `/xadrez-contra-o-bot.html`) com conteúdo único e link interno entre elas.
+## Divulgação e manutenção
 
-## Expectativa realista
-
-“Primeiro lugar para quem quer jogar xadrez” é uma disputa direta com chess.com, lichess.org e Chess24, que têm milhões de acessos e anos de autoridade. Isso não acontece em dias.
-
-O caminho realista é:
-
-1. **Primeiras semanas:** site indexado e aparecendo para o nome “Xadrez 3D Online”.
-2. **1 a 3 meses:** aparecendo para buscas de cauda longa (as da lista acima).
-3. **6 meses ou mais:** disputar posições boas em “jogar xadrez online”, dependendo de backlinks e conteúdo.
-
-## Manutenção
-
-- Ao mudar o conteúdo, atualize `<lastmod>` no `sitemap.xml`.
-- Se um dia usar domínio próprio, troque a URL em: `canonical`, `og:url`, `og:image`, `twitter:image`, JSON-LD, `robots.txt` e `sitemap.xml`.
-- Evite publicar páginas de teste: o workflow já exclui `test-*.html`, `*-test.html` e `gltest.html`.
-- Não use texto escondido nem repetição artificial de palavras-chave — isso pode gerar penalização.
+- Adicione os tópicos do repositório: `chess`, `xadrez`, `3d`, `webgl`, `threejs`, `webrtc`, `chess-puzzles`.
+- Atualize o `lastmod` do sitemap quando houver uma alteração real de conteúdo.
+- Se mudar o domínio, atualize canonical, Open Graph, URLs absolutas, sitemap e robots.txt.
+- Priorize páginas úteis, texto original e links internos naturais; não repita palavras-chave artificialmente.
