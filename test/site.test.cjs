@@ -360,3 +360,9 @@ test('bot worker failures and timeouts release the worker and scheduler', () => 
   assert.match(app, /if \(forceMainThread \|\| activeBoardMode === '2d'\)[\s\S]*Bot\.chooseMove/);
   assert.match(app, /app\.bot\.thinking = false;\s*commitLocal\(move\)/);
 });
+
+test('site layout applies the body design system class and cleans it up', () => {
+  const layout = fs.readFileSync(path.join(__dirname, '..', 'src', 'components', 'layout', 'SiteLayout.jsx'), 'utf8');
+  assert.match(layout, /document\.body\.classList\.add\("site-body"\)/);
+  assert.match(layout, /return \(\) => document\.body\.classList\.remove\("site-body"\)/);
+});
