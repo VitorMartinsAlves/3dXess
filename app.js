@@ -2924,11 +2924,15 @@
     app.legalForSelected = [];
     app.pendingPromotion = null;
 
-    announceMove(mv, prevState, app.game.status);
-
-    // O scheduler é parte da lógica da partida, não da renderização.
-    // Uma falha visual no tabuleiro nunca pode impedir a resposta do bot.
+    // Agenda a resposta do bot imediatamente após o estado lógico mudar.
+    // Efeitos de áudio/renderer nunca podem impedir o próximo turno.
     if (app.mode === 'bot') botAfterMove(prevState.turn);
+
+    try {
+      announceMove(mv, prevState, app.game.status);
+    } catch (error) {
+      console.warn('Falha ao reproduzir efeito da jogada:', error);
+    }
 
     renderAll(true);
     maybeShowLocalResult();
