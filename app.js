@@ -194,43 +194,55 @@
     botPending.clear();
   }
 
+  function stopBotWorker(error) {
+    const activeWorker = botWorker;
+    botWorker = null;
+    if (activeWorker && typeof activeWorker.terminate === 'function') {
+      activeWorker.terminate();
+    }
+    if (error) rejectBotPending(error);
+  }
+
   function ensureBotWorker() {
-    if (botWorker) return botWorker;
+    // Cada lance recebe um Worker novo. Evita reutilizar uma instância que
+    // possa ter ficado bloqueada ou com estado interno inconsistente.
+    if (botWorker) stopBotWorker(new Error('Worker anterior substituído.'));
     if (botWorkerBroken || typeof Worker === 'undefined' || location.protocol === 'file:') {
       return null;
     }
 
     try {
-      botWorker = new Worker('bot-worker.js');
-      botWorker.onmessage = function (event) {
+      const worker = new Worker(new URL('bot-worker.js', document.baseURI).href);
+      botWorker = worker;
+      worker.onmessage = function (event) {
         const data = event.data || {};
         const entry = botPending.get(data.id);
         if (!entry) return;
         botPending.delete(data.id);
         window.clearTimeout(entry.timeout);
+        if (botWorker === worker) botWorker = null;
+        worker.terminate();
         if (data.ok && data.uci) entry.resolve(data);
         else entry.reject(new Error(data.error || 'O bot não encontrou um lance.'));
       };
-      botWorker.onerror = function () {
+      worker.onerror = function () {
         botWorkerBroken = true;
-        const failedWorker = botWorker;
-        botWorker = null;
-        if (failedWorker && typeof failedWorker.terminate === 'function') failedWorker.terminate();
-        rejectBotPending(new Error('Falha ao iniciar o worker do bot.'));
+        if (botWorker === worker) botWorker = null;
+        worker.terminate();
+        rejectBotPending(new Error('Falha ao executar o worker do bot.'));
       };
-      botWorker.onmessageerror = function () {
-        const failedWorker = botWorker;
-        botWorker = null;
-        if (failedWorker && typeof failedWorker.terminate === 'function') failedWorker.terminate();
-        rejectBotPending(new Error('Falha ao ler a resposta do bot.'));
+      worker.onmessageerror = function () {
+        botWorkerBroken = true;
+        if (botWorker === worker) botWorker = null;
+        worker.terminate();
+        rejectBotPending(new Error('Falha ao interpretar a resposta do bot.'));
       };
+      return worker;
     } catch (e) {
       botWorkerBroken = true;
       botWorker = null;
       return null;
     }
-
-    return botWorker;
   }
 
   function requestBotMove(state, options) {
@@ -2339,6 +2351,7 @@
       window.clearTimeout(app.bot.watchdogTimer);
       app.bot.watchdogTimer = null;
     }
+    stopBotWorker(new Error('Partida do bot encerrada.'));
   }
 
   function resetLocalGame() {
@@ -2567,6 +2580,7 @@
       window.clearTimeout(app.bot.watchdogTimer);
       app.bot.watchdogTimer = null;
     }
+    stopBotWorker(new Error('Busca do bot cancelada.'));
   }
 
   /*
@@ -2580,12 +2594,7 @@
 
     cancelBotThinking();
 
-    const previousWorker = botWorker;
-    botWorker = null;
-    if (previousWorker && typeof previousWorker.terminate === 'function') {
-      previousWorker.terminate();
-    }
-    rejectBotPending(new Error('Busca reiniciada após trocar o modo do tabuleiro.'));
+    stopBotWorker(new Error('Busca reiniciada após trocar o modo do tabuleiro.'));
     scheduleBotMove();
   }
 
@@ -2627,14 +2636,7 @@
           app.game.state.turn !== app.bot.color) return;
 
       console.warn('Bot: watchdog reiniciando uma busca sem resposta.');
-      const stalledWorker = botWorker;
-      botWorker = null;
-      if (stalledWorker && typeof stalledWorker.terminate === 'function') {
-        stalledWorker.terminate();
-      }
-
       cancelBotThinking();
-      rejectBotPending(new Error('Busca do bot reiniciada pelo watchdog.'));
       scheduleBotMove(true);
     }, Math.max(6500, budget + 5500));
 
