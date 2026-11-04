@@ -165,3 +165,53 @@ test('game loads the 3D renderer only when selected and persists the choice', ()
   assert.match(ensureBoard, /settings\.boardMode === '3d'/);
   assert.match(ensureBoard, /activateBoard\('2d'\)/);
 });
+
+
+test('localized game lobbies have clear sections, accessible tabs, and local play in the correct place', () => {
+  for (const [locale, routes] of Object.entries(locales)) {
+    const html = readRoute(routes.play);
+    assert.match(html, /class="lobby-head-actions"/);
+    assert.match(html, /class="lobby-preferences"/);
+    assert.match(html, /class="lobby-intro"/);
+    assert.match(html, /aria-label="Modos de jogo"/);
+    for (const name of ['quick', 'bot', 'create', 'join', 'public']) {
+      assert.match(html, new RegExp('id="tab-btn-' + name + '"[^>]*role="tab"[^>]*aria-controls="tab-' + name + '"'));
+      assert.match(html, new RegExp('id="tab-' + name + '"[^>]*role="tabpanel"[^>]*aria-labelledby="tab-btn-' + name + '"'));
+    }
+
+    const quickStart = html.indexOf('id="tab-quick"');
+    const botStart = html.indexOf('id="tab-bot"');
+    const joinStart = html.indexOf('id="tab-join"');
+    const publicStart = html.indexOf('id="tab-public"');
+    assert.ok(html.slice(quickStart, botStart).includes('id="local-play"'), locale + ' local play belongs to quick play');
+    assert.doesNotMatch(html.slice(joinStart, publicStart), /id="local-play"/, locale + ' join tab should only handle invites');
+  }
+});
+
+test('lobby tabs support keyboard navigation and expose selected state', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const switchStart = app.indexOf('function switchTab');
+  const switchEnd = app.indexOf('WIRING DA INTERFACE', switchStart);
+  const switchTab = app.slice(switchStart, switchEnd);
+  assert.match(switchTab, /aria-selected/);
+  assert.match(switchTab, /aria-hidden/);
+  assert.match(switchTab, /tabIndex = active \? 0 : -1/);
+
+  const wireStart = app.indexOf('function wireEvents');
+  const wireEnd = app.indexOf('INICIALIZAÇÃO', wireStart);
+  const wire = app.slice(wireStart, wireEnd);
+  for (const key of ['ArrowRight', 'ArrowLeft', 'Home', 'End']) {
+    assert.ok(wire.includes("event.key === '" + key + "'"), 'tab key support: ' + key);
+  }
+});
+
+test('new lobby copy is translated in English, Spanish and Simplified Chinese', () => {
+  const i18n = fs.readFileSync(path.join(__dirname, '..', 'game-i18n.js'), 'utf8');
+  for (const copy of [
+    'Choose how to play', 'Find an opponent', 'Challenge the computer',
+    'Vista del tablero', 'Encuentra un rival', 'Desafía al ordenador',
+    '选择游戏方式', '寻找对手', '挑战电脑'
+  ]) {
+    assert.ok(i18n.includes(copy), 'missing lobby translation: ' + copy);
+  }
+});
