@@ -134,13 +134,13 @@
     if (!node || node.nodeType !== Node.TEXT_NODE) return;
     const raw = node.nodeValue || "";
     if (!raw.trim() || translatedText.get(node) === raw) return;
-    const key = raw.replace(/\\s+/g, " ").trim();
+    const key = raw.replace(/\s+/g, " ").trim();
     if (!Object.prototype.hasOwnProperty.call(dict, key)) {
       translatedText.delete(node);
       return;
     }
-    const leading = raw.match(/^\\s*/)?.[0] || "";
-    const trailing = raw.match(/\\s*$/)?.[0] || "";
+    const leading = raw.match(/^\s*/)?.[0] || "";
+    const trailing = raw.match(/\s*$/)?.[0] || "";
     const next = leading + dict[key] + trailing;
     // Remember the translated value before writing it. MutationObserver will
     // see the characterData update, but it will not translate that node twice.
