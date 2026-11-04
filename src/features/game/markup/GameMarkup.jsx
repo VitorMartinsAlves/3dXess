@@ -37,7 +37,7 @@ export function GameLobby() { return (<div id="lobby" className="screen">
       <section className="lobby-preferences" aria-label="Preferências da partida">
         <div className="nick-row">
           <label htmlFor="nickname">Seu nome</label>
-          <input id="nickname" type="text" maxLength="20" placeholder="Jogador" autoComplete="nickname" / />
+          <input id="nickname" type="text" maxLength="20" placeholder="Jogador" autoComplete="nickname" />
           <span id="net-status" className="fb-status" title="Status da conexão P2P">conectando P2P…</span>
         </div>
 
@@ -175,7 +175,7 @@ export function GameLobby() { return (<div id="lobby" className="screen">
         <div className="field-grid">
           <div className="field">
             <label htmlFor="create-name">Nome da sala</label>
-            <input id="create-name" type="text" maxLength="30" placeholder="Sala do campeonato" / />
+            <input id="create-name" type="text" maxLength="30" placeholder="Sala do campeonato" />
           </div>
           <div className="field">
             <label htmlFor="create-tc">Controle de tempo</label>
@@ -217,7 +217,7 @@ export function GameLobby() { return (<div id="lobby" className="screen">
           <p>Digite o código da sala ou abra diretamente o link que recebeu. O anfitrião precisa estar online.</p>
         </div>
         <div className="join-row">
-          <input id="join-code" type="text" maxLength="8" placeholder="CÓDIGO" autoCapitalize="characters" spellCheck="false" / />
+          <input id="join-code" type="text" maxLength="8" placeholder="CÓDIGO" autoCapitalize="characters" spellCheck="false" />
           <button id="join-btn" className="primary" type="button">Entrar</button>
         </div>
       </section>
@@ -315,7 +315,7 @@ export function GameSession() { return (<div id="game-ui" className="hidden">
           <div className="empty">Sem mensagens.</div>
         </div>
         <form id="chat-form" className="chat-form" autoComplete="off">
-          <input id="chat-input" type="text" maxLength="300" placeholder="Escreva uma mensagem…" / />
+          <input id="chat-input" type="text" maxLength="300" placeholder="Escreva uma mensagem…" />
           <button className="primary" type="submit" title="Enviar">&#10148;</button>
         </form>
       </div>
@@ -367,22 +367,22 @@ export function GameDialogs() { return (<><div id="promotion" className="modal h
       <div className="settings-group">
         <label className="switch-row">
           <span>Efeitos especiais</span>
-          <input id="opt-effects" type="checkbox" defaultChecked / />
+          <input id="opt-effects" type="checkbox" defaultChecked />
           <span className="switch"></span>
         </label>
         <label className="switch-row">
           <span>Sons</span>
-          <input id="opt-sound" type="checkbox" defaultChecked / />
+          <input id="opt-sound" type="checkbox" defaultChecked />
           <span className="switch"></span>
         </label>
         <label className="switch-row">
           <span>Girar automático para a minha cor</span>
-          <input id="opt-autofocus" type="checkbox" defaultChecked / />
+          <input id="opt-autofocus" type="checkbox" defaultChecked />
           <span className="switch"></span>
         </label>
         <label className="switch-row">
           <span>Aparecer no contador online<small className="switch-note">Compartilha seu IP via P2P, como nas partidas</small></span>
-          <input id="opt-presence" type="checkbox" defaultChecked / />
+          <input id="opt-presence" type="checkbox" defaultChecked />
           <span className="switch"></span>
         </label>
       </div>
@@ -401,7 +401,7 @@ export function GameDialogs() { return (<><div id="promotion" className="modal h
       <div className="settings-group">
         <div className="field">
           <label htmlFor="opt-nickname">Seu nome</label>
-          <input id="opt-nickname" type="text" maxLength="20" placeholder="Jogador" / />
+          <input id="opt-nickname" type="text" maxLength="20" placeholder="Jogador" />
         </div>
       </div>
 
