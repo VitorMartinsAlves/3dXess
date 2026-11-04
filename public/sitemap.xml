@@ -314,4 +314,28 @@
       <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/play/"/>
       <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/jogar/"/>
   </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/conta/</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/en/account/</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/es/cuenta/</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/zh-cn/account/</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
 </urlset>
