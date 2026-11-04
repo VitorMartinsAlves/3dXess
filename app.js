@@ -2273,6 +2273,20 @@
     } catch (err) {
       boardReady = false;
       console.error('Board:', err);
+
+      if (settings.boardMode === '3d') {
+        settings.boardMode = '2d';
+        saveSettings();
+        syncBoardModeControls();
+        try {
+          activateBoard('2d');
+          toast('O modo 3D não iniciou neste dispositivo. A partida continuará em 2D.', 'error', 6000);
+          return;
+        } catch (fallbackError) {
+          console.error('Board2D fallback:', fallbackError);
+        }
+      }
+
       const error = $('load-error');
       if (error) {
         const text = error.querySelector('p');
