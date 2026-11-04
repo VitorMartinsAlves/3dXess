@@ -191,6 +191,7 @@ export function AccountPage({ locale = "pt-BR" }) {
       setProfile(null);
       setProfileMissing(false);
       if (!nextUser) {
+        try { localStorage.removeItem("3dxess.account.session.v1"); } catch { /* ignore */ }
         setLoading(false);
         return;
       }
