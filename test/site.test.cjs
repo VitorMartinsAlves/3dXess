@@ -394,6 +394,7 @@ test('Firebase accounts use email/password, native password reset and public pla
     'signInWithEmailAndPassword',
     'sendPasswordResetEmail',
     'setDoc',
+    'updateDoc',
     'serverTimestamp',
     'syncGameNickname',
     'xadrez3.settings.v3',
@@ -415,7 +416,7 @@ test('Firestore rules allow safe self-created profiles but protect progression f
   assert.match(rules, /allow create: if request\.auth != null/);
   assert.match(rules, /request\.resource\.data\.rating == 1000/);
   assert.match(rules, /request\.resource\.data\.xp == 0/);
-  assert.match(rules, /affectedKeys\(\)[\s\S]*hasOnly\(\['avatarUrl', 'bio', 'updatedAt'\]\)/);
+  assert.match(rules, /affectedKeys\(\)[\s\S]*hasOnly\(\['username', 'avatarUrl', 'bio', 'updatedAt'\]\)/);
   assert.match(rules, /match \/\{document=\*\*\} \{ allow read, write: if false; \}/);
   const firebaseClient = fs.readFileSync(path.join(__dirname, '..', 'src', 'shared', 'firebase', 'client.js'), 'utf8');
   assert.match(firebaseClient, /VITE_FIREBASE_API_KEY/);
