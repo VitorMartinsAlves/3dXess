@@ -202,6 +202,27 @@ test('lobby tabs support keyboard navigation and expose selected state', () => {
   }
 });
 
+test('game locale switching navigates once and the translation observer batches DOM mutations', () => {
+  const i18n = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'game-i18n.js'), 'utf8');
+  const switcherStart = i18n.indexOf('const switcher = document.getElementById("game-language-switch")');
+  const switcherEnd = i18n.indexOf('applyInitialTranslations();', switcherStart);
+  const switcher = i18n.slice(switcherStart, switcherEnd);
+  assert.match(switcher, /Object\.prototype\.hasOwnProperty\.call\(routes, selectedLocale\)/);
+  assert.match(switcher, /switcher\.disabled = true/);
+  assert.match(switcher, /setAttribute\("aria-busy", "true"\)/);
+  assert.match(switcher, /window\.location\.assign\(target\.play\)/);
+  assert.match(switcher, /selectedLocale === lang/);
+
+  const observerStart = i18n.indexOf('const pendingTextNodes = new Set()');
+  const observer = i18n.slice(observerStart);
+  assert.match(observer, /pendingElements = new Set\(\)/);
+  assert.match(observer, /Promise\.resolve\(\)\.then/);
+  assert.match(observer, /coveredByAncestor/);
+  assert.match(observer, /node\.isConnected/);
+  assert.match(observer, /applyGameRoutes\(node\)/);
+  assert.doesNotMatch(observer, /applyGameRoutes\(\);/);
+});
+
 test('new lobby copy is translated in English, Spanish and Simplified Chinese', () => {
   const i18n = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'game-i18n.js'), 'utf8');
   for (const copy of [

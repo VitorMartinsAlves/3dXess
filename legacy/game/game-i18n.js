@@ -181,14 +181,33 @@
     }
   }
 
-  function applyGameRoutes() {
+  function applyGameRoutes(root = document) {
     const selectedRoutes = routes[lang] || routes["pt-BR"];
-    document.querySelectorAll("[data-game-route]").forEach((link) => {
+    const links = [];
+    if (root.nodeType === Node.ELEMENT_NODE && root.matches("[data-game-route]")) {
+      links.push(root);
+    }
+    if (typeof root.querySelectorAll === "function") {
+      links.push(...root.querySelectorAll("[data-game-route]"));
+    }
+    for (const link of links) {
       const key = link.dataset.gameRoute;
-      if (selectedRoutes[key]) link.setAttribute("href", selectedRoutes[key]);
-    });
-    const homeLink = document.querySelector(".site-return-link");
-    if (homeLink) homeLink.setAttribute("href", selectedRoutes.home);
+      if (selectedRoutes[key] && link.getAttribute("href") !== selectedRoutes[key]) {
+        link.setAttribute("href", selectedRoutes[key]);
+      }
+    }
+    const homeLinks = [];
+    if (root.nodeType === Node.ELEMENT_NODE && root.matches(".site-return-link")) {
+      homeLinks.push(root);
+    }
+    if (typeof root.querySelectorAll === "function") {
+      homeLinks.push(...root.querySelectorAll(".site-return-link"));
+    }
+    for (const homeLink of homeLinks) {
+      if (homeLink.getAttribute("href") !== selectedRoutes.home) {
+        homeLink.setAttribute("href", selectedRoutes.home);
+      }
+    }
   }
 
   function applyInitialTranslations() {
@@ -205,32 +224,81 @@
   if (switcher) {
     switcher.value = lang;
     switcher.addEventListener("change", () => {
-      const target = routes[switcher.value];
-      if (target) window.location.assign(target.play);
+      const selectedLocale = switcher.value;
+      const target = Object.prototype.hasOwnProperty.call(routes, selectedLocale)
+        ? routes[selectedLocale]
+        : null;
+      if (!target || selectedLocale === lang) return;
+
+      // The game is a static localized route. Navigate once, after locking the
+      // control, instead of allowing repeated change events during navigation.
+      switcher.disabled = true;
+      switcher.setAttribute("aria-busy", "true");
+      try {
+        window.location.assign(target.play);
+      } catch (error) {
+        switcher.disabled = false;
+        switcher.removeAttribute("aria-busy");
+        switcher.value = lang;
+        console.error("Não foi possível trocar o idioma do jogo:", error);
+      }
     });
   }
 
   applyInitialTranslations();
 
-  // Process only inserted/changed nodes. Scanning the entire document after
-  // every game status update was expensive and could loop forever when a
-  // translation intentionally had the same text (for example, "online").
+  // Coalesce DOM mutations into one pass. The board renderer replaces many
+  // nodes per move; translating each fragment and rescanning every site link
+  // for every mutation made the observer compete with rendering and bot UI.
+  const pendingTextNodes = new Set();
+  const pendingElements = new Set();
+  let flushScheduled = false;
+
+  function scheduleMutationFlush() {
+    if (flushScheduled) return;
+    flushScheduled = true;
+    Promise.resolve().then(() => {
+      flushScheduled = false;
+
+      for (const node of pendingTextNodes) translateNode(node);
+      pendingTextNodes.clear();
+
+      const roots = Array.from(pendingElements);
+      pendingElements.clear();
+      const rootSet = new Set(roots);
+      for (const node of roots) {
+        let parent = node.parentElement;
+        let coveredByAncestor = false;
+        while (parent) {
+          if (rootSet.has(parent)) {
+            coveredByAncestor = true;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+        if (coveredByAncestor || !node.isConnected) continue;
+        translateText(node);
+        translateAttributes(node);
+        if (node.matches("[data-game-route], .site-return-link") ||
+            node.querySelector("[data-game-route], .site-return-link")) {
+          applyGameRoutes(node);
+        }
+      }
+    });
+  }
+
   const observer = new MutationObserver((records) => {
     for (const record of records) {
       if (record.type === "characterData") {
-        translateNode(record.target);
+        pendingTextNodes.add(record.target);
         continue;
       }
       for (const node of record.addedNodes) {
-        if (node.nodeType === Node.TEXT_NODE) {
-          translateNode(node);
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-          translateText(node);
-          translateAttributes(node);
-          applyGameRoutes();
-        }
+        if (node.nodeType === Node.TEXT_NODE) pendingTextNodes.add(node);
+        else if (node.nodeType === Node.ELEMENT_NODE) pendingElements.add(node);
       }
     }
+    scheduleMutationFlush();
   });
   observer.observe(document.body, { subtree: true, childList: true, characterData: true });
 })();
