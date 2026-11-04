@@ -973,6 +973,7 @@
      ------------------------------------------------------------ */
   let lastAspect = 0;
   let animationFrameId = null;
+  let isActive = true;
 
   function resize() {
     if (!renderer || !containerEl) return;
@@ -995,7 +996,7 @@
 
   function animate() {
     animationFrameId = null;
-    if (!renderer || document.hidden) return;
+    if (!renderer || document.hidden || !isActive) return;
 
     const dt = Math.min(clock.getDelta(), 0.05);
     updateAnimations(dt);
@@ -1015,8 +1016,26 @@
       return;
     }
 
+    if (!isActive) return;
     if (clock) clock.start();
     if (renderer && animationFrameId === null) {
+      animationFrameId = requestAnimationFrame(animate);
+    }
+  }
+
+  function setActive(value) {
+    isActive = !!value;
+    if (!renderer) return;
+
+    if (!isActive && animationFrameId !== null) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+      return;
+    }
+
+    if (isActive && !document.hidden && animationFrameId === null) {
+      resize();
+      if (clock) clock.start();
       animationFrameId = requestAnimationFrame(animate);
     }
   }
@@ -1035,9 +1054,15 @@
     camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
 
     const compact = !!(global.matchMedia && global.matchMedia('(max-width: 720px)').matches);
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, compact ? 1.5 : 2));
-    renderer.shadowMap.enabled = true;
+    const memory = Number(global.navigator && global.navigator.deviceMemory) || 0;
+    const cores = Number(global.navigator && global.navigator.hardwareConcurrency) || 0;
+    const lowPower = (memory > 0 && memory <= 4) || (cores > 0 && cores <= 4);
+    renderer = new THREE.WebGLRenderer({
+      antialias: !lowPower && !compact,
+      powerPreference: 'high-performance',
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 1 : compact ? 1.25 : 1.5));
+    renderer.shadowMap.enabled = !lowPower;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
@@ -1057,7 +1082,7 @@
 
     const keyLight = new THREE.DirectionalLight(0xfff2dd, 2.4);
     keyLight.position.set(6, 14, 8);
-    keyLight.castShadow = true;
+    keyLight.castShadow = !lowPower;
     keyLight.shadow.mapSize.set(compact ? 1024 : 2048, compact ? 1024 : 2048);
     keyLight.shadow.camera.left = -8;
     keyLight.shadow.camera.right = 8;
@@ -1149,6 +1174,7 @@
     THEMES: THEMES,
     SKINS: SKINS,
     init: init,
+    setActive: setActive,
     setState: function (state, opts) {
       opts = opts || {};
       const nextBoard = state && state.board;
