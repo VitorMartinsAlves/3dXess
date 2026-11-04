@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-require('../engine.js');
+require('../legacy/game/engine.js');
 const Chess = globalThis.Chess;
 
 function move(state, from, to, promotion) {

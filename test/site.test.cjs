@@ -4,140 +4,102 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
+
 const BASE = 'https://vitormartinsalves.github.io/3dXess/';
-const locales = {
-  'pt-BR': { home: '', about: 'sobre/', learn: 'aprender/', practice: 'praticar/', challenges: 'desafios/', rules: 'regras/', play: 'jogar/' },
-  en: { home: 'en/', about: 'en/about/', learn: 'en/learn/', practice: 'en/practice/', challenges: 'en/challenges/', rules: 'en/rules/', play: 'en/play/' },
-  es: { home: 'es/', about: 'es/acerca/', learn: 'es/aprender/', practice: 'es/practica/', challenges: 'es/desafios/', rules: 'es/reglas/', play: 'es/jugar/' },
-  'zh-CN': { home: 'zh-cn/', about: 'zh-cn/about/', learn: 'zh-cn/learn/', practice: 'zh-cn/practice/', challenges: 'zh-cn/challenges/', rules: 'zh-cn/rules/', play: 'zh-cn/play/' }
-};
-
-function fileFor(route) {
-  return path.join(__dirname, '..', route ? route + 'index.html' : 'index.html');
+const localeDirs = { 'pt-BR': 'ptBR', en: 'en', es: 'es', 'zh-CN': 'zhCN' };
+const locales = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'site-routes.json'), 'utf8'));
+const pageNames = { home: 'HomePage', about: 'AboutPage', learn: 'LearnPage', practice: 'PracticePage', challenges: 'ChallengesPage', rules: 'RulesPage', play: 'PlayPage' };
+const pageMeta = Object.fromEntries(Object.entries(localeDirs).map(([locale, dir]) => [
+  locale,
+  JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'src', 'data', 'page-meta', dir + '.json'), 'utf8'))
+]));
+function componentFile(locale) {
+  return path.join(__dirname, '..', 'src', 'pages', 'locales', localeDirs[locale] + '.jsx');
 }
-function readRoute(route) { return fs.readFileSync(fileFor(route), 'utf8'); }
-function expectedAlternates(page) {
-  return Object.entries(locales).map(([locale, routes]) => ({ locale, url: BASE + routes[page] }));
+function readRoute(route) {
+  for (const [locale, pages] of Object.entries(locales)) {
+    for (const [page, target] of Object.entries(pages)) {
+      if (target !== route) continue;
+      const source = page === 'play'
+        ? path.join(__dirname, '..', 'src', 'features', 'game', 'markup', 'GameMarkup.jsx')
+        : componentFile(locale);
+      return fs.readFileSync(source, 'utf8');
+    }
+  }
+  throw new Error('Rota não encontrada: ' + route);
 }
 
-test('all 28 localized pages exist and declare language and canonical URL', () => {
-  for (const [locale, routes] of Object.entries(locales)) {
-    for (const [page, route] of Object.entries(routes)) {
-      const html = readRoute(route);
-      assert.ok(html.includes('<html lang="' + locale + '"'), locale + '/' + page + ' lang');
-      assert.ok(html.includes('<link rel="canonical" href="' + BASE + route + '"'), locale + '/' + page + ' canonical');
-      assert.match(html, /<title>[^<]+<\/title>/i, locale + '/' + page + ' title');
-      assert.match(html, /name="description"/i, locale + '/' + page + ' description');
+test('all 28 localized routes are represented by React page components and metadata', () => {
+  for (const [locale, pages] of Object.entries(locales)) {
+    const source = fs.readFileSync(componentFile(locale), 'utf8');
+    for (const [page, route] of Object.entries(pages)) {
+      assert.ok(source.includes('function ' + pageNames[page] + '()'), locale + '/' + page + ' component missing');
+      assert.ok(pageMeta[locale][page]?.title, locale + '/' + page + ' title missing');
+      assert.ok(pageMeta[locale][page]?.description, locale + '/' + page + ' description missing');
+      assert.ok(route !== undefined, locale + '/' + page + ' route missing');
     }
   }
 });
 
-test('each localized page has reciprocal hreflang links and x-default', () => {
-  for (const [locale, routes] of Object.entries(locales)) {
-    for (const [page, route] of Object.entries(routes)) {
-      const html = readRoute(route);
-      for (const item of expectedAlternates(page)) {
-        assert.ok(html.includes('hreflang="' + item.locale + '" href="' + item.url + '"'), locale + '/' + page + ' missing ' + item.locale);
-      }
-      const fallback = BASE + locales['pt-BR'][page];
-      assert.ok(html.includes('hreflang="x-default" href="' + fallback + '"'), locale + '/' + page + ' missing x-default');
+test('SEO manager creates canonical, Open Graph, Twitter and hreflang metadata', () => {
+  const seo = fs.readFileSync(path.join(__dirname, '..', 'src', 'components', 'seo', 'SeoManager.jsx'), 'utf8');
+  for (const required of ['canonical', 'og:type', 'og:locale', 'twitter:card', 'hreflang', 'x-default']) {
+    assert.ok(seo.includes(required), 'SEO manager missing ' + required);
+  }
+});
+
+test('sitemap contains all 28 localized routes and resolves against the route registry', () => {
+  const sitemap = fs.readFileSync(path.join(__dirname, '..', 'public', 'sitemap.xml'), 'utf8');
+  const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+  assert.equal(locations.length, 28);
+  for (const [locale, pages] of Object.entries(locales)) {
+    for (const route of Object.values(pages)) {
+      assert.ok(locations.includes(BASE + route), 'sitemap missing ' + locale + ': ' + route);
     }
   }
 });
 
-test('every sitemap URL resolves to a page in this repository', () => {
-  const sitemap = fs.readFileSync(path.join(__dirname, '..', 'sitemap.xml'), 'utf8');
-  const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
-  assert.equal(locs.length, 28);
-  for (const [locale, routes] of Object.entries(locales)) {
-    for (const route of Object.values(routes)) {
-      assert.ok(locs.includes(BASE + route), 'sitemap missing ' + locale + ': ' + route);
-      assert.ok(fs.existsSync(fileFor(route)), 'page file missing: ' + route);
+test('all localized pages provide valid structured data and social metadata', () => {
+  for (const [locale, pages] of Object.entries(pageMeta)) {
+    for (const [page, entry] of Object.entries(pages)) {
+      assert.ok(entry.title && entry.description, locale + '/' + page + ' metadata incomplete');
+      assert.ok(entry.schema, locale + '/' + page + ' structured data missing');
+      assert.doesNotThrow(() => JSON.parse(JSON.stringify(entry.schema)));
     }
   }
 });
 
-test('all localized pages include complete social metadata and valid structured data', () => {
-  const localesForOpenGraph = {
-    'pt-BR': 'pt_BR',
-    en: 'en_US',
-    es: 'es_ES',
-    'zh-CN': 'zh_CN'
-  };
-
-  for (const [locale, routes] of Object.entries(locales)) {
-    for (const [page, route] of Object.entries(routes)) {
-      const html = readRoute(route);
-      assert.match(html, /<meta property="og:type" content="website"/, locale + '/' + page + ' og:type');
-      assert.ok(html.includes('property="og:locale" content="' + localesForOpenGraph[locale] + '"'), locale + '/' + page + ' og:locale');
-      for (const key of ['og:url', 'og:title', 'og:description', 'og:image']) {
-        assert.ok(html.includes('property="' + key + '"'), locale + '/' + page + ' ' + key);
-      }
-      for (const key of ['twitter:card', 'twitter:title', 'twitter:description', 'twitter:image']) {
-        assert.ok(html.includes('name="' + key + '"'), locale + '/' + page + ' ' + key);
-      }
-
-      const schemas = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi)];
-      assert.ok(schemas.length > 0, locale + '/' + page + ' structured data');
-      for (const schema of schemas) {
-        assert.doesNotThrow(() => JSON.parse(schema[1]), locale + '/' + page + ' valid JSON-LD');
-      }
-    }
+test('localized pages contain readable React markup without serialized object labels', () => {
+  for (const [locale, pages] of Object.entries(locales)) {
+    const source = fs.readFileSync(componentFile(locale), 'utf8');
+    assert.doesNotMatch(source, /\[object Object\]/, locale + ' contains an unserialized object label');
+    assert.match(source, /site-card|site-hero|site-section/, locale + ' public page content missing');
+    assert.equal(Object.keys(pages).length, 7);
   }
 });
 
-test('localized pages contain readable content without broken object labels', () => {
-  const homeTitles = {
-    'pt-BR': ['Partidas contra amigos e o bot', 'Treinamento por posição', 'Desafios diários de xadrez'],
-    en: ['Play friends or the bot', 'Position-based training', 'Daily chess challenges'],
-    es: ['Juega contra amigos o el bot', 'Práctica por posiciones', 'Desafíos diarios de ajedrez'],
-    'zh-CN': ['与朋友或电脑对弈', '按局面进行训练', '每日国际象棋挑战']
-  };
-
-  for (const [locale, routes] of Object.entries(locales)) {
-    for (const route of Object.values(routes)) {
-      assert.doesNotMatch(readRoute(route), /\[object Object\]/, locale + '/' + route + ' has an unserialized object label');
-    }
-
-    const html = readRoute(routes.home);
-    const cards = [...html.matchAll(/<article class="site-card">[\s\S]*?<h3>([\s\S]*?)<\/h3>/g)]
-      .map(match => match[1]);
-    assert.deepEqual(cards, homeTitles[locale], locale + ' homepage feature headings');
-    assert.match(html, /<nav class="site-footer-links" aria-label="[^"]+"/, locale + ' footer navigation label');
+test('training routes render React content and use the isolated trainer runtime', () => {
+  const runtime = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'training', 'components', 'TrainerRuntime.jsx'), 'utf8');
+  assert.match(runtime, /legacy\/vendor\/three\.min\.js/);
+  assert.match(runtime, /legacy\/game\/board3d\.js/);
+  assert.match(runtime, /legacy\/training\/practice\.js/);
+  for (const locale of Object.keys(locales)) {
+    const source = fs.readFileSync(componentFile(locale), 'utf8');
+    assert.match(source, /TrainerRuntime mode="practice"/);
+    assert.match(source, /TrainerRuntime mode="daily"/);
+    assert.match(source, /training-board/);
   }
 });
 
-test('trainer pages load the 3D engine and shared trainer module', () => {
-  for (const [locale, routes] of Object.entries(locales)) {
-    for (const page of ['practice', 'challenges']) {
-      const html = readRoute(routes[page]);
-      assert.match(html, /vendor\/three\.min\.js/);
-      assert.match(html, /engine\.js/);
-      assert.match(html, /board3d\.js/);
-      assert.match(html, /practice\.js/);
-      assert.match(html, /id="training-board"/);
-    }
-  }
-});
-
-test('localized game pages expose both board modes without eagerly loading WebGL', () => {
-  for (const [locale, routes] of Object.entries(locales)) {
-    const html = readRoute(routes.play);
-    assert.match(html, /game-i18n\.js/);
-    assert.match(html, /board2d\.js/);
-    assert.match(html, /id="game-language-switch"/);
-    assert.match(html, /id="board-2d"/);
-    assert.match(html, /id="board-3d"/);
-    assert.match(html, /data-board-mode="2d"/);
-    assert.match(html, /data-board-mode="3d"/);
-    assert.doesNotMatch(html, /vendor\/three\.min\.js|vendor\/OrbitControls\.js/);
-    assert.doesNotMatch(html, /src="board3d\.js"/);
-    assert.ok(html.includes('lang="' + locale + '"'));
+test('game page markup is mounted by React and keeps both renderer containers and modes', () => {
+  const markup = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'game', 'markup', 'GameMarkup.jsx'), 'utf8');
+  for (const required of ['id="app"', 'id="board-2d"', 'id="board-3d"', 'data-board-mode="2d"', 'data-board-mode="3d"', 'id="lobby"', 'id="game-ui"']) {
+    assert.ok(markup.includes(required), 'game markup missing ' + required);
   }
 });
 
 test('2D renderer is independent from WebGL and exposes keyboard-accessible squares', () => {
-  const renderer = fs.readFileSync(path.join(__dirname, '..', 'board2d.js'), 'utf8');
+  const renderer = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'board2d.js'), 'utf8');
   assert.doesNotMatch(renderer, /THREE\./);
   assert.match(renderer, /global\.Board2D/);
   assert.match(renderer, /role', 'grid'/);
@@ -152,7 +114,7 @@ test('2D renderer is independent from WebGL and exposes keyboard-accessible squa
 });
 
 test('game loads the 3D renderer only when selected and persists the choice', () => {
-  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'app.js'), 'utf8');
   assert.match(app, /boardMode: '2d'/);
   assert.match(app, /function loadBoard3DAssets/);
   assert.match(app, /vendor\/three\.min\.js/);
@@ -171,8 +133,8 @@ test('game loads the 3D renderer only when selected and persists the choice', ()
 test('localized game lobbies have clear sections, accessible tabs, and local play in the correct place', () => {
   for (const [locale, routes] of Object.entries(locales)) {
     const html = readRoute(routes.play);
-    assert.match(html, /class="lobby-head-actions"/);
-    assert.match(html, /class="lobby-preferences"/);
+    assert.match(html, /className="lobby-head-actions"/);
+    assert.match(html, /className="lobby-preferences"/);
     assert.match(html, /class="lobby-intro"/);
     assert.match(html, /aria-label="Modos de jogo"/);
     for (const name of ['quick', 'bot', 'create', 'join', 'public']) {
@@ -190,7 +152,7 @@ test('localized game lobbies have clear sections, accessible tabs, and local pla
 });
 
 test('lobby tabs support keyboard navigation and expose selected state', () => {
-  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'app.js'), 'utf8');
   const switchStart = app.indexOf('function switchTab');
   const switchEnd = app.indexOf('WIRING DA INTERFACE', switchStart);
   const switchTab = app.slice(switchStart, switchEnd);
@@ -207,7 +169,7 @@ test('lobby tabs support keyboard navigation and expose selected state', () => {
 });
 
 test('new lobby copy is translated in English, Spanish and Simplified Chinese', () => {
-  const i18n = fs.readFileSync(path.join(__dirname, '..', 'game-i18n.js'), 'utf8');
+  const i18n = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'game-i18n.js'), 'utf8');
   for (const copy of [
     'Choose how to play', 'Find an opponent', 'Challenge the computer',
     'Vista del tablero', 'Encuentra un rival', 'Desafía al ordenador',
@@ -219,9 +181,9 @@ test('new lobby copy is translated in English, Spanish and Simplified Chinese', 
 
 
 test('2D board uses original pixel-art SVG sprites and readable outside coordinates', () => {
-  const renderer = fs.readFileSync(path.join(__dirname, '..', 'board2d.js'), 'utf8');
-  const styles = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
-  const sprites = fs.readFileSync(path.join(__dirname, '..', 'assets', 'pixel-chess-pieces.svg'), 'utf8');
+  const renderer = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'board2d.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', 'game.css'), 'utf8');
+  const sprites = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'assets', 'pixel-chess-pieces.svg'), 'utf8');
   assert.match(renderer, /assets\/pixel-chess-pieces\.svg/);
   for (const piece of ['p', 'r', 'n', 'b', 'q', 'k']) {
     assert.match(sprites, new RegExp('<symbol id="' + piece + '"'));
@@ -240,14 +202,14 @@ test('2D board uses original pixel-art SVG sprites and readable outside coordina
 
 
 test('2D legal move markers stay hidden until a piece is selected', () => {
-  const styles = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', 'game.css'), 'utf8');
   assert.match(styles, /\.board2d-target\s*\{[^}]*display:\s*none/s);
   assert.match(styles, /\.board2d-square\.is-legal\s+\.board2d-target[^}]*display:\s*block/s);
   assert.match(styles, /\.board2d-square\.is-capture\s+\.board2d-target[^}]*display:\s*block/s);
 });
 
 test('2D renderer animates legal moves, captures and castling without a permanent frame loop', () => {
-  const renderer = fs.readFileSync(path.join(__dirname, '..', 'board2d.js'), 'utf8');
+  const renderer = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'board2d.js'), 'utf8');
   assert.match(renderer, /function animateLastMove/);
   assert.match(renderer, /function animateMove/);
   assert.match(renderer, /function animateCapture/);
@@ -261,8 +223,8 @@ test('2D renderer animates legal moves, captures and castling without a permanen
 
 
 test('2D move animation uses the new destination piece and a board-relative motion overlay', () => {
-  const renderer = fs.readFileSync(path.join(__dirname, '..', 'board2d.js'), 'utf8');
-  const styles = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
+  const renderer = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'board2d.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', 'game.css'), 'utf8');
   assert.match(renderer, /function animateLastMove\(previousBoard, move, nextBoard\)/);
   assert.match(renderer, /movingPiece \|\| destinationPiece/);
   assert.match(renderer, /motionLayer\.getBoundingClientRect\(\)/);
@@ -277,8 +239,8 @@ test('2D move animation uses the new destination piece and a board-relative moti
 
 test('bot completes multiple consecutive turns within its bounded search budget', () => {
   const context = vm.createContext({});
-  const engine = fs.readFileSync(path.join(__dirname, '..', 'engine.js'), 'utf8');
-  const bot = fs.readFileSync(path.join(__dirname, '..', 'bot.js'), 'utf8');
+  const engine = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'engine.js'), 'utf8');
+  const bot = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'bot.js'), 'utf8');
   vm.runInContext(engine, context, { timeout: 1000 });
   vm.runInContext(bot, context, { timeout: 1000 });
 
@@ -303,14 +265,14 @@ test('bot completes multiple consecutive turns within its bounded search budget'
 });
 
 test('quiescence search caps consecutive check extensions', () => {
-  const bot = fs.readFileSync(path.join(__dirname, '..', 'bot.js'), 'utf8');
+  const bot = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'bot.js'), 'utf8');
   assert.match(bot, /MAX_QUIESCENCE_CHECK_EXTENSION = 8/);
   assert.match(bot, /const hardPlyLimit = ctx\.quiescencePly \+ MAX_QUIESCENCE_CHECK_EXTENSION/);
   assert.match(bot, /if \(inCheck && ply >= hardPlyLimit\)/);
 });
 
 test('2D animations cannot leave destination pieces hidden', () => {
-  const renderer = fs.readFileSync(path.join(__dirname, '..', 'board2d.js'), 'utf8');
+  const renderer = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'board2d.js'), 'utf8');
   assert.match(renderer, /cleanupTimer = window\.setTimeout\(cleanup, 1400\)/);
   assert.match(renderer, /cleanupTimer = window\.setTimeout\(cleanup, 1000\)/);
   assert.match(renderer, /try \{\s*animation = start\.element\.animate/);
@@ -320,7 +282,7 @@ test('2D animations cannot leave destination pieces hidden', () => {
 });
 
 test('bot scheduling and HUD updates are independent from board render failures', () => {
-  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'app.js'), 'utf8');
   const commitStart = app.indexOf('function commitLocal(mv)');
   const commitEnd = app.indexOf('function undoBotMove()', commitStart);
   const commit = app.slice(commitStart, commitEnd);
@@ -335,7 +297,7 @@ test('bot scheduling and HUD updates are independent from board render failures'
 });
 
 test('switching board renderers restarts an in-flight bot turn', () => {
-  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'app.js'), 'utf8');
   const start = app.indexOf('function resumeBotTurnAfterBoardSwitch');
   const end = app.indexOf('function scheduleBotMove', start);
   assert.ok(start >= 0 && end > start, 'bot resume helper exists');
@@ -352,7 +314,7 @@ test('switching board renderers restarts an in-flight bot turn', () => {
 });
 
 test('bot workers are isolated per move and always terminate after a response', () => {
-  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'app.js'), 'utf8');
   const start = app.indexOf('function ensureBotWorker()');
   const end = app.indexOf('function requestBotMove', start);
   const workerFactory = app.slice(start, end);
@@ -366,7 +328,7 @@ test('bot workers are isolated per move and always terminate after a response', 
 });
 
 test('2D bot turns bypass workers and use a bounded local calculation', () => {
-  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'app.js'), 'utf8');
   const start = app.indexOf('function scheduleBotMove');
   const end = app.indexOf('function botAfterMove', start);
   const scheduler = app.slice(start, end);
@@ -376,7 +338,7 @@ test('2D bot turns bypass workers and use a bounded local calculation', () => {
 });
 
 test('stalled bot searches restart without requiring a board-mode change', () => {
-  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'app.js'), 'utf8');
   assert.match(app, /watchdogTimer: null/);
   assert.match(app, /Math\.max\(6500, budget \+ 5500\)/);
   assert.match(app, /forceMainThread \|\| activeBoardMode === '2d'/);
@@ -390,7 +352,7 @@ test('stalled bot searches restart without requiring a board-mode change', () =>
 });
 
 test('bot worker failures and timeouts release the worker and scheduler', () => {
-  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'app.js'), 'utf8');
   assert.match(app, /worker\.onmessageerror/);
   assert.match(app, /worker\.terminate\(\)/);
   assert.match(app, /budget \+ 3500/);

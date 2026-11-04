@@ -1,0 +1,129 @@
+{
+  "home": {
+    "title": "免费在线 3D 国际象棋 | 对弈、练习与挑战 | 3dXess",
+    "description": "在线体验 3D 国际象棋，练习特定局面并完成战术挑战。可与电脑或朋友对弈，直接在浏览器中运行。",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/",
+      "inLanguage": "zh-CN",
+      "description": "在线体验 3D 国际象棋，练习特定局面并完成战术挑战。可与电脑或朋友对弈，直接在浏览器中运行。"
+    }
+  },
+  "about": {
+    "title": "关于项目 | 3dXess",
+    "description": "3dXess 是一个独立的 3D 国际象棋项目，将经典对弈带入浏览器，并提供练习工具。",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "关于项目 | 3dXess",
+      "description": "3dXess 是一个独立的 3D 国际象棋项目，将经典对弈带入浏览器，并提供练习工具。",
+      "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/about/",
+      "inLanguage": "zh-CN",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/"
+      }
+    }
+  },
+  "learn": {
+    "title": "学习国际象棋 | 3dXess",
+    "description": "从基本规则到战术与残局，通过循序渐进的练习建立可靠的棋局判断能力。",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "学习国际象棋 | 3dXess",
+      "description": "从基本规则到战术与残局，通过循序渐进的练习建立可靠的棋局判断能力。",
+      "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/learn/",
+      "inLanguage": "zh-CN",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/"
+      }
+    }
+  },
+  "practice": {
+    "title": "练习具体局面 | 3dXess",
+    "description": "选择一个场景，在 3D 棋盘上移动棋子。规则引擎会验证走法并检查练习目标。",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "练习具体局面 | 3dXess",
+      "description": "选择一个场景，在 3D 棋盘上移动棋子。规则引擎会验证走法并检查练习目标。",
+      "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/practice/",
+      "inLanguage": "zh-CN",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/"
+      }
+    }
+  },
+  "challenges": {
+    "title": "每日国际象棋挑战 | 3dXess",
+    "description": "在 3D 棋盘上完成今天的目标。挑战每天轮换，连续完成记录保存在本地浏览器。",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "每日国际象棋挑战 | 3dXess",
+      "description": "在 3D 棋盘上完成今天的目标。挑战每天轮换，连续完成记录保存在本地浏览器。",
+      "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/challenges/",
+      "inLanguage": "zh-CN",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/"
+      }
+    }
+  },
+  "rules": {
+    "title": "国际象棋规则 | 3dXess",
+    "description": "了解棋子的走法、特殊移动、将军、将死和和棋条件。",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "国际象棋规则 | 3dXess",
+      "description": "了解棋子的走法、特殊移动、将军、将死和和棋条件。",
+      "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/rules/",
+      "inLanguage": "zh-CN",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/"
+      }
+    }
+  },
+  "play": {
+    "title": "在线 3D 国际象棋 — 在浏览器中免费对弈",
+    "description": "直接在浏览器中体验 3D 国际象棋。与电脑或朋友对弈，练习棋局，无需安装。",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "在线 3D 国际象棋",
+      "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/play/",
+      "description": "直接在浏览器中体验 3D 国际象棋。与电脑或朋友对弈，练习棋局，无需安装。",
+      "applicationCategory": "GameApplication",
+      "applicationSubCategory": "国际象棋",
+      "operatingSystem": "Any modern browser",
+      "browserRequirements": "JavaScript is required; WebGL is only needed for 3D mode.",
+      "inLanguage": "zh-CN",
+      "isAccessibleForFree": true,
+      "featureList": [
+        "与电脑对弈",
+        "通过邀请链接加入在线房间",
+        "本地双人模式",
+        "国际象棋计时器和时间控制",
+        "支持现代桌面和移动浏览器"
+      ],
+      "image": "https://vitormartinsalves.github.io/3dXess/og-image.png",
+      "author": {
+        "@type": "Person",
+        "name": "Vitor Martins Alves",
+        "url": "https://github.com/VitorMartinsAlves"
+      }
+    }
+  }
+}

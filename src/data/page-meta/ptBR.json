@@ -1,0 +1,198 @@
+{
+  "home": {
+    "title": "Xadrez 3D Online Grátis | Jogar, Treinar e Resolver Desafios",
+    "description": "Jogue xadrez 3D online, treine posições específicas e resolva desafios táticos. Partidas contra o bot e amigos, direto no navegador.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/",
+      "inLanguage": "pt-BR",
+      "description": "Jogue xadrez 3D online, treine posições específicas e resolva desafios táticos. Partidas contra o bot e amigos, direto no navegador."
+    }
+  },
+  "about": {
+    "title": "Sobre o 3dXess | Projeto de Xadrez 3D Online",
+    "description": "Conheça o 3dXess: um projeto independente de xadrez 3D com partidas online, bot local e ferramentas de treinamento no navegador.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Sobre o 3dXess | Projeto de Xadrez 3D Online",
+      "url": "https://vitormartinsalves.github.io/3dXess/sobre/",
+      "inLanguage": "pt-BR",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "learn": {
+    "title": "Aprender Xadrez | Fundamentos, Tática e Finais | 3dXess",
+    "description": "Aprenda as regras do xadrez, segurança do rei, tática, estratégia e finais com uma trilha prática.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Aprender Xadrez | Fundamentos, Tática e Finais | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/aprender/",
+      "inLanguage": "pt-BR",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "practice": {
+    "title": "Praticar Xadrez | Cenários Interativos em 3D | 3dXess",
+    "description": "Treine xeque-mate, captura da dama, roque e promoção em posições interativas validadas pelo motor de xadrez.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Praticar Xadrez | Cenários Interativos em 3D | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/praticar/",
+      "inLanguage": "pt-BR",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "challenges": {
+    "title": "Desafio Diário de Xadrez | 3dXess",
+    "description": "Resolva um desafio diário de xadrez em um tabuleiro 3D e acompanhe sua sequência local de exercícios.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Desafio Diário de Xadrez | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/desafios/",
+      "inLanguage": "pt-BR",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "rules": {
+    "title": "Regras do Xadrez | Movimentos e Empates | 3dXess",
+    "description": "Consulte as regras do xadrez: movimento das peças, roque, en passant, promoção, xeque-mate e empates.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Regras do Xadrez | Movimentos e Empates | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/regras/",
+      "inLanguage": "pt-BR",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "play": {
+    "title": "Xadrez 3D Online — Jogue Xadrez Grátis no Navegador",
+    "description": "Jogue xadrez 3D online grátis no navegador: partidas contra o bot, salas com amigos por link e modo local. Sem cadastro, sem instalação e sem download.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://vitormartinsalves.github.io/3dXess/#website",
+          "url": "https://vitormartinsalves.github.io/3dXess/",
+          "name": "Xadrez 3D Online",
+          "inLanguage": "pt-BR"
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://vitormartinsalves.github.io/3dXess/#app",
+          "name": "Xadrez 3D Online",
+          "url": "https://vitormartinsalves.github.io/3dXess/",
+          "description": "Jogo de xadrez 3D no navegador com partidas contra o bot, salas online com amigos por link, modo local e relógio de xadrez.",
+          "applicationCategory": "GameApplication",
+          "applicationSubCategory": "Xadrez",
+          "operatingSystem": "Qualquer navegador moderno (Windows, macOS, Linux, Android, iOS)",
+          "browserRequirements": "Requer JavaScript; WebGL é necessário somente para o modo 3D.",
+          "inLanguage": "pt-BR",
+          "isAccessibleForFree": true,
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "BRL"
+          },
+          "featureList": [
+            "Xadrez 3D com tabuleiro giratório",
+            "Partidas online com amigos por link ou código de sala",
+            "Jogar contra o bot em 6 níveis de dificuldade",
+            "Modo local para dois jogadores no mesmo dispositivo",
+            "Relógio com controles de tempo e incremento",
+            "Funciona no celular, tablet e computador sem instalar nada"
+          ],
+          "screenshot": "https://vitormartinsalves.github.io/3dXess/og-image.png",
+          "image": "https://vitormartinsalves.github.io/3dXess/og-image.png",
+          "author": {
+            "@type": "Person",
+            "name": "Vitor Martins Alves",
+            "url": "https://github.com/VitorMartinsAlves"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://vitormartinsalves.github.io/3dXess/#faq",
+          "inLanguage": "pt-BR",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "O Xadrez 3D Online é grátis?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Sim. O jogo é totalmente gratuito, não tem anúncios, não exige cadastro e não pede nenhum dado pessoal."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Preciso criar conta para jogar?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Não. Basta abrir o site e escolher um nome. Não há login, senha nem cadastro."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Como jogar xadrez online com um amigo?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Abra a aba Criar sala, escolha o controle de tempo e envie o link de convite ou o código de 5 caracteres para o seu amigo. Os dois precisam estar online ao mesmo tempo."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Funciona no celular?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Sim. O tabuleiro 3D funciona em celulares e tablets com navegador moderno, com controles de toque para girar a câmera e mover as peças."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Preciso instalar algum aplicativo?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Não. O jogo roda direto no navegador. Também é possível adicionar à tela inicial do celular para abrir como um aplicativo."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Dá para jogar sozinho contra o computador?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Sim. Na aba Contra o bot você escolhe o nível de dificuldade, o estilo de jogo, a cor e o controle de tempo. O bot roda no próprio navegador, então não precisa de internet."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

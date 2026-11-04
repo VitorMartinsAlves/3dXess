@@ -1,11 +1,22 @@
 {
   "name": "3dxess",
   "private": true,
+  "version": "2.0.0",
+  "engines": { "node": ">=22.12.0" },
   "scripts": {
-    "check": "node --check app.js && node --check engine.js && node --check bot.js && node --check bot-worker.js && node --check board3d.js && node --check board2d.js && node --check site.js && node --check practice.js && node --check game-i18n.js",
+    "dev": "vite --host 0.0.0.0",
+    "build": "node scripts/prepare-public.mjs && vite build && node scripts/generate-routes.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "check": "node --check legacy/game/app.js && node --check legacy/game/engine.js && node --check legacy/game/bot.js && node --check legacy/game/bot-worker.js && node --check legacy/game/board2d.js && node --check legacy/game/board3d.js && node --check legacy/game/game-i18n.js && node --check legacy/training/practice.js",
     "test": "npm run check && node --test"
   },
-  "engines": {
-    "node": ">=22"
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router-dom": "7.18.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.2.1",
+    "vite": "8.3.5"
   }
 }
