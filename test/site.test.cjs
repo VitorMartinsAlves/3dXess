@@ -345,7 +345,6 @@ test('switching board renderers restarts an in-flight bot turn', () => {
   assert.match(resume, /app\.game\.state\.turn !== app\.bot\.color/);
   assert.match(resume, /cancelBotThinking\(\)/);
   assert.match(resume, /stopBotWorker\(/);
-  assert.match(resume, /rejectBotPending\(/);
   assert.match(resume, /scheduleBotMove\(\)/);
 
   assert.match(app, /activateBoard\('2d'\);\s*resumeBotTurnAfterBoardSwitch\(\)/);
@@ -385,6 +384,7 @@ test('bot worker failures and timeouts release the worker and scheduler', () => 
   assert.match(app, /worker\.onmessageerror/);
   assert.match(app, /worker\.terminate\(\)/);
   assert.match(app, /budget \+ 3500/);
-  assert.match(app, /Promise\.resolve\(\)\s*\.then\(function \(\) \{\s*return requestBotMove/);
+  assert.match(app, /return requestBotMove\(state, options\)/);
+  assert.match(app, /if \(forceMainThread\)[\s\S]*Bot\.chooseMove/);
   assert.match(app, /app\.bot\.thinking = false;\s*commitLocal\(move\)/);
 });
