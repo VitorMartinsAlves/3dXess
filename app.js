@@ -2820,7 +2820,7 @@
     $('promotion').classList.add('hidden');
 
     hideLoader();
-    renderAll(true);
+    renderAll(!shouldPlayIntro);
     if (shouldPlayIntro && boardReady) B.playIntro();
     maybeHandleDrawOffer();
     maybeShowRoomResult();
