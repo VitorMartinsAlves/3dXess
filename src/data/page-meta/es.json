@@ -120,5 +120,21 @@
         "url": "https://github.com/VitorMartinsAlves"
       }
     }
+  },
+  "account": {
+    "title": "Cuenta 3dXess | Rating y Clasificación de Ajedrez",
+    "description": "Crea tu cuenta 3dXess y consulta tu rating, nivel, estadísticas y clasificación global.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Cuenta 3dXess | Rating y Clasificación de Ajedrez",
+      "url": "https://vitormartinsalves.github.io/3dXess/es/cuenta/",
+      "inLanguage": "es",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
   }
 }
