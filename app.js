@@ -2188,6 +2188,7 @@
     $('promotion').classList.add('hidden');
     if (boardReady) B.setOrientation('w');
     renderAll(false);
+    if (boardReady) B.playIntro();
   }
 
   function startLocalGame() {
@@ -2342,6 +2343,7 @@
     if (boardReady) B.setOrientation(app.myColor);
 
     renderAll(false);
+    if (boardReady) B.playIntro();
 
     if (app.game.state.turn === app.bot.color) scheduleBotMove();
   }
@@ -2749,7 +2751,7 @@
       capture = !!prevState.board[mv.to.r][mv.to.f];
     }
 
-    B.playEffect(capture ? 'capture' : 'move', mv.to.r, mv.to.f);
+    B.playEffect(mv.promotion ? 'promotion' : capture ? 'capture' : 'move', mv.to.r, mv.to.f);
 
     if (status.check || status.type === 'checkmate') {
       const king = C.findKing(app.game.state.board, app.game.state.turn);
@@ -2774,6 +2776,8 @@
     const prevState = app.game.state;
     const hadRoom = !!app.room;
     const version = Number(room.game.version) || 0;
+    const shouldPlayIntro = room.meta.status === 'playing' &&
+      (!hadRoom || prevStatus !== 'playing');
 
     app.room = room;
     app.mode = 'online';
@@ -2816,7 +2820,8 @@
     $('promotion').classList.add('hidden');
 
     hideLoader();
-    renderAll(true);
+    renderAll(!shouldPlayIntro);
+    if (shouldPlayIntro && boardReady) B.playIntro();
     maybeHandleDrawOffer();
     maybeShowRoomResult();
   }

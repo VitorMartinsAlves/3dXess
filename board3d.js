@@ -130,6 +130,7 @@
   let clickHandler = null;
   let interactive = true;
   let currentState = null;
+  let renderedBoardSnapshot = null;
   let lastMove = null;
   let selected = null;
   let legalMoves = [];
@@ -448,13 +449,66 @@
   /* ------------------------------------------------------------
      PEÇAS DINÂMICAS
      ------------------------------------------------------------ */
-  function rebuildPieces(animate) {
+  function boardsMatch(snapshot, board) {
+    if (!snapshot || !board) return false;
+    for (let r = 0; r < 8; r++) {
+      for (let f = 0; f < 8; f++) {
+        const a = snapshot[r] && snapshot[r][f];
+        const b = board[r] && board[r][f];
+        if (!a !== !b) return false;
+        if (a && (a.type !== b.type || a.color !== b.color)) return false;
+      }
+    }
+    return true;
+  }
+
+  function snapshotBoard(board) {
+    return board.map(function (row) {
+      return row.map(function (piece) {
+        return piece ? { type: piece.type, color: piece.color } : null;
+      });
+    });
+  }
+
+  function disposePieceObject(piece) {
+    piece.traverse(function (obj) {
+      if (!obj.isMesh) return;
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.userData.motionOwnedMaterial && obj.material) {
+        if (Array.isArray(obj.material)) obj.material.forEach(function (mat) { mat.dispose(); });
+        else obj.material.dispose();
+      }
+    });
+  }
+
+  function clonePieceMaterials(piece) {
+    piece.traverse(function (obj) {
+      if (!obj.isMesh || !obj.material) return;
+      if (Array.isArray(obj.material)) {
+        obj.material = obj.material.map(function (mat) {
+          const clone = mat.clone();
+          clone.transparent = true;
+          clone.depthWrite = false;
+          clone.opacity = 1;
+          return clone;
+        });
+        obj.material.forEach(function (mat) { mat.needsUpdate = true; });
+      } else {
+        obj.material = obj.material.clone();
+        obj.material.transparent = true;
+        obj.material.depthWrite = false;
+        obj.material.opacity = 1;
+        obj.material.needsUpdate = true;
+      }
+      obj.userData.motionOwnedMaterial = true;
+    });
+  }
+
+  function rebuildPieces(animate, previousBoard) {
     if (!piecesGroup) return;
     for (const child of piecesGroup.children.slice()) {
       piecesGroup.remove(child);
-      child.traverse(function (obj) {
-        if (obj.isMesh && obj.geometry) obj.geometry.dispose();
-      });
+      disposePieceObject(child);
     }
 
     animations.length = 0;
@@ -464,6 +518,28 @@
     }
 
     const board = currentState.board;
+    const moveSpecs = [];
+    if (animate && lastMove && lastMove.from && lastMove.to) {
+      moveSpecs.push({ from: lastMove.from, to: lastMove.to, delay: 0 });
+
+      if (lastMove.castle && previousBoard) {
+        const kingSide = lastMove.to.f > lastMove.from.f;
+        const rookFrom = { r: lastMove.from.r, f: kingSide ? 7 : 0 };
+        const rookTo = { r: lastMove.from.r, f: kingSide ? 5 : 3 };
+        const oldRook = previousBoard[rookFrom.r] && previousBoard[rookFrom.r][rookFrom.f];
+        const newRook = board[rookTo.r] && board[rookTo.r][rookTo.f];
+        if (oldRook && oldRook.type === 'r' && newRook &&
+            newRook.type === 'r' && newRook.color === oldRook.color) {
+          moveSpecs.push({ from: rookFrom, to: rookTo, delay: 0.035 });
+        }
+      }
+    }
+
+    const movedByTarget = new Map();
+    moveSpecs.forEach(function (spec) {
+      movedByTarget.set(spec.to.r + ':' + spec.to.f, spec);
+    });
+
     for (let r = 0; r < 8; r++) {
       for (let f = 0; f < 8; f++) {
         const p = board[r][f];
@@ -474,15 +550,62 @@
         piece.userData.f = f;
         const target = squareToWorld(r, f);
         piece.position.copy(target);
-        piecesGroup.add(piece);
 
-        if (animate && lastMove && lastMove.to &&
-            lastMove.to.r === r && lastMove.to.f === f &&
-            lastMove.from && (lastMove.from.r !== r || lastMove.from.f !== f)) {
-          const from = squareToWorld(lastMove.from.r, lastMove.from.f);
+        const spec = movedByTarget.get(r + ':' + f);
+        if (spec) {
+          const from = squareToWorld(spec.from.r, spec.from.f);
+          const distance = Math.hypot(target.x - from.x, target.z - from.z);
+          const baseScale = piece.scale.clone();
+          const baseRotation = piece.rotation.clone();
           piece.position.copy(from);
-          animations.push({ obj: piece, from: from, to: target.clone(), t: 0, dur: 0.18 });
+          animations.push({
+            type: 'move',
+            obj: piece,
+            from: from,
+            to: target.clone(),
+            t: 0,
+            delay: spec.delay || 0,
+            dur: 0.34 + Math.min(distance * 0.015, 0.1),
+            height: 1.05 + Math.min(distance * 0.06, 0.42),
+            baseScale: baseScale,
+            baseRotation: baseRotation,
+          });
         }
+
+        piecesGroup.add(piece);
+      }
+    }
+
+    /* A peça capturada continua visível por alguns frames: ela perde
+       opacidade e sai do caminho enquanto a peça atacante aterrissa. */
+    if (animate && previousBoard && lastMove && lastMove.from && lastMove.to) {
+      const captureSquare = lastMove.enPassant
+        ? { r: lastMove.from.r, f: lastMove.to.f }
+        : lastMove.to;
+      const captured = previousBoard[captureSquare.r] &&
+        previousBoard[captureSquare.r][captureSquare.f];
+
+      if (captured) {
+        const ghost = createPiece(captured.type, captured.color);
+        ghost.userData = {
+          kind: 'capture-ghost',
+          effectGhost: true,
+        };
+        ghost.position.copy(squareToWorld(captureSquare.r, captureSquare.f));
+        clonePieceMaterials(ghost);
+        piecesGroup.add(ghost);
+
+        const push = lastMove.from.f < lastMove.to.f ? 1 : -1;
+        animations.push({
+          type: 'capture',
+          obj: ghost,
+          t: 0,
+          dur: 0.27,
+          origin: ghost.position.clone(),
+          drift: new THREE.Vector3(push * 0.19, -0.12, 0.06),
+          baseScale: ghost.scale.clone(),
+          baseRotation: ghost.rotation.clone(),
+        });
       }
     }
 
@@ -490,17 +613,117 @@
   }
 
   function refreshPickables() {
-    pickables = squareMeshes.concat(piecesGroup ? piecesGroup.children : []);
+    const pieces = piecesGroup
+      ? piecesGroup.children.filter(function (piece) { return !piece.userData.effectGhost; })
+      : [];
+    pickables = squareMeshes.concat(pieces);
+  }
+
+  function playIntro() {
+    if (!piecesGroup || prefersReducedMotion()) return;
+    animations.length = 0;
+
+    piecesGroup.children.forEach(function (piece) {
+      if (piece.userData.kind !== 'piece') return;
+      const basePosition = piece.position.clone();
+      const baseScale = piece.scale.clone();
+      piece.position.y = basePosition.y + 1.35;
+      piece.scale.copy(baseScale).multiplyScalar(0.84);
+      animations.push({
+        type: 'intro',
+        obj: piece,
+        t: 0,
+        delay: Math.abs(3.5 - piece.userData.f) * 0.018 +
+          (piece.userData.r === 0 || piece.userData.r === 7 ? 0.055 : 0),
+        dur: 0.46,
+        basePosition: basePosition,
+        baseScale: baseScale,
+        baseRotation: piece.rotation.clone(),
+      });
+    });
+  }
+
+  function prefersReducedMotion() {
+    return !!(global.matchMedia &&
+      global.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
 
   function updateAnimations(dt) {
     for (let i = animations.length - 1; i >= 0; i--) {
       const a = animations[i];
       a.t += dt;
-      const k = Math.min(a.t / a.dur, 1);
-      const eased = 1 - Math.pow(1 - k, 3);
-      a.obj.position.lerpVectors(a.from, a.to, eased);
-      if (k >= 1) animations.splice(i, 1);
+      if (a.t < (a.delay || 0)) continue;
+
+      const elapsed = a.t - (a.delay || 0);
+      const k = Math.min(elapsed / a.dur, 1);
+      const eased = k < 0.5
+        ? 4 * k * k * k
+        : 1 - Math.pow(-2 * k + 2, 3) / 2;
+
+      if (a.type === 'move') {
+        const arc = Math.sin(Math.PI * k);
+        const dx = a.to.x - a.from.x;
+        const dz = a.to.z - a.from.z;
+        a.obj.position.set(
+          a.from.x + dx * eased,
+          a.from.y + (a.to.y - a.from.y) * eased + arc * a.height,
+          a.from.z + dz * eased
+        );
+
+        const distance = Math.max(1, Math.hypot(dx, dz));
+        a.obj.rotation.x = a.baseRotation.x - (dz / distance) * arc * 0.055;
+        a.obj.rotation.z = a.baseRotation.z + (dx / distance) * arc * 0.055;
+
+        if (k > 0.84) {
+          const landing = (k - 0.84) / 0.16;
+          const squash = Math.sin(Math.PI * landing) * 0.055;
+          a.obj.scale.set(
+            a.baseScale.x * (1 + squash),
+            a.baseScale.y * (1 - squash * 1.3),
+            a.baseScale.z * (1 + squash)
+          );
+        } else {
+          a.obj.scale.copy(a.baseScale).multiplyScalar(1 + arc * 0.025);
+        }
+
+        if (k >= 1) {
+          a.obj.position.copy(a.to);
+          a.obj.rotation.copy(a.baseRotation);
+          a.obj.scale.copy(a.baseScale);
+        }
+      } else if (a.type === 'capture') {
+        const fade = 1 - eased;
+        a.obj.position.set(
+          a.origin.x + a.drift.x * eased,
+          a.origin.y + a.drift.y * eased + Math.sin(Math.PI * k) * 0.05,
+          a.origin.z + a.drift.z * eased
+        );
+        a.obj.rotation.z = a.baseRotation.z + 0.42 * eased;
+        a.obj.scale.copy(a.baseScale).multiplyScalar(1 - eased * 0.36);
+        a.obj.traverse(function (obj) {
+          if (!obj.isMesh || !obj.userData.motionOwnedMaterial || !obj.material) return;
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach(function (mat) { mat.opacity = fade; });
+          } else {
+            obj.material.opacity = fade;
+          }
+        });
+      } else if (a.type === 'intro') {
+        const bounce = Math.sin(Math.PI * k);
+        a.obj.position.copy(a.basePosition);
+        a.obj.position.y += (1 - eased) * 1.35 + bounce * 0.07;
+        const scale = 0.84 + eased * 0.16 + bounce * 0.035;
+        a.obj.scale.copy(a.baseScale).multiplyScalar(scale);
+        a.obj.rotation.copy(a.baseRotation);
+      }
+
+      if (k >= 1) {
+        if (a.type === 'capture') {
+          piecesGroup.remove(a.obj);
+          disposePieceObject(a.obj);
+        }
+        animations.splice(i, 1);
+      }
     }
   }
 
@@ -511,16 +734,16 @@
     if (!effectsEnabled || !effectsGroup) return;
     const p = squareToWorld(r, f);
 
-    if (kind === 'capture' || kind === 'explosion') {
-      const count = kind === 'explosion' ? 26 : 16;
+    if (kind === 'capture' || kind === 'explosion' || kind === 'promotion') {
+      const count = kind === 'explosion' ? 26 : kind === 'promotion' ? 12 : 9;
       for (let i = 0; i < count; i++) {
         const mat = new THREE.MeshBasicMaterial({
-          color: kind === 'explosion' ? 0xfb7185 : 0xffd166,
+          color: kind === 'explosion' ? 0xfb7185 : kind === 'promotion' ? 0x86efac : 0xd7bd80,
           transparent: true,
           opacity: 1,
         });
         const m = new THREE.Mesh(new THREE.SphereGeometry(0.05 + Math.random() * 0.04, 8, 6), mat);
-        m.position.copy(p).add(new THREE.Vector3(0, 0.35, 0));
+        m.position.copy(p).add(new THREE.Vector3(0, kind === 'promotion' ? 0.52 : 0.35, 0));
         effectsGroup.add(m);
         effectAnims.push({
           mesh: m,
@@ -536,11 +759,11 @@
       }
     }
 
-    if (kind === 'check' || kind === 'explosion') {
+    if (kind === 'check' || kind === 'explosion' || kind === 'promotion') {
       const ring = new THREE.Mesh(
         new THREE.RingGeometry(0.22, 0.32, 40),
         new THREE.MeshBasicMaterial({
-          color: 0xef4444, transparent: true, opacity: 0.95,
+          color: kind === 'promotion' ? 0x86efac : 0xef4444, transparent: true, opacity: 0.95,
           side: THREE.DoubleSide, depthWrite: false,
         })
       );
@@ -861,17 +1084,25 @@
     init: init,
     setState: function (state, opts) {
       opts = opts || {};
+      const nextBoard = state && state.board;
+      const previousBoard = renderedBoardSnapshot;
+      const boardChanged = !boardsMatch(previousBoard, nextBoard);
       currentState = state;
       lastMove = opts.lastMove || null;
       selected = opts.selected || null;
       legalMoves = opts.legalMoves || [];
       checkSquare = opts.checkSquare || null;
-      rebuildPieces(!!opts.animate);
+
+      if (boardChanged) {
+        rebuildPieces(!!opts.animate && !prefersReducedMotion(), previousBoard);
+        renderedBoardSnapshot = nextBoard ? snapshotBoard(nextBoard) : null;
+      }
       renderHighlights();
     },
     setTheme: applyTheme,
     setSkin: applySkin,
     setEffects: function (enabled) { effectsEnabled = !!enabled; },
+    playIntro: playIntro,
     setOrientation: setOrientation,
     setInteractive: function (value) { interactive = !!value; },
     onSquareClick: function (cb) { clickHandler = cb; },
