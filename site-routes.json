@@ -6,7 +6,8 @@
     "practice": "praticar/",
     "challenges": "desafios/",
     "rules": "regras/",
-    "play": "jogar/"
+    "play": "jogar/",
+    "account": "conta/"
   },
   "en": {
     "home": "en/",
@@ -15,7 +16,8 @@
     "practice": "en/practice/",
     "challenges": "en/challenges/",
     "rules": "en/rules/",
-    "play": "en/play/"
+    "play": "en/play/",
+    "account": "en/account/"
   },
   "es": {
     "home": "es/",
@@ -24,7 +26,8 @@
     "practice": "es/practica/",
     "challenges": "es/desafios/",
     "rules": "es/reglas/",
-    "play": "es/jugar/"
+    "play": "es/jugar/",
+    "account": "es/cuenta/"
   },
   "zh-CN": {
     "home": "zh-cn/",
@@ -33,6 +36,7 @@
     "practice": "zh-cn/practice/",
     "challenges": "zh-cn/challenges/",
     "rules": "zh-cn/rules/",
-    "play": "zh-cn/play/"
+    "play": "zh-cn/play/",
+    "account": "zh-cn/account/"
   }
 }
