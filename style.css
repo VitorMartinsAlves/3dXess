@@ -987,7 +987,7 @@ select { cursor: pointer; }
   min-height: 0;
   grid-column: 2;
   grid-row: 1;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: repeat(8, minmax(0, 1fr));
   overflow: hidden;
   border: 2px solid rgba(35, 50, 65, .9);
@@ -995,7 +995,13 @@ select { cursor: pointer; }
   box-shadow: 0 0 0 1px rgba(220, 233, 243, .16);
   touch-action: manipulation;
 }
-.board2d-row { display: contents; }
+.board2d-row {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr);
+}
 .board2d-square {
   position: relative;
   display: grid;
@@ -1129,9 +1135,7 @@ select { cursor: pointer; }
     max-width: 560px;
     padding: 5px;
   }
-  .board2d-piece { font-size: clamp(24px, 8.8vmin, 54px); }
-  .board2d-square::before { left: 2px; bottom: 2px; }
-  .board2d-square::after { right: 2px; bottom: 2px; }
+  .board2d-piece { inset: 3%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .board2d-square { transition: none; }
