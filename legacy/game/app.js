@@ -478,14 +478,21 @@
   }
 
   function showLoader(text) {
-    $('loader-text').textContent = text || 'Conectando…';
+    const loader = $('loader');
+    const label = $('loader-text');
+    if (!loader || !label) return;
+    label.textContent = text || 'Conectando…';
     resetLoaderUi();
-    $('loader').classList.remove('hidden');
+    loader.hidden = false;
+    loader.classList.remove('hidden');
   }
 
   function hideLoader() {
     const loader = $('loader');
-    if (loader) loader.classList.add('hidden');
+    if (loader) {
+      loader.hidden = true;
+      loader.classList.add('hidden');
+    }
     resetLoaderUi();
   }
 
@@ -505,6 +512,7 @@
     const retryBtn = $('loader-retry');
     if (retryBtn) retryBtn.classList.toggle('hidden', !retry);
     loaderRetry = retry || null;
+    loader.hidden = false;
     loader.classList.remove('hidden');
   }
 
