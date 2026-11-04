@@ -3,3 +3,7 @@ dist/
 .vite/
 coverage/
 .DS_Store
+
+# Local environment files (never commit)
+.env.local
+.env.*.local
