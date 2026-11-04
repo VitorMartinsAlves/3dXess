@@ -379,7 +379,7 @@ test('stalled bot searches restart without requiring a board-mode change', () =>
   const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
   assert.match(app, /watchdogTimer: null/);
   assert.match(app, /Math\.max\(6500, budget \+ 5500\)/);
-  assert.match(app, /if \(forceMainThread\)/);
+  assert.match(app, /forceMainThread \|\| activeBoardMode === '2d'/);
   assert.match(app, /scheduleBotMove\(true\)/);
   assert.match(app, /stopBotWorker\(new Error\('Busca do bot cancelada\.'\)\)/);
 
@@ -395,6 +395,6 @@ test('bot worker failures and timeouts release the worker and scheduler', () => 
   assert.match(app, /worker\.terminate\(\)/);
   assert.match(app, /budget \+ 3500/);
   assert.match(app, /return requestBotMove\(state, options\)/);
-  assert.match(app, /if \(forceMainThread\)[\s\S]*Bot\.chooseMove/);
+  assert.match(app, /if \(forceMainThread \|\| activeBoardMode === '2d'\)[\s\S]*Bot\.chooseMove/);
   assert.match(app, /app\.bot\.thinking = false;\s*commitLocal\(move\)/);
 });
