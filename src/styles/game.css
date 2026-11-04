@@ -1543,3 +1543,71 @@ select { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   .tab { transition: none; }
 }
+
+
+/* Cross-page navigation in the lobby and a safe account shortcut in a match. */
+.lobby-wrap { width: min(900px, 100%); }
+.game-site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 0 2px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: rgba(0,0,0,.2);
+}
+.game-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: color .16s ease, background .16s ease, border-color .16s ease;
+}
+.game-nav-link:hover,
+.game-nav-link:focus-visible {
+  color: var(--text);
+  border-color: var(--border);
+  background: rgba(255,255,255,.06);
+}
+.site-game-account-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  background: rgba(255,255,255,.06);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  pointer-events: auto;
+}
+.site-game-account-link:hover,
+.site-game-account-link:focus-visible {
+  border-color: rgba(110,231,183,.45);
+  background: rgba(110,231,183,.09);
+  color: var(--accent);
+}
+body[data-trainer-mode] { overflow-x: hidden; overflow-y: auto; }
+@media (max-width: 720px) {
+  .game-site-nav { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 4px; }
+  .game-nav-link { min-width: 0; padding-inline: 6px; font-size: 11px; }
+  .site-game-account-link { min-height: 38px; padding-inline: 8px; font-size: 11px; }
+}
+@media (max-width: 480px) {
+  .game-site-nav { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .lobby-head-actions { gap: 6px; }
+  .site-game-account-link span:first-child { display: none; }
+}
