@@ -56,6 +56,35 @@ test('every sitemap URL resolves to a page in this repository', () => {
   }
 });
 
+test('all localized pages include complete social metadata and valid structured data', () => {
+  const localesForOpenGraph = {
+    'pt-BR': 'pt_BR',
+    en: 'en_US',
+    es: 'es_ES',
+    'zh-CN': 'zh_CN'
+  };
+
+  for (const [locale, routes] of Object.entries(locales)) {
+    for (const [page, route] of Object.entries(routes)) {
+      const html = readRoute(route);
+      assert.match(html, /<meta property="og:type" content="website"/, locale + '/' + page + ' og:type');
+      assert.ok(html.includes('property="og:locale" content="' + localesForOpenGraph[locale] + '"'), locale + '/' + page + ' og:locale');
+      for (const key of ['og:url', 'og:title', 'og:description', 'og:image']) {
+        assert.ok(html.includes('property="' + key + '"'), locale + '/' + page + ' ' + key);
+      }
+      for (const key of ['twitter:card', 'twitter:title', 'twitter:description', 'twitter:image']) {
+        assert.ok(html.includes('name="' + key + '"'), locale + '/' + page + ' ' + key);
+      }
+
+      const schemas = [...html.matchAll(/<script type="application\\/ld\\+json">([\\s\\S]*?)<\\/script>/gi)];
+      assert.ok(schemas.length > 0, locale + '/' + page + ' structured data');
+      for (const schema of schemas) {
+        assert.doesNotThrow(() => JSON.parse(schema[1]), locale + '/' + page + ' valid JSON-LD');
+      }
+    }
+  }
+});
+
 test('localized pages contain readable content without broken object labels', () => {
   const homeTitles = {
     'pt-BR': ['Partidas contra amigos e o bot', 'Treinamento por posição', 'Desafios diários de xadrez'],
