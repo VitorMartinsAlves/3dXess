@@ -42,6 +42,7 @@
   let grid = null;
   let motionLayer = null;
   let motionAnimations = new Set();
+  let animatedTargets = new Set();
   let renderedBoardSnapshot = null;
   let squares = [];
   let rankCoordinates = [];
@@ -291,11 +292,19 @@
     return true;
   }
 
+  function clearAnimatedTargets() {
+    animatedTargets.forEach(function (square) {
+      square.classList.remove('is-animating-arrival');
+    });
+    animatedTargets.clear();
+  }
+
   function cancelMoveAnimations() {
     motionAnimations.forEach(function (animation) {
       try { animation.cancel(); } catch (e) { /* ignore */ }
     });
     motionAnimations.clear();
+    clearAnimatedTargets();
     if (motionLayer) motionLayer.replaceChildren();
   }
 
@@ -305,14 +314,14 @@
     return squares[view.row * 8 + view.col] || null;
   }
 
-  function makeMotionPiece(piece, position, rootRect) {
+  function makeMotionPiece(piece, position, overlayRect) {
     const square = squareForPosition(position);
     if (!square || !piece) return null;
     const rect = square.getBoundingClientRect();
     const element = document.createElement('div');
     element.className = 'board2d-motion-piece';
-    element.style.left = (rect.left - rootRect.left) + 'px';
-    element.style.top = (rect.top - rootRect.top) + 'px';
+    element.style.left = (rect.left - overlayRect.left) + 'px';
+    element.style.top = (rect.top - overlayRect.top) + 'px';
     element.style.width = rect.width + 'px';
     element.style.height = rect.height + 'px';
 
@@ -320,52 +329,65 @@
     sprite.className = 'board2d-piece ' + (piece.color === 'w' ? 'is-white' : 'is-black');
     sprite.appendChild(createPieceSprite(piece));
     element.appendChild(sprite);
-    return { element: element, rect: rect };
+    return { element: element, rect: rect, square: square };
   }
 
-  function animateMove(previousBoard, move, from, to, delay) {
-    const movingPiece = previousBoard[from.r] && previousBoard[from.r][from.f];
-    if (!movingPiece || !motionLayer || typeof Element === 'undefined' ||
-        !Element.prototype.animate || prefersReducedMotion()) return;
-
-    const rootRect = root.getBoundingClientRect();
-    const start = makeMotionPiece(movingPiece, from, rootRect);
+  function animateMove(piece, from, to, delay) {
+    if (!piece || !motionLayer || prefersReducedMotion()) return false;
+    const origin = squareForPosition(from);
     const destination = squareForPosition(to);
-    if (!start || !destination) return;
+    if (!origin || !destination) return false;
+
+    const overlayRect = motionLayer.getBoundingClientRect();
+    const start = makeMotionPiece(piece, from, overlayRect);
+    if (!start) return false;
 
     const end = destination.getBoundingClientRect();
     const dx = end.left - start.rect.left;
     const dy = end.top - start.rect.top;
     const distance = Math.hypot(dx, dy);
-    const knightJump = movingPiece.type === 'n';
-    const arc = Math.min(start.rect.height * (knightJump ? 0.36 : 0.17), knightJump ? 30 : 16);
+    const knightJump = piece.type === 'n';
+    const arc = Math.min(start.rect.height * (knightJump ? 0.42 : 0.2), knightJump ? 34 : 18);
+
     motionLayer.appendChild(start.element);
+    destination.classList.add('is-animating-arrival');
+    animatedTargets.add(destination);
+
+    if (typeof start.element.animate !== 'function') {
+      start.element.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0)';
+      window.setTimeout(function () {
+        start.element.remove();
+        destination.classList.remove('is-animating-arrival');
+        animatedTargets.delete(destination);
+      }, 420);
+      return true;
+    }
 
     const animation = start.element.animate([
       { transform: 'translate3d(0, 0, 0) scale(1)' },
-      { transform: 'translate3d(' + (dx * 0.5) + 'px, ' + (dy * 0.5 - arc) + 'px, 0) scale(1.055)', offset: 0.48 },
+      { transform: 'translate3d(' + (dx * 0.5) + 'px, ' + (dy * 0.5 - arc) + 'px, 0) scale(1.08)', offset: 0.48 },
       { transform: 'translate3d(' + dx + 'px, ' + dy + 'px, 0) scale(1)' }
     ], {
-      duration: 330 + Math.min(distance * 0.045, 90),
+      duration: 420 + Math.min(distance * 0.055, 110),
       delay: delay || 0,
       easing: 'cubic-bezier(.2,.78,.24,1)',
       fill: 'forwards'
     });
 
     motionAnimations.add(animation);
-    animation.onfinish = function () {
+    function cleanup() {
       motionAnimations.delete(animation);
       start.element.remove();
-    };
-    animation.oncancel = function () {
-      motionAnimations.delete(animation);
-      start.element.remove();
-    };
+      destination.classList.remove('is-animating-arrival');
+      animatedTargets.delete(destination);
+    }
+    animation.onfinish = cleanup;
+    animation.oncancel = cleanup;
+    return true;
   }
 
   function animateCapture(previousBoard, lastMove) {
-    if (!lastMove || !motionLayer || prefersReducedMotion() ||
-        typeof Element === 'undefined' || !Element.prototype.animate) return;
+    if (!lastMove || !motionLayer || prefersReducedMotion()) return;
 
     const square = lastMove.enPassant
       ? { r: lastMove.from.r, f: lastMove.to.f }
@@ -373,16 +395,20 @@
     const captured = previousBoard[square.r] && previousBoard[square.r][square.f];
     if (!captured) return;
 
-    const rootRect = root.getBoundingClientRect();
-    const ghost = makeMotionPiece(captured, square, rootRect);
+    const overlayRect = motionLayer.getBoundingClientRect();
+    const ghost = makeMotionPiece(captured, square, overlayRect);
     if (!ghost) return;
     ghost.element.classList.add('is-capture-ghost');
     motionLayer.appendChild(ghost.element);
 
+    if (typeof ghost.element.animate !== 'function') {
+      window.setTimeout(function () { ghost.element.remove(); }, 260);
+      return;
+    }
     const animation = ghost.element.animate([
       { opacity: 1, transform: 'scale(1) translateY(0)' },
       { opacity: 0, transform: 'scale(.72) translateY(7px)' }
-    ], { duration: 245, easing: 'ease-out', fill: 'forwards' });
+    ], { duration: 300, easing: 'ease-out', fill: 'forwards' });
 
     motionAnimations.add(animation);
     animation.onfinish = function () {
@@ -395,23 +421,29 @@
     };
   }
 
-  function animateLastMove(previousBoard, move) {
-    if (!previousBoard || !move || !move.from || !move.to ||
-        prefersReducedMotion() || typeof Element === 'undefined' ||
-        !Element.prototype.animate) return;
+  function animateLastMove(previousBoard, move, nextBoard) {
+    if (!move || !move.from || !move.to || prefersReducedMotion()) return;
 
     cancelMoveAnimations();
-    animateMove(previousBoard, move, move.from, move.to, 0);
+
+    const movingPiece = previousBoard && previousBoard[move.from.r] &&
+      previousBoard[move.from.r][move.from.f];
+    const destinationPiece = nextBoard && nextBoard[move.to.r] &&
+      nextBoard[move.to.r][move.to.f];
+    animateMove(movingPiece || destinationPiece, move.from, move.to, 0);
 
     if (move.castle) {
       const kingSide = move.to.f > move.from.f;
       const rookFrom = { r: move.from.r, f: kingSide ? 7 : 0 };
       const rookTo = { r: move.from.r, f: kingSide ? 5 : 3 };
-      const rook = previousBoard[rookFrom.r] && previousBoard[rookFrom.r][rookFrom.f];
-      if (rook && rook.type === 'r') animateMove(previousBoard, move, rookFrom, rookTo, 45);
+      const oldRook = previousBoard && previousBoard[rookFrom.r] &&
+        previousBoard[rookFrom.r][rookFrom.f];
+      const newRook = nextBoard && nextBoard[rookTo.r] &&
+        nextBoard[rookTo.r][rookTo.f];
+      animateMove(oldRook || newRook, rookFrom, rookTo, 55);
     }
 
-    animateCapture(previousBoard, move);
+    if (previousBoard) animateCapture(previousBoard, move);
   }
 
   function prefersReducedMotion() {
@@ -432,8 +464,8 @@
     checkSquare = options.checkSquare || null;
     render();
 
-    if (options.animate && boardChanged && previousBoard) {
-      animateLastMove(previousBoard, lastMove);
+    if (options.animate && boardChanged) {
+      animateLastMove(previousBoard, lastMove, nextBoard);
     } else if (boardChanged) {
       cancelMoveAnimations();
     }
