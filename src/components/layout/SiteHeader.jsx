@@ -1,22 +1,20 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { BASE_URL, SITE_ROUTES, routeHref } from "../../app/routes.js";
+"use client";
 
-const labels = {
-  "pt-BR": { home: "Início", learn: "Aprender", practice: "Praticar", challenges: "Desafios", about: "Sobre", play: "Jogar agora", account: "Conta", brand: "Xadrez 3D", subtitle: "Salas, partidas rápidas e links de convite" },
-  en: { home: "Home", learn: "Learn", practice: "Practice", challenges: "Challenges", about: "About", play: "Play now", account: "Account", brand: "3D Chess", subtitle: "Rooms, quick games and invite links" },
-  es: { home: "Inicio", learn: "Aprender", practice: "Practicar", challenges: "Desafíos", about: "Acerca de", play: "Jugar ahora", account: "Cuenta", brand: "Ajedrez 3D", subtitle: "Salas, partidas rápidas y enlaces de invitación" },
-  "zh-CN": { home: "首页", learn: "学习", practice: "练习", challenges: "挑战", about: "关于", play: "开始对局", account: "账户", brand: "3D 国际象棋", subtitle: "房间、快速对局和邀请链接" },
-};
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { SITE_ROUTES, routeHref } from "../../app/routes.js";
+
 const languageOptions = [
-  ["pt-BR", "PT · Português"], ["en", "EN · English"],
-  ["es", "ES · Español"], ["zh-CN", "中文 · 简体"],
+  ["pt-BR", "PT · Português"],
+  ["en", "EN · English"],
+  ["es", "ES · Español"],
+  ["zh-CN", "中文 · 简体"],
 ];
+const primaryNavigation = ["home", "play", "learn", "practice"];
 
 export function SiteHeader({ locale, page }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const t = labels[locale] ?? labels["pt-BR"];
-  const navItems = ["home", "learn", "practice", "challenges", "about", "account"];
+  const { t, i18n } = useTranslation("common");
 
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -27,45 +25,56 @@ export function SiteHeader({ locale, page }) {
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [menuOpen]);
 
-  function onLanguageChange(event) {
+  async function onLanguageChange(event) {
     const nextLocale = event.target.value;
-    const nextRoute = SITE_ROUTES[nextLocale]?.[page];
-    if (nextRoute !== undefined) window.location.assign(`${BASE_URL}${nextRoute}`);
+    if (!SITE_ROUTES[nextLocale]?.[page]) return;
+    await i18n.changeLanguage(nextLocale);
+    window.location.assign(routeHref(nextLocale, page));
   }
 
   return (
     <header className="site-header">
       <div className="site-container site-header-inner">
-        <Link className="site-brand" to={routeHref(locale, "home")} reloadDocument aria-label={`${t.brand} — ${t.home}`}>
+        <a className="site-brand" href={routeHref(locale, "home")} aria-label={t("homeAria")}>
           <span className="site-brand-mark" aria-hidden="true">♞</span>
           <span className="site-brand-name">
-            <span className="site-brand-title">{t.brand}</span>{" "}
-            <span className="site-brand-badge">Online</span>
-            <small>{t.subtitle}</small>
+            <span className="site-brand-title">{t("brand")}</span>
+            <span className="site-brand-badge">{t("online")}</span>
+            <small>{t("tagline")}</small>
           </span>
-        </Link>
-        <button
-          className="site-menu-toggle"
-          type="button"
-          aria-expanded={menuOpen}
-          aria-controls="site-navigation"
-          aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
+        </a>
+
+        <button className="site-menu-toggle" type="button" aria-expanded={menuOpen}
+          aria-controls="site-navigation" aria-label={menuOpen ? t("menuClose") : t("menuOpen")}
+          onClick={() => setMenuOpen((open) => !open)}>
           <span aria-hidden="true">{menuOpen ? "×" : "☰"}</span>
         </button>
-        <nav className={`site-nav${menuOpen ? " is-open" : ""}`} id="site-navigation" aria-label="Navegação principal">
-          {navItems.map((item) => (
-            <Link key={item} to={routeHref(locale, item)} reloadDocument aria-current={page === item ? "page" : undefined} onClick={() => setMenuOpen(false)}>
-              {t[item]}
-            </Link>
+
+        <nav className={`site-nav${menuOpen ? " is-open" : ""}`} id="site-navigation" aria-label={t("navLabel")}>
+          {primaryNavigation.map((item) => (
+            <a key={item} href={routeHref(locale, item)}
+              aria-current={page === item ? "page" : undefined}
+              onClick={() => setMenuOpen(false)}>{t(item)}</a>
           ))}
+          <div className="site-nav-mobile-tools">
+            <a href={routeHref(locale, "account")} aria-current={page === "account" ? "page" : undefined}>{t("account")}</a>
+            <label className="site-mobile-language"><span>{t("language")}</span>
+              <select className="site-language" aria-label={t("language")} value={locale} onChange={onLanguageChange}>
+                {languageOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+              </select>
+            </label>
+          </div>
         </nav>
+
         <div className="site-header-actions">
-          <select className="site-language" aria-label="Idioma" value={locale} onChange={onLanguageChange}>
+          <select className="site-language" aria-label={t("language")} value={locale} onChange={onLanguageChange}>
             {languageOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
-          <Link className="site-button site-button-primary" to={routeHref(locale, "play")} reloadDocument>{t.play}</Link>
+          <a className={`site-account-link${page === "account" ? " is-active" : ""}`}
+            href={routeHref(locale, "account")} aria-current={page === "account" ? "page" : undefined}
+            title={t("account")}>
+            <span aria-hidden="true">♙</span><span>{t("account")}</span>
+          </a>
         </div>
       </div>
     </header>
