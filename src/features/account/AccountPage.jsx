@@ -10,7 +10,7 @@ import {
 import {
   collection, doc, getDoc, getDocs, limit, orderBy, query,
 } from "firebase/firestore";
-import { auth, db, firebaseConfigReady } from "../../shared/firebase/client.js";
+import { accountApiUrl, auth, db, firebaseConfigReady } from "../../shared/firebase/client.js";
 import { callAccountApi } from "./accountApi.js";
 import "./account.css";
 
@@ -250,6 +250,7 @@ export function AccountPage({ locale = "pt-BR" }) {
     event.preventDefault();
     setError("");
     setNotice("");
+    if (!accountApiUrl) return setError(t.missingWorker);
     if (!validUsername(username)) return setError(t.invalidUsername);
     if (password.length < 8) return setError(t.passwordShort);
     if (password !== confirmPassword) return setError(t.passwordMismatch);
