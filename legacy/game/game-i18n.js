@@ -29,6 +29,13 @@
       "Fim de jogo":"Game over","Ver tabuleiro":"View board","Confirmar":"Confirm","Cancelar":"Cancel","Conectando…":"Connecting…","Tentar novamente":"Try again","Voltar ao lobby":"Back to lobby","Não foi possível carregar o jogo":"The game could not be loaded","Seu navegador precisa de JavaScript e WebGL habilitados. Ative a aceleração de hardware e recarregue a página.":"Your browser needs JavaScript and WebGL. Enable hardware acceleration and reload the page.",
       "Desfazer":"Undo","Expandir painel":"Expand panel","Escreva uma mensagem…":"Write a message…","Enviar":"Send","Dama":"Queen","Torre":"Rook","Bispo":"Bishop","Cavalo":"Knight","Fechar":"Close","Jogador":"Player","Atualizar":"Refresh",
       "O bot não encontrou um lance.":"The bot could not find a move.","Não foi possível conectar":"Could not connect","Trystero local indisponível, tentando CDN:":"Local Trystero unavailable, trying CDN:","WebRTC carregado. A conexão é direta entre os navegadores.":"WebRTC loaded. The connection is direct between browsers.","P2P indisponível":"P2P unavailable","Falha ao abrir a conexão WebRTC.":"Could not open the WebRTC connection.","O anfitrião recusou o lance.":"The host rejected the move.","O anfitrião encerrou a sala.":"The host closed the room.","Conexão com o anfitrião perdida. Tentando reconectar…":"Connection to host lost. Reconnecting…","Reconectando ao anfitrião…":"Reconnecting to host…","Não foi possível reconectar ao anfitrião.":"Could not reconnect to host.","Falha ao enviar a ação. Verifique a conexão.":"Could not send the action. Check your connection.","Não é a sua vez.":"It is not your turn.","Lance inválido.":"Invalid move.","Partida rápida":"Quick game","Conectando ao adversário…":"Connecting to opponent…","Não foi possível iniciar a partida. Tente de novo.":"Could not start the game. Try again.","Você já está em uma sala.":"You are already in a room.","Não foi possível criar a sala":"Could not create room","Digite um código de sala válido.":"Enter a valid room code.","Você voltou ao lobby.":"You returned to the lobby.","O bot não carregou. Recarregue a página.":"The bot did not load. Reload the page.","Lance inválido do bot.":"Invalid bot move.","O bot não conseguiu calcular um lance.":"The bot could not calculate a move.","Configurações salvas.":"Settings saved.","Sua vez. Selecione uma peça.":"Your turn. Select a piece.","O chat está disponível apenas em partidas online.":"Chat is only available in online games."
+      "Início":"Home",
+      "Aprender":"Learn",
+      "Praticar":"Practice",
+      "Desafios":"Challenges",
+      "Conta":"Account",
+      "Navegação do site":"Site navigation",
+      "Abrir a conta em uma nova aba":"Open account in a new tab",
     },
     es: {
       "Preferências da partida":"Preferencias de partida","Modos de jogo":"Modos de juego","Você pode trocar depois":"Puedes cambiarlo después",
@@ -57,6 +64,13 @@
       "Fim de jogo":"Fin de la partida","Ver tabuleiro":"Ver tablero","Confirmar":"Confirmar","Cancelar":"Cancelar","Conectando…":"Conectando…","Tentar novamente":"Intentar de nuevo","Voltar ao lobby":"Volver al menú","Não foi possível carregar o jogo":"No se pudo cargar el juego","Seu navegador precisa de JavaScript e WebGL habilitados. Ative a aceleração de hardware e recarregue a página.":"Tu navegador necesita JavaScript y WebGL. Activa la aceleración por hardware y recarga la página.",
       "Desfazer":"Deshacer","Expandir painel":"Expandir panel","Escreva uma mensagem…":"Escribe un mensaje…","Enviar":"Enviar","Dama":"Dama","Torre":"Torre","Bispo":"Alfil","Cavalo":"Caballo","Fechar":"Cerrar","Jogador":"Jugador","Atualizar":"Actualizar",
       "O bot não encontrou um lance.":"El bot no encontró una jugada.","Não foi possível conectar":"No se pudo conectar","P2P indisponível":"P2P no disponible","Falha ao abrir a conexão WebRTC.":"No se pudo abrir la conexión WebRTC.","O anfitrião recusou o lance.":"El anfitrión rechazó la jugada.","O anfitrião encerrou a sala.":"El anfitrión cerró la sala.","Conexão com o anfitrião perdida. Tentando reconectar…":"Se perdió la conexión con el anfitrión. Reconectando…","Reconectando ao anfitrião…":"Reconectando con el anfitrión…","Não foi possível reconectar ao anfitrião.":"No se pudo reconectar con el anfitrión.","Falha ao enviar a ação. Verifique a conexão.":"No se pudo enviar la acción. Comprueba la conexión.","Não é a sua vez.":"No es tu turno.","Lance inválido.":"Jugada no válida.","Conectando ao adversário…":"Conectando con el rival…","Não foi possível iniciar a partida. Tente de novo.":"No se pudo iniciar la partida. Inténtalo de nuevo.","Você já está em uma sala.":"Ya estás en una sala.","Não foi possível criar a sala":"No se pudo crear la sala","Digite um código de sala válido.":"Introduce un código de sala válido.","Você voltou ao lobby.":"Has vuelto al menú.","O bot não carregou. Recarregue a página.":"El bot no se cargó. Recarga la página.","Lance inválido do bot.":"Jugada no válida del bot.","O bot não conseguiu calcular um lance.":"El bot no pudo calcular una jugada.","Configurações salvas.":"Configuración guardada.","Sua vez. Selecione uma peça.":"Tu turno. Selecciona una pieza.","O chat está disponível apenas em partidas online.":"El chat solo está disponible en partidas en línea."
+      "Início":"Inicio",
+      "Aprender":"Aprender",
+      "Praticar":"Practicar",
+      "Desafios":"Desafíos",
+      "Conta":"Cuenta",
+      "Navegação do site":"Navegación del sitio",
+      "Abrir a conta em uma nova aba":"Abrir la cuenta en una pestaña nueva",
     },
     "zh-CN": {
       "Preferências da partida":"对局偏好","Modos de jogo":"游戏模式","Você pode trocar depois":"之后可以更改",
@@ -85,6 +99,13 @@
       "Fim de jogo":"对局结束","Ver tabuleiro":"查看棋盘","Confirmar":"确认","Cancelar":"取消","Conectando…":"正在连接…","Tentar novamente":"重试","Voltar ao lobby":"返回大厅","Não foi possível carregar o jogo":"无法加载游戏","Seu navegador precisa de JavaScript e WebGL habilitados. Ative a aceleração de hardware e recarregue a página.":"浏览器需要启用 JavaScript 和 WebGL。请启用硬件加速后刷新页面。",
       "Desfazer":"悔棋","Expandir painel":"展开面板","Escreva uma mensagem…":"输入消息…","Enviar":"发送","Dama":"后","Torre":"车","Bispo":"象","Cavalo":"马","Fechar":"关闭","Jogador":"玩家","Atualizar":"刷新",
       "O bot não encontrou um lance.":"电脑没有找到着法。","Não foi possível conectar":"连接失败","P2P indisponível":"P2P 不可用","Falha ao abrir a conexão WebRTC.":"无法建立 WebRTC 连接。","O anfitrião recusou o lance.":"房主拒绝了这步棋。","O anfitrião encerrou a sala.":"房主关闭了房间。","Conexão com o anfitrião perdida. Tentando reconectar…":"与房主的连接中断，正在重连…","Reconectando ao anfitrião…":"正在重新连接房主…","Não foi possível reconectar ao anfitrião.":"无法重新连接房主。","Falha ao enviar a ação. Verifique a conexão.":"发送操作失败，请检查连接。","Não é a sua vez.":"还没轮到你。","Lance inválido.":"无效着法。","Conectando ao adversário…":"正在连接对手…","Não foi possível iniciar a partida. Tente de novo.":"无法开始对局，请重试。","Você já está em uma sala.":"你已经在一个房间中。","Não foi possível criar a sala":"无法创建房间","Digite um código de sala válido.":"请输入有效的房间代码。","Você voltou ao lobby.":"已返回大厅。","O bot não carregou. Recarregue a página.":"电脑模块加载失败，请刷新页面。","Lance inválido do bot.":"电脑走出了无效着法。","O bot não conseguiu calcular um lance.":"电脑无法计算着法。","Configurações salvas.":"设置已保存。","Sua vez. Selecione uma peça.":"轮到你了。请选择一个棋子。","O chat está disponível apenas em partidas online.":"聊天功能仅适用于在线对局。"
+      "Início":"首页",
+      "Aprender":"学习",
+      "Praticar":"练习",
+      "Desafios":"挑战",
+      "Conta":"账户",
+      "Navegação do site":"网站导航",
+      "Abrir a conta em uma nova aba":"在新标签页中打开账户",
     }
   };
   const dict = dictionaries[lang] || {};
@@ -94,41 +115,98 @@
     es: { home:"/3dXess/es/", play:"/3dXess/es/jugar/" },
     "zh-CN": { home:"/3dXess/zh-cn/", play:"/3dXess/zh-cn/play/" }
   };
+  const translatedText = new WeakMap();
+
+  const routes = {
+    "pt-BR": {
+      home: "/3dXess/", learn: "/3dXess/aprender/", practice: "/3dXess/praticar/",
+      challenges: "/3dXess/desafios/", account: "/3dXess/conta/", play: "/3dXess/jogar/"
+    },
+    en: {
+      home: "/3dXess/en/", learn: "/3dXess/en/learn/", practice: "/3dXess/en/practice/",
+      challenges: "/3dXess/en/challenges/", account: "/3dXess/en/account/", play: "/3dXess/en/play/"
+    },
+    es: {
+      home: "/3dXess/es/", learn: "/3dXess/es/aprender/", practice: "/3dXess/es/practica/",
+      challenges: "/3dXess/es/desafios/", account: "/3dXess/es/cuenta/", play: "/3dXess/es/jugar/"
+    },
+    "zh-CN": {
+      home: "/3dXess/zh-cn/", learn: "/3dXess/zh-cn/learn/", practice: "/3dXess/zh-cn/practice/",
+      challenges: "/3dXess/zh-cn/challenges/", account: "/3dXess/zh-cn/account/", play: "/3dXess/zh-cn/play/"
+    }
+  };
+
+  function translateNode(node) {
+    if (!node || node.nodeType !== Node.TEXT_NODE) return;
+    const raw = node.nodeValue || "";
+    if (!raw.trim() || translatedText.get(node) === raw) return;
+    const key = raw.replace(/\\s+/g, " ").trim();
+    if (!Object.prototype.hasOwnProperty.call(dict, key)) {
+      translatedText.delete(node);
+      return;
+    }
+    const leading = raw.match(/^\\s*/)?.[0] || "";
+    const trailing = raw.match(/\\s*$/)?.[0] || "";
+    const next = leading + dict[key] + trailing;
+    // Remember the translated value before writing it. MutationObserver will
+    // see the characterData update, but it will not translate that node twice.
+    translatedText.set(node, next);
+    if (next !== raw) node.nodeValue = next;
+  }
+
   function translateText(root) {
+    if (!root) return;
+    if (root.nodeType === Node.TEXT_NODE) {
+      translateNode(root);
+      return;
+    }
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode(node) {
-        const p = node.parentElement;
-        if (!p || p.closest("script,style,textarea,[data-no-translate]")) return NodeFilter.FILTER_REJECT;
+        const parent = node.parentElement;
+        if (!parent || parent.closest("script,style,textarea,[data-no-translate]")) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       }
     });
     let node;
-    while ((node = walker.nextNode())) {
-      const raw = node.nodeValue;
-      const key = raw.replace(/\s+/g, " ").trim();
-      if (!key || !Object.prototype.hasOwnProperty.call(dict, key)) continue;
-      const leading = raw.match(/^\s*/)?.[0] || "";
-      const trailing = raw.match(/\s*$/)?.[0] || "";
-      node.nodeValue = leading + dict[key] + trailing;
+    while ((node = walker.nextNode())) translateNode(node);
+  }
+
+  function translateAttributes(root) {
+    if (!root || root.nodeType !== Node.ELEMENT_NODE) return;
+    const selector = "input,button,a,select,[aria-label],[title]";
+    const elements = [];
+    if (root.matches(selector)) elements.push(root);
+    elements.push(...root.querySelectorAll(selector));
+    for (const element of elements) {
+      for (const attribute of ["placeholder", "aria-label", "title", "alt"]) {
+        const value = element.getAttribute(attribute);
+        if (value && Object.prototype.hasOwnProperty.call(dict, value)) {
+          element.setAttribute(attribute, dict[value]);
+        }
+      }
     }
   }
-  function translateAttributes(root) {
-    root.querySelectorAll("input,button,a,select,[aria-label],[title]").forEach(el => {
-      ["placeholder","aria-label","title","alt"].forEach(attr => {
-        const value = el.getAttribute(attr);
-        if (value && Object.prototype.hasOwnProperty.call(dict, value)) el.setAttribute(attr, dict[value]);
-      });
+
+  function applyGameRoutes() {
+    const selectedRoutes = routes[lang] || routes["pt-BR"];
+    document.querySelectorAll("[data-game-route]").forEach((link) => {
+      const key = link.dataset.gameRoute;
+      if (selectedRoutes[key]) link.setAttribute("href", selectedRoutes[key]);
     });
-  }
-  function apply() {
-    if (lang === "pt-BR") return;
-    translateText(document.body);
-    translateAttributes(document.body);
     const homeLink = document.querySelector(".site-return-link");
-    if (homeLink) homeLink.setAttribute("href", routes[lang].home);
+    if (homeLink) homeLink.setAttribute("href", selectedRoutes.home);
+  }
+
+  function applyInitialTranslations() {
+    if (lang !== "pt-BR") {
+      translateText(document.body);
+      translateAttributes(document.body);
+    }
+    applyGameRoutes();
     const selector = document.getElementById("game-language-switch");
     if (selector) selector.value = lang;
   }
+
   const switcher = document.getElementById("game-language-switch");
   if (switcher) {
     switcher.value = lang;
@@ -137,7 +215,28 @@
       if (target) window.location.assign(target.play);
     });
   }
-  apply();
-  const observer = new MutationObserver(() => apply());
+
+  applyInitialTranslations();
+
+  // Process only inserted/changed nodes. Scanning the entire document after
+  // every game status update was expensive and could loop forever when a
+  // translation intentionally had the same text (for example, "online").
+  const observer = new MutationObserver((records) => {
+    for (const record of records) {
+      if (record.type === "characterData") {
+        translateNode(record.target);
+        continue;
+      }
+      for (const node of record.addedNodes) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          translateNode(node);
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          translateText(node);
+          translateAttributes(node);
+          applyGameRoutes();
+        }
+      }
+    }
+  });
   observer.observe(document.body, { subtree: true, childList: true, characterData: true });
 })();
