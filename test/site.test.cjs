@@ -397,6 +397,8 @@ test('Firebase accounts use email/password, native password reset and public pla
     'serverTimestamp',
     'syncGameNickname',
     'xadrez3.settings.v3',
+    'creatingProfileRef',
+    'permission-denied',
     'orderBy("rating"',
   ]) assert.ok(account.includes(required), 'account integration missing ' + required);
   assert.doesNotMatch(account, /signInWithCustomToken|callAccountApi|totp|QRCode/);
