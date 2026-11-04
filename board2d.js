@@ -141,8 +141,8 @@
     layout.appendChild(grid);
     layout.appendChild(fileStrip);
     root.appendChild(layout);
-    root.appendChild(motionLayer);
     container.appendChild(root);
+    document.body.appendChild(motionLayer);
     applyTheme(currentTheme);
     applySkin(currentSkin);
     updateCoordinates();
@@ -368,7 +368,7 @@
       { transform: 'translate3d(' + (dx * 0.5) + 'px, ' + (dy * 0.5 - arc) + 'px, 0) scale(1.08)', offset: 0.48 },
       { transform: 'translate3d(' + dx + 'px, ' + dy + 'px, 0) scale(1)' }
     ], {
-      duration: 420 + Math.min(distance * 0.055, 110),
+      duration: 520 + Math.min(distance * 0.065, 130),
       delay: delay || 0,
       easing: 'cubic-bezier(.2,.78,.24,1)',
       fill: 'forwards'
@@ -408,7 +408,7 @@
     const animation = ghost.element.animate([
       { opacity: 1, transform: 'scale(1) translateY(0)' },
       { opacity: 0, transform: 'scale(.72) translateY(7px)' }
-    ], { duration: 300, easing: 'ease-out', fill: 'forwards' });
+    ], { duration: 330, easing: 'ease-out', fill: 'forwards' });
 
     motionAnimations.add(animation);
     animation.onfinish = function () {
