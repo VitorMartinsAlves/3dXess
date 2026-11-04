@@ -10,7 +10,7 @@ const rootAssets = join(root, "assets");
 // Keep project-owned files such as assets/css/style.css intact.
 const currentAssets = new Set(await readdir(distAssets).catch(() => []));
 for (const name of await readdir(rootAssets).catch(() => [])) {
-  if (!/^[\\w.-]+\\.(?:js|css)$/.test(name)) continue;
+  if (!name.endsWith(".js") && !name.endsWith(".css")) continue;
   if (!currentAssets.has(name)) {
     await rm(join(rootAssets, name), { force: true });
   }
