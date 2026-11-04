@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public profile fields only: username, rating, level, XP and statistics.
+    match /users/{uid} {
+      allow get, list: if true;
+      // Clients can edit presentation fields only. Rating and progression are server-owned.
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['avatarUrl', 'bio', 'updatedAt'])
+        && (!('avatarUrl' in request.resource.data)
+          || request.resource.data.avatarUrl is string)
+        && (!('bio' in request.resource.data)
+          || request.resource.data.bio is string);
+      allow create, delete: if false;
+    }
+
+    // Private email, username indexes and encrypted TOTP secrets are Worker-only.
+    match /usernameIndex/{document=**} { allow read, write: if false; }
+    match /emailIndex/{document=**} { allow read, write: if false; }
+    match /privateUsers/{uid} { allow read, write: if false; }
+    match /totpSecrets/{uid} { allow read, write: if false; }
+
+    match /matches/{matchId} {
+      allow read: if request.auth != null
+        && request.auth.uid in resource.data.playerUids;
+      allow write: if false;
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}
