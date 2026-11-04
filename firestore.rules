@@ -29,7 +29,8 @@ service cloud.firestore {
         && request.resource.data.createdAt is timestamp
         && request.resource.data.updatedAt is timestamp;
 
-      // Players cannot change rating, level, XP or match statistics from the browser.
+      // Players can change their public display name and presentation fields only.
+      // Rating, XP, level and match statistics remain protected from browser writes.
       allow update: if request.auth != null
         && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys()
@@ -37,25 +38,7 @@ service cloud.firestore {
         && request.resource.data.updatedAt is timestamp
         && (!('username' in request.resource.data)
           || (request.resource.data.username is string
-            && request.resource.data.username.matches('^[A-Za-z0-9_]{3,20}
-          || (request.resource.data.avatarUrl is string
-            && request.resource.data.avatarUrl.size() <= 500))
-        && (!('bio' in request.resource.data)
-          || (request.resource.data.bio is string
-            && request.resource.data.bio.size() <= 500));
-      allow delete: if false;
-    }
-
-    match /matches/{matchId} {
-      allow read: if request.auth != null
-        && request.auth.uid in resource.data.playerUids;
-      allow write: if false;
-    }
-
-    match /{document=**} { allow read, write: if false; }
-  }
-}
-)))
+            && request.resource.data.username.matches('^[A-Za-z0-9_]{3,20}$')))
         && (!('avatarUrl' in request.resource.data)
           || (request.resource.data.avatarUrl is string
             && request.resource.data.avatarUrl.size() <= 500))
