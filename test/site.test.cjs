@@ -56,6 +56,27 @@ test('every sitemap URL resolves to a page in this repository', () => {
   }
 });
 
+test('localized pages contain readable content without broken object labels', () => {
+  const homeTitles = {
+    'pt-BR': ['Partidas contra amigos e o bot', 'Treinamento por posição', 'Desafios diários de xadrez'],
+    en: ['Play friends or the bot', 'Position-based training', 'Daily chess challenges'],
+    es: ['Juega contra amigos o el bot', 'Práctica por posiciones', 'Desafíos diarios de ajedrez'],
+    'zh-CN': ['与朋友或电脑对弈', '按局面进行训练', '每日国际象棋挑战']
+  };
+
+  for (const [locale, routes] of Object.entries(locales)) {
+    for (const route of Object.values(routes)) {
+      assert.doesNotMatch(readRoute(route), /\\[object Object\\]/, locale + '/' + route + ' has an unserialized object label');
+    }
+
+    const html = readRoute(routes.home);
+    const cards = [...html.matchAll(/<article class="site-card">[\\s\\S]*?<h3>([\\s\\S]*?)<\\/h3>/g)]
+      .map(match => match[1]);
+    assert.deepEqual(cards, homeTitles[locale], locale + ' homepage feature headings');
+    assert.match(html, /<nav class="site-footer-links" aria-label="[^"]+"/, locale + ' footer navigation label');
+  }
+});
+
 test('trainer pages load the 3D engine and shared trainer module', () => {
   for (const [locale, routes] of Object.entries(locales)) {
     for (const page of ['practice', 'challenges']) {
