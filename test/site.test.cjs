@@ -314,6 +314,6 @@ test('bot worker failures and timeouts release the worker and scheduler', () => 
   assert.match(app, /botWorker\.onmessageerror/);
   assert.match(app, /worker\.terminate\(\)/);
   assert.match(app, /budget \+ 3500/);
-  assert.match(app, /Promise\.resolve\(\)\.then\(function \(\) \{\s*return requestBotMove/);
+  assert.match(app, /Promise\.resolve\(\)\s*\.then\(function \(\) \{\s*return requestBotMove/);
   assert.match(app, /app\.bot\.thinking = false;\s*commitLocal\(move\)/);
 });
