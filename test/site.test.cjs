@@ -135,7 +135,7 @@ test('localized game lobbies have clear sections, accessible tabs, and local pla
     const html = readRoute(routes.play);
     assert.match(html, /className="lobby-head-actions"/);
     assert.match(html, /className="lobby-preferences"/);
-    assert.match(html, /class="lobby-intro"/);
+    assert.match(html, /className="lobby-intro"/);
     assert.match(html, /aria-label="Modos de jogo"/);
     for (const name of ['quick', 'bot', 'create', 'join', 'public']) {
       assert.match(html, new RegExp('id="tab-btn-' + name + '"[^>]*role="tab"[^>]*aria-controls="tab-' + name + '"'));
@@ -318,7 +318,7 @@ test('bot workers are isolated per move and always terminate after a response', 
   const start = app.indexOf('function ensureBotWorker()');
   const end = app.indexOf('function requestBotMove', start);
   const workerFactory = app.slice(start, end);
-  assert.match(workerFactory, /new Worker\(new URL\('bot-worker\.js', document\.baseURI\)\.href\)/);
+  assert.match(workerFactory, /new Worker\(new URL\('legacy\/game\/bot-worker\.js', document\.baseURI\)\.href\)/);
   assert.doesNotMatch(workerFactory, /if \(botWorker\) return botWorker/);
   assert.match(workerFactory, /worker\.onmessage = function/);
   assert.match(workerFactory, /worker\.terminate\(\)/);
