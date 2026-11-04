@@ -55,15 +55,22 @@
     <div class="lobby-wrap">
       <header class="lobby-head">
         <div class="brand big">
-          <span class="brand-icon">&#9822;</span>
+          <span class="brand-icon" aria-hidden="true">&#9822;</span>
           <div>
             <h1>Xadrez 3D <span class="tag">Online</span></h1>
             <p>Salas, partidas rápidas e links de convite</p>
           </div>
         </div>
-        <a href="/3dXess/" class="site-return-link" style="margin-left:auto;margin-right:12px;color:#a6b1bd;font-size:12px;text-decoration:none">← Início</a>
-        <select id="game-language-switch" aria-label="Idioma" style="max-width:138px;min-height:38px;padding:0 8px;border:1px solid rgba(226,232,240,.14);border-radius:10px;background:#111820;color:#edf1f5;font:inherit;font-size:12px;margin-right:10px"><option value="pt-BR">PT · Português</option><option value="en">EN · English</option><option value="es">ES · Español</option><option value="zh-CN">中文 · 简体</option></select>
-        <button id="open-settings-lobby" class="icon-btn" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
+        <div class="lobby-head-actions">
+          <a href="/3dXess/" class="site-return-link">← Início</a>
+          <select id="game-language-switch" class="lobby-language" aria-label="Idioma">
+            <option value="pt-BR">PT · Português</option>
+            <option value="en">EN · English</option>
+            <option value="es">ES · Español</option>
+            <option value="zh-CN">中文 · 简体</option>
+          </select>
+          <button id="open-settings-lobby" class="icon-btn" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
+        </div>
       </header>
 
       <div class="live-stats" id="live-stats" aria-label="Atividade agora no site">
@@ -78,39 +85,49 @@
         </span>
       </div>
 
-      <div class="nick-row">
-        <label for="nickname">Seu nome</label>
-        <input id="nickname" type="text" maxlength="20" placeholder="Jogador" autocomplete="nickname" />
-        <span id="net-status" class="fb-status" title="Status da conexão P2P">conectando P2P…</span>
+      <section class="lobby-preferences" aria-label="Preferências da partida">
+        <div class="nick-row">
+          <label for="nickname">Seu nome</label>
+          <input id="nickname" type="text" maxlength="20" placeholder="Jogador" autocomplete="nickname" />
+          <span id="net-status" class="fb-status" title="Status da conexão P2P">conectando P2P…</span>
+        </div>
+
+        <section class="board-mode-picker" aria-labelledby="board-mode-label">
+          <div class="board-mode-picker-copy">
+            <strong id="board-mode-label">Visual do tabuleiro</strong>
+            <small>Você pode trocar depois</small>
+          </div>
+          <div class="board-mode-options" role="group" aria-label="Visual do tabuleiro">
+            <button class="board-mode-option active" type="button" data-board-mode="2d" aria-pressed="true">
+              <span class="board-mode-option-name">2D · Leve</span>
+              <span class="board-mode-option-description">Menos uso de recursos</span>
+            </button>
+            <button class="board-mode-option" type="button" data-board-mode="3d" aria-pressed="false">
+              <span class="board-mode-option-name">3D · Imersivo</span>
+              <span class="board-mode-option-description">Peças e câmera 3D</span>
+            </button>
+          </div>
+        </section>
+      </section>
+
+      <div class="lobby-intro">
+        <h2>Escolha como jogar</h2>
+        <p>Partidas online, desafios contra o bot ou salas com amigos.</p>
       </div>
 
-  <section class="board-mode-picker" aria-labelledby="board-mode-label">
-    <div class="board-mode-picker-copy">
-      <strong id="board-mode-label">Visual do tabuleiro</strong>
-      <small>Escolha como prefere jogar</small>
-    </div>
-    <div class="board-mode-options" role="group" aria-label="Visual do tabuleiro">
-      <button class="board-mode-option active" type="button" data-board-mode="2d" aria-pressed="true">
-        <span class="board-mode-option-name">2D · Leve</span>
-        <span class="board-mode-option-description">Ideal para PCs modestos</span>
-      </button>
-      <button class="board-mode-option" type="button" data-board-mode="3d" aria-pressed="false">
-        <span class="board-mode-option-name">3D · Imersivo</span>
-        <span class="board-mode-option-description">Vista tridimensional e peças 3D</span>
-      </button>
-    </div>
-  </section>
-
-      <nav class="tabs" role="tablist">
-        <button class="tab active" data-tab="quick" type="button" role="tab">Partida rápida</button>
-        <button class="tab" data-tab="bot" type="button" role="tab">Contra o bot</button>
-        <button class="tab" data-tab="create" type="button" role="tab">Criar sala</button>
-        <button class="tab" data-tab="join" type="button" role="tab">Entrar</button>
-        <button class="tab" data-tab="public" type="button" role="tab">Salas públicas</button>
+      <nav class="tabs" role="tablist" aria-label="Modos de jogo">
+        <button id="tab-btn-quick" class="tab active" data-tab="quick" type="button" role="tab" aria-controls="tab-quick" aria-selected="true" tabindex="0">Partida rápida</button>
+        <button id="tab-btn-bot" class="tab" data-tab="bot" type="button" role="tab" aria-controls="tab-bot" aria-selected="false" tabindex="-1">Contra o bot</button>
+        <button id="tab-btn-create" class="tab" data-tab="create" type="button" role="tab" aria-controls="tab-create" aria-selected="false" tabindex="-1">Criar sala</button>
+        <button id="tab-btn-join" class="tab" data-tab="join" type="button" role="tab" aria-controls="tab-join" aria-selected="false" tabindex="-1">Entrar</button>
+        <button id="tab-btn-public" class="tab" data-tab="public" type="button" role="tab" aria-controls="tab-public" aria-selected="false" tabindex="-1">Salas públicas</button>
       </nav>
 
-      <section id="tab-quick" class="tab-panel active">
-        <p class="hint">Encontre um adversário automaticamente. Os dois precisam estar online ao mesmo tempo — a conexão é direta entre os navegadores.</p>
+      <section id="tab-quick" class="tab-panel active" role="tabpanel" aria-labelledby="tab-btn-quick" tabindex="0">
+        <div class="panel-intro">
+          <h2>Encontre um adversário</h2>
+          <p>Busque automaticamente alguém com as mesmas preferências. Os dois precisam estar online ao mesmo tempo.</p>
+        </div>
         <div class="field-grid">
           <div class="field">
             <label for="quick-tc">Controle de tempo</label>
@@ -137,11 +154,21 @@
         </div>
         <button id="quick-match" class="primary big-btn" type="button">Buscar partida</button>
         <button id="cancel-match" class="ghost big-btn hidden" type="button">Cancelar busca</button>
+        <div class="local-play-card">
+          <div>
+            <strong>Jogar no mesmo dispositivo</strong>
+            <small>Uma partida local, sem internet ou conta.</small>
+          </div>
+          <button id="local-play" class="ghost" type="button">Jogar local</button>
+        </div>
         <div id="match-status" class="match-status hidden"></div>
       </section>
 
-      <section id="tab-bot" class="tab-panel">
-        <p class="hint">Jogue sozinho contra um bot que roda no seu navegador. Escolha o nível, o estilo e o tempo.</p>
+      <section id="tab-bot" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-bot" tabindex="0">
+        <div class="panel-intro">
+          <h2>Desafie o computador</h2>
+          <p>Escolha a dificuldade, o estilo de jogo, sua cor e o tempo da partida.</p>
+        </div>
         <div class="field-grid">
           <div class="field">
             <label for="bot-level">Dificuldade</label>
@@ -191,7 +218,11 @@
         <p class="hint small">O bot usa o mesmo motor de regras e não precisa de internet nem de conta.</p>
       </section>
 
-      <section id="tab-create" class="tab-panel">
+      <section id="tab-create" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-create" tabindex="0">
+        <div class="panel-intro">
+          <h2>Crie uma sala</h2>
+          <p>Configure a partida e compartilhe o convite com outra pessoa.</p>
+        </div>
         <div class="field-grid">
           <div class="field">
             <label for="create-name">Nome da sala</label>
@@ -231,18 +262,22 @@
         <p class="hint small">Você recebe um código e um link para convidar quem quiser.</p>
       </section>
 
-      <section id="tab-join" class="tab-panel">
-        <p class="hint">Digite o código de 5 caracteres ou abra o link de convite. Quem criou a sala precisa estar online.</p>
+      <section id="tab-join" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-join" tabindex="0">
+        <div class="panel-intro">
+          <h2>Entre com um convite</h2>
+          <p>Digite o código da sala ou abra diretamente o link que recebeu. O anfitrião precisa estar online.</p>
+        </div>
         <div class="join-row">
           <input id="join-code" type="text" maxlength="8" placeholder="CÓDIGO" autocapitalize="characters" spellcheck="false" />
           <button id="join-btn" class="primary" type="button">Entrar</button>
         </div>
-        <div class="divider"><span>ou</span></div>
-        <button id="local-play" class="ghost big-btn" type="button">Jogar local (mesmo dispositivo)</button>
-        <p class="hint small">O modo local não precisa de internet nem de conta.</p>
       </section>
 
-      <section id="tab-public" class="tab-panel">
+      <section id="tab-public" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-public" tabindex="0">
+        <div class="panel-intro">
+          <h2>Salas disponíveis</h2>
+          <p>Entre em uma partida pública que esteja aguardando outro jogador.</p>
+        </div>
         <div class="public-head">
           <span id="public-count">Carregando salas…</span>
           <button id="refresh-public" class="icon-btn small" type="button" title="Atualizar">&#8635;</button>
