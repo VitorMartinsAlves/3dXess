@@ -42,15 +42,15 @@ function syncGameNickname(value, uid) {
 
 function readableError(error, labels) {
   const code = error?.code || "";
-  if (code.includes("email-already-in-use")) return "Este e-mail já está cadastrado.";
-  if (code.includes("invalid-email")) return "Informe um e-mail válido.";
+  if (code.includes("email-already-in-use")) return labels("emailAlreadyUsed");
+  if (code.includes("invalid-email")) return labels("invalidEmail");
   if (code.includes("weak-password")) return labels("passwordShort");
   if (code.includes("user-not-found") || code.includes("wrong-password") || code.includes("invalid-credential")) {
     return labels("wrongCredentials");
   }
-  if (code.includes("too-many-requests")) return "Muitas tentativas. Aguarde e tente novamente.";
-  if (code.includes("permission-denied")) return "O Firestore bloqueou esta operação. Publique as regras atualizadas do arquivo firestore.rules no Console do Firebase.";
-  if (code.includes("operation-not-allowed")) return "Ative E-mail/senha em Authentication → Método de login no Firebase.";
+  if (code.includes("too-many-requests")) return labels("tooManyRequests");
+  if (code.includes("permission-denied")) return labels("permissionDenied");
+  if (code.includes("operation-not-allowed")) return labels("authDisabled");
   return error?.message || labels("genericError");
 }
 
