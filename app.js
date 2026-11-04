@@ -100,6 +100,7 @@
       turnStartedAt: 0,
       requestSeq: 0,
       pendingTimer: null,
+      watchdogTimer: null,
     },
   };
 
@@ -2334,6 +2335,10 @@
       window.clearTimeout(app.bot.pendingTimer);
       app.bot.pendingTimer = null;
     }
+    if (app.bot.watchdogTimer) {
+      window.clearTimeout(app.bot.watchdogTimer);
+      app.bot.watchdogTimer = null;
+    }
   }
 
   function resetLocalGame() {
@@ -2558,6 +2563,10 @@
       window.clearTimeout(app.bot.pendingTimer);
       app.bot.pendingTimer = null;
     }
+    if (app.bot.watchdogTimer) {
+      window.clearTimeout(app.bot.watchdogTimer);
+      app.bot.watchdogTimer = null;
+    }
   }
 
   /*
@@ -2580,7 +2589,7 @@
     scheduleBotMove();
   }
 
-  function scheduleBotMove() {
+  function scheduleBotMove(forceMainThread) {
     if (app.mode !== 'bot' || !app.bot.active) return;
     if (app.game.status.over || app.game.state.turn !== app.bot.color) return;
     if (app.bot.thinking) return;
@@ -2606,6 +2615,29 @@
     const started = Date.now();
     const minDelay = (info.minDelay || 300) + Math.random() * (info.delayJitter || 300);
 
+    /*
+     * Segunda camada de proteção: se a resposta do worker ou o agendamento
+     * não concluir, reinicia uma única busca nesta vez sem depender do worker.
+     * Isso impede que o estado "pensando" fique preso até alguém trocar o board.
+     */
+    app.bot.watchdogTimer = window.setTimeout(function () {
+      app.bot.watchdogTimer = null;
+      if (requestId !== app.bot.requestSeq || !app.bot.thinking ||
+          app.mode !== 'bot' || !app.bot.active || app.game.status.over ||
+          app.game.state.turn !== app.bot.color) return;
+
+      console.warn('Bot: watchdog reiniciando uma busca sem resposta.');
+      const stalledWorker = botWorker;
+      botWorker = null;
+      if (stalledWorker && typeof stalledWorker.terminate === 'function') {
+        stalledWorker.terminate();
+      }
+
+      cancelBotThinking();
+      rejectBotPending(new Error('Busca do bot reiniciada pelo watchdog.'));
+      scheduleBotMove(true);
+    }, Math.max(6500, budget + 5500));
+
     function applyResult(result) {
       if (requestId !== app.bot.requestSeq) return;
       if (app.mode !== 'bot' || !app.bot.active) return;
@@ -2613,6 +2645,10 @@
 
       const move = uciToMove(app.game.state, result.uci);
       if (!move) throw new Error('Lance inválido do bot.');
+      if (app.bot.watchdogTimer) {
+        window.clearTimeout(app.bot.watchdogTimer);
+        app.bot.watchdogTimer = null;
+      }
 
       const wait = Math.max(0, minDelay - (Date.now() - started));
       app.bot.pendingTimer = window.setTimeout(function () {
@@ -2644,6 +2680,10 @@
       } catch (e) {
         if (requestId !== app.bot.requestSeq) return;
         app.bot.thinking = false;
+        if (app.bot.watchdogTimer) {
+          window.clearTimeout(app.bot.watchdogTimer);
+          app.bot.watchdogTimer = null;
+        }
         toast('O bot não conseguiu calcular um lance.', 'error');
         renderHUD();
       }
@@ -2651,7 +2691,13 @@
 
     Promise.resolve()
       .then(function () {
-        return requestBotMove(state, { level: level, style: app.bot.style, timeMs: budget });
+        const options = { level: level, style: app.bot.style, timeMs: budget };
+        if (forceMainThread) {
+          return window.Bot.chooseMove(state, Object.assign({}, options, {
+            timeMs: Math.min(budget, 800),
+          }));
+        }
+        return requestBotMove(state, options);
       })
       .then(applyResult)
       .catch(function (err) {
