@@ -33,8 +33,14 @@ test('all 32 localized routes are represented by React page components and metad
   for (const [locale, pages] of Object.entries(locales)) {
     const source = fs.readFileSync(componentFile(locale), 'utf8');
     for (const [page, route] of Object.entries(pages)) {
-      if (page === 'account') assert.ok(source.includes('export { AccountPage }'), locale + '/account export missing');
-      else assert.ok(source.includes('function ' + pageNames[page] + '()'), locale + '/' + page + ' component missing');
+      if (page === 'account') {
+        assert.ok(source.includes('export { AccountPage }'), locale + '/account export missing');
+      } else if (page === 'home') {
+        assert.ok(source.includes('import { HomePage } from "../HomePage.jsx"'), locale + '/home shared component import missing');
+        assert.ok(source.includes('export { HomePage }'), locale + '/home shared component export missing');
+      } else {
+        assert.ok(source.includes('function ' + pageNames[page] + '()'), locale + '/' + page + ' component missing');
+      }
       assert.ok(pageMeta[locale][page]?.title, locale + '/' + page + ' title missing');
       assert.ok(pageMeta[locale][page]?.description, locale + '/' + page + ' description missing');
       assert.ok(route !== undefined, locale + '/' + page + ' route missing');

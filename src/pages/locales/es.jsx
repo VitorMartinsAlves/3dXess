@@ -30,3 +30,5 @@ export function RulesPage() { return (
 export function PlayPage() { return (<GameRuntime><GameBoardStage /><GameLobby /><GameSession /><GameDialogs /><GameNotifications /></GameRuntime>); }
 
 export { AccountPage } from "../../features/account/AccountPage.jsx";
+
+export { HomePage };
