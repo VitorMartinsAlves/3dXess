@@ -273,3 +273,8 @@ A página de prática oferece quatro posições validadas pelo motor: mate em um
 Os arquivos `site.css` e `site.js` definem o design system e a navegação das páginas públicas. `practice.js` integra o treinador ao motor `engine.js` e à cena `board3d.js`. `game-i18n.js` traduz os principais textos do lobby do jogo.
 
 O sitemap e as instruções de indexação estão em [SEO.md](SEO.md). Para publicar, o workflow existente do GitHub Pages continua copiando a árvore estática do repositório e executando `npm test` antes do deploy.
+
+
+### Identidade visual
+
+O site público reutiliza os tokens visuais do lobby definidos em `style.css`: fundo escuro, painéis translúcidos, tipografia do sistema, verde-menta/azul e controles compactos. A folha `site.css` deve permanecer alinhada a essa paleta e aos componentes principais do jogo.
