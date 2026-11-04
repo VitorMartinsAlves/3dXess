@@ -65,7 +65,7 @@
 
     grid = document.createElement('div');
     grid.className = 'board2d-grid';
-    grid.setAttribute('role', 'grid');
+    grid.setAttribute('role', 'group');
     grid.setAttribute('aria-label', root.getAttribute('aria-label'));
 
     squares = [];
