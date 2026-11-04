@@ -1,0 +1,7 @@
+name = "3dxess-account-api"
+main = "src/index.js"
+compatibility_date = "2026-11-04"
+
+[vars]
+FIREBASE_PROJECT_ID = "xesss-2fcbf"
+ALLOWED_ORIGINS = "https://vitormartinsalves.github.io,http://localhost:5173,http://127.0.0.1:5173"
