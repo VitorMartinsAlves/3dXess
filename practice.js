@@ -147,7 +147,12 @@
       B.playIntro();
     }
     const title = $("training-current-title");
-    if (title) title.textContent = current.id;
+    const activeButton = document.querySelector('[data-scenario="' + current.id + '"]');
+    if (title) title.textContent = dailyMode
+      ? copy.daily
+      : activeButton && activeButton.querySelector("strong")
+        ? activeButton.querySelector("strong").textContent
+        : current.id;
     setStatus(copy.goals[current.goal] || copy.ready, "info");
   }
   function goalMet(move, result, nextState) {
