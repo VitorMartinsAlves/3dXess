@@ -66,11 +66,11 @@ test('localized pages contain readable content without broken object labels', ()
 
   for (const [locale, routes] of Object.entries(locales)) {
     for (const route of Object.values(routes)) {
-      assert.doesNotMatch(readRoute(route), /\\[object Object\\]/, locale + '/' + route + ' has an unserialized object label');
+      assert.doesNotMatch(readRoute(route), /\[object Object\]/, locale + '/' + route + ' has an unserialized object label');
     }
 
     const html = readRoute(routes.home);
-    const cards = [...html.matchAll(/<article class="site-card">[\\s\\S]*?<h3>([\\s\\S]*?)<\\/h3>/g)]
+    const cards = [...html.matchAll(/<article class="site-card">[\s\S]*?<h3>([\s\S]*?)<\/h3>/g)]
       .map(match => match[1]);
     assert.deepEqual(cards, homeTitles[locale], locale + ' homepage feature headings');
     assert.match(html, /<nav class="site-footer-links" aria-label="[^"]+"/, locale + ' footer navigation label');
