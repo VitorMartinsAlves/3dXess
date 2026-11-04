@@ -229,6 +229,9 @@ test('2D board uses original pixel-art SVG sprites and readable outside coordina
   assert.match(renderer, /createCoordinateStrip/);
   assert.match(renderer, /updateCoordinates/);
   assert.match(renderer, /setAttribute\('role', 'grid'\)/);
+  assert.match(renderer, /setAttribute\('role', 'row'\)/);
+  assert.match(renderer, /setAttribute\('role', 'gridcell'\)/);
+  assert.match(styles, /\.board2d-row \{[\s\S]*display: grid/);
   assert.match(styles, /image-rendering: pixelated/);
   assert.match(styles, /board2d-coordinates/);
   assert.match(styles, /--piece-outline-color/);
