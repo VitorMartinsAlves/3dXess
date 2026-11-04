@@ -366,3 +366,18 @@ test('site layout applies the body design system class and cleans it up', () => 
   assert.match(layout, /document\.body\.classList\.add\("site-body"\)/);
   assert.match(layout, /return \(\) => document\.body\.classList\.remove\("site-body"\)/);
 });
+
+
+test('game waits for its stylesheet before mounting the lobby markup', () => {
+  const runtime = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'game', 'components', 'GameRuntime.jsx'), 'utf8');
+  assert.match(runtime, /const \[stylesReady, setStylesReady\] = useState\(false\)/);
+  assert.match(runtime, /import\("\.\.\/\.\.\/\.\.\/styles\/game\.css"\)/);
+  assert.match(runtime, /if \(!stylesReady\) return <GameLoadingScreen error=\{error\} \/>;/);
+  assert.match(runtime, /if \(!stylesReady \|\| error\) return undefined;/);
+  assert.match(runtime, /loadLegacyScripts\(GAME_SCRIPTS\)/);
+  assert.ok(
+    runtime.indexOf('import("../../../styles/game.css")') <
+      runtime.indexOf("loadLegacyScripts(GAME_SCRIPTS)"),
+    "game stylesheet must load before legacy scripts",
+  );
+});
