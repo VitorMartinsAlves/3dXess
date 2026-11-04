@@ -504,6 +504,53 @@
     });
   }
 
+  function pathHasPiece(board, from, to, enPassant) {
+    if (!board || !from || !to) return false;
+
+    const dr = to.r - from.r;
+    const df = to.f - from.f;
+    const absR = Math.abs(dr);
+    const absF = Math.abs(df);
+
+    // En passant: a peça capturada fica ao lado do destino, não nele.
+    if (enPassant && board[from.r] && board[from.r][to.f]) return true;
+
+    // Movimentos em linha reta ou diagonal: verifica as casas intermediárias.
+    if (dr === 0 || df === 0 || absR === absF) {
+      const steps = Math.max(absR, absF);
+      const stepR = Math.sign(dr);
+      const stepF = Math.sign(df);
+
+      for (let i = 1; i < steps; i++) {
+        const r = from.r + stepR * i;
+        const f = from.f + stepF * i;
+        if (board[r] && board[r][f]) return true;
+      }
+    }
+
+    // O cavalo pode cruzar uma das casas intermediárias do seu movimento em L.
+    if (absR === 2 && absF === 1) {
+      const candidates = [
+        { r: from.r + Math.sign(dr), f: from.f },
+        { r: from.r, f: from.f + Math.sign(df) },
+      ];
+      if (candidates.some(function (square) {
+        return !!(board[square.r] && board[square.r][square.f]);
+      })) return true;
+    } else if (absR === 1 && absF === 2) {
+      const candidates = [
+        { r: from.r, f: from.f + Math.sign(df) },
+        { r: from.r + Math.sign(dr), f: from.f },
+      ];
+      if (candidates.some(function (square) {
+        return !!(board[square.r] && board[square.r][square.f]);
+      })) return true;
+    }
+
+    // Uma peça no destino também é um obstáculo (captura).
+    return !!(board[to.r] && board[to.r][to.f]);
+  }
+
   function rebuildPieces(animate, previousBoard) {
     if (!piecesGroup) return;
     for (const child of piecesGroup.children.slice()) {
@@ -520,7 +567,12 @@
     const board = currentState.board;
     const moveSpecs = [];
     if (animate && lastMove && lastMove.from && lastMove.to) {
-      moveSpecs.push({ from: lastMove.from, to: lastMove.to, delay: 0 });
+      moveSpecs.push({
+        from: lastMove.from,
+        to: lastMove.to,
+        delay: 0,
+        jump: pathHasPiece(previousBoard, lastMove.from, lastMove.to, lastMove.enPassant),
+      });
 
       if (lastMove.castle && previousBoard) {
         const kingSide = lastMove.to.f > lastMove.from.f;
@@ -530,7 +582,12 @@
         const newRook = board[rookTo.r] && board[rookTo.r][rookTo.f];
         if (oldRook && oldRook.type === 'r' && newRook &&
             newRook.type === 'r' && newRook.color === oldRook.color) {
-          moveSpecs.push({ from: rookFrom, to: rookTo, delay: 0.035 });
+          moveSpecs.push({
+            from: rookFrom,
+            to: rookTo,
+            delay: 0.035,
+            jump: pathHasPiece(previousBoard, rookFrom, rookTo, false),
+          });
         }
       }
     }
@@ -567,6 +624,7 @@
             delay: spec.delay || 0,
             dur: 0.34 + Math.min(distance * 0.015, 0.1),
             height: 1.05 + Math.min(distance * 0.06, 0.42),
+            jump: !!spec.jump,
             baseScale: baseScale,
             baseRotation: baseRotation,
           });
@@ -661,7 +719,7 @@
         : 1 - Math.pow(-2 * k + 2, 3) / 2;
 
       if (a.type === 'move') {
-        const arc = Math.sin(Math.PI * k);
+        const arc = a.jump ? Math.sin(Math.PI * k) : 0;
         const dx = a.to.x - a.from.x;
         const dz = a.to.z - a.from.z;
         a.obj.position.set(
@@ -670,20 +728,26 @@
           a.from.z + dz * eased
         );
 
-        const distance = Math.max(1, Math.hypot(dx, dz));
-        a.obj.rotation.x = a.baseRotation.x - (dz / distance) * arc * 0.055;
-        a.obj.rotation.z = a.baseRotation.z + (dx / distance) * arc * 0.055;
+        if (a.jump) {
+          const distance = Math.max(1, Math.hypot(dx, dz));
+          a.obj.rotation.x = a.baseRotation.x - (dz / distance) * arc * 0.055;
+          a.obj.rotation.z = a.baseRotation.z + (dx / distance) * arc * 0.055;
 
-        if (k > 0.84) {
-          const landing = (k - 0.84) / 0.16;
-          const squash = Math.sin(Math.PI * landing) * 0.055;
-          a.obj.scale.set(
-            a.baseScale.x * (1 + squash),
-            a.baseScale.y * (1 - squash * 1.3),
-            a.baseScale.z * (1 + squash)
-          );
+          if (k > 0.84) {
+            const landing = (k - 0.84) / 0.16;
+            const squash = Math.sin(Math.PI * landing) * 0.055;
+            a.obj.scale.set(
+              a.baseScale.x * (1 + squash),
+              a.baseScale.y * (1 - squash * 1.3),
+              a.baseScale.z * (1 + squash)
+            );
+          } else {
+            a.obj.scale.copy(a.baseScale).multiplyScalar(1 + arc * 0.025);
+          }
         } else {
-          a.obj.scale.copy(a.baseScale).multiplyScalar(1 + arc * 0.025);
+          // Caminho livre: deslocamento contínuo, sem salto, inclinação ou impacto.
+          a.obj.rotation.copy(a.baseRotation);
+          a.obj.scale.copy(a.baseScale);
         }
 
         if (k >= 1) {
