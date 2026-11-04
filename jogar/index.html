@@ -150,7 +150,7 @@
   </script>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app"><div id="board-2d" class="board-stage"></div><div id="board-3d" class="board-stage hidden"></div></div>
 
   <!-- ================= LOBBY ================= -->
   <div id="lobby" class="screen">
@@ -185,6 +185,23 @@
         <input id="nickname" type="text" maxlength="20" placeholder="Jogador" autocomplete="nickname" />
         <span id="net-status" class="fb-status" title="Status da conexão P2P">conectando P2P…</span>
       </div>
+
+  <section class="board-mode-picker" aria-labelledby="board-mode-label">
+    <div class="board-mode-picker-copy">
+      <strong id="board-mode-label">Visual do tabuleiro</strong>
+      <small>Escolha como prefere jogar</small>
+    </div>
+    <div class="board-mode-options" role="group" aria-label="Visual do tabuleiro">
+      <button class="board-mode-option active" type="button" data-board-mode="2d" aria-pressed="true">
+        <span class="board-mode-option-name">2D · Leve</span>
+        <span class="board-mode-option-description">Ideal para PCs modestos</span>
+      </button>
+      <button class="board-mode-option" type="button" data-board-mode="3d" aria-pressed="false">
+        <span class="board-mode-option-name">3D · Imersivo</span>
+        <span class="board-mode-option-description">Vista tridimensional e peças 3D</span>
+      </button>
+    </div>
+  </section>
 
       <nav class="tabs" role="tablist">
         <button class="tab active" data-tab="quick" type="button" role="tab">Partida rápida</button>
@@ -365,6 +382,10 @@
       </div>
 
       <div class="actions">
+      <div class="board-mode-switch" role="group" aria-label="Visual do tabuleiro">
+        <button class="board-mode-switch-btn" type="button" data-board-mode="2d" aria-label="Modo 2D" title="Modo 2D" aria-pressed="true">2D</button>
+        <button class="board-mode-switch-btn" type="button" data-board-mode="3d" aria-label="Modo 3D" title="Modo 3D" aria-pressed="false">3D</button>
+      </div>
         <button id="flip-btn" class="icon-btn" type="button" title="Girar tabuleiro" aria-label="Girar tabuleiro">&#8646;</button>
         <button id="settings-btn" class="icon-btn" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
         <button id="undo-btn" class="ghost hidden" type="button" title="Desfazer">&#8630;</button>
@@ -551,23 +572,14 @@
   <div id="load-error" hidden>
     <div>
       <h2>Não foi possível carregar o jogo</h2>
-      <p>Seu navegador precisa de JavaScript e WebGL habilitados. Ative a aceleração de hardware e recarregue a página.</p>
+      <p>Ative o JavaScript no navegador e recarregue a página para iniciar o jogo.</p>
     </div>
   </div>
 
   <script src="game-i18n.js" defer></script>
-  <script src="vendor/three.min.js" defer></script>
-  <script src="vendor/OrbitControls.js" defer></script>
   <script src="engine.js" defer></script>
   <script src="bot.js" defer></script>
-  <script src="board3d.js" defer></script>
+  <script src="board2d.js" defer></script>
   <script src="app.js" defer></script>
-  <script>
-    window.addEventListener('load', function () {
-      if (!window.THREE || !window.THREE.OrbitControls) {
-        document.getElementById('load-error').hidden = false;
-      }
-    });
-  </script>
 </body>
 </html>
