@@ -33,8 +33,29 @@ service cloud.firestore {
       allow update: if request.auth != null
         && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['avatarUrl', 'bio', 'updatedAt'])
+          .hasOnly(['username', 'avatarUrl', 'bio', 'updatedAt'])
         && request.resource.data.updatedAt is timestamp
+        && (!('username' in request.resource.data)
+          || (request.resource.data.username is string
+            && request.resource.data.username.matches('^[A-Za-z0-9_]{3,20}
+          || (request.resource.data.avatarUrl is string
+            && request.resource.data.avatarUrl.size() <= 500))
+        && (!('bio' in request.resource.data)
+          || (request.resource.data.bio is string
+            && request.resource.data.bio.size() <= 500));
+      allow delete: if false;
+    }
+
+    match /matches/{matchId} {
+      allow read: if request.auth != null
+        && request.auth.uid in resource.data.playerUids;
+      allow write: if false;
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}
+)))
         && (!('avatarUrl' in request.resource.data)
           || (request.resource.data.avatarUrl is string
             && request.resource.data.avatarUrl.size() <= 500))
