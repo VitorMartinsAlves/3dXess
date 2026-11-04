@@ -115,18 +115,23 @@ function validUsername(value) {
   return /^[a-zA-Z0-9_]{3,20}$/.test(value.trim());
 }
 
-function syncGameNickname(value) {
+function syncGameNickname(value, uid) {
   const nickname = String(value || "")
     .replace(/[\u0000-\u001f\u007f]/g, "")
     .trim()
     .slice(0, 20);
-  if (!nickname) return;
+  if (!nickname || !uid) return;
   try {
-    const key = "xadrez3.settings.v3";
-    const current = JSON.parse(localStorage.getItem(key) || "{}");
-    localStorage.setItem(key, JSON.stringify({ ...current, nickname }));
+    // Must match legacy/game/app.js exactly.
+    const settingsKey = "xadrez3d.settings.v3";
+    const current = JSON.parse(localStorage.getItem(settingsKey) || "{}");
+    localStorage.setItem(settingsKey, JSON.stringify({ ...current, nickname }));
+    localStorage.setItem("3dxess.account.session.v1", JSON.stringify({
+      uid,
+      username: nickname,
+    }));
   } catch {
-    // Account profile remains saved in Firestore even if local storage is unavailable.
+    // Firestore remains the source of truth if local storage is unavailable.
   }
 }
 
@@ -194,7 +199,7 @@ export function AccountPage({ locale = "pt-BR" }) {
         if (snapshot.exists()) {
           const nextProfile = snapshot.data();
           setProfile(nextProfile);
-          syncGameNickname(nextProfile.username);
+          syncGameNickname(nextProfile.username, nextUser.uid);
         } else setProfileMissing(true);
       } catch (loadError) {
         setError(readableError(loadError, t));
@@ -231,7 +236,7 @@ export function AccountPage({ locale = "pt-BR" }) {
     const snapshot = await getDoc(profileRef);
     if (!snapshot.exists()) throw new Error("O perfil não foi encontrado no Firestore após salvar.");
     setProfile(snapshot.data());
-    syncGameNickname(snapshot.data().username);
+    syncGameNickname(snapshot.data().username, targetUser.uid);
     setProfileMissing(false);
     setNotice(t.created);
   }
@@ -312,6 +317,7 @@ export function AccountPage({ locale = "pt-BR" }) {
     setBusy(true);
     try {
       await signOut(auth);
+      try { localStorage.removeItem("3dxess.account.session.v1"); } catch { /* ignore */ }
       setProfile(null);
       setLeaderboard([]);
       setNotice("");
