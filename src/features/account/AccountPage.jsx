@@ -7,7 +7,7 @@ import {
   signOut,
 } from "firebase/auth";
 import {
-  collection, doc, getDoc, getDocs, limit, orderBy, query, serverTimestamp, setDoc,
+  collection, doc, getDoc, getDocs, limit, orderBy, query, serverTimestamp, setDoc, updateDoc,
 } from "firebase/firestore";
 import { auth, db, firebaseConfigReady } from "../../shared/firebase/client.js";
 import "./account.css";
@@ -219,8 +219,17 @@ export function AccountPage({ locale = "pt-BR" }) {
 
   async function createProfile(targetUser, playerName) {
     const profileRef = doc(db, "users", targetUser.uid);
-    await setDoc(profileRef, initialProfile(playerName));
+    const existing = await getDoc(profileRef);
+    if (existing.exists()) {
+      await updateDoc(profileRef, {
+        username: playerName.trim(),
+        updatedAt: serverTimestamp(),
+      });
+    } else {
+      await setDoc(profileRef, initialProfile(playerName));
+    }
     const snapshot = await getDoc(profileRef);
+    if (!snapshot.exists()) throw new Error("O perfil não foi encontrado no Firestore após salvar.");
     setProfile(snapshot.data());
     syncGameNickname(snapshot.data().username);
     setProfileMissing(false);
