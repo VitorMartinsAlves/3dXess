@@ -2246,7 +2246,10 @@
 
     if (nextMode === '2d') {
       if (gameIsVisible() && activeBoardMode !== '2d') {
-        try { activateBoard('2d'); } catch (error) {
+        try {
+          activateBoard('2d');
+          resumeBotTurnAfterBoardSwitch();
+        } catch (error) {
           console.error('Board2D:', error);
           toast('Não foi possível iniciar o tabuleiro 2D.', 'error');
         }
@@ -2255,15 +2258,21 @@
     }
 
     return loadBoard3DAssets().then(function () {
-      if (settings.boardMode === '3d' && gameIsVisible()) activateBoard('3d');
+      if (settings.boardMode === '3d' && gameIsVisible() && activeBoardMode !== '3d') {
+        activateBoard('3d');
+        resumeBotTurnAfterBoardSwitch();
+      }
       return true;
     }).catch(function (error) {
       console.error('Board3D:', error);
       settings.boardMode = '2d';
       saveSettings();
       syncBoardModeControls();
-      if (gameIsVisible()) {
-        try { activateBoard('2d'); } catch (fallbackError) { console.error('Board2D:', fallbackError); }
+      if (gameIsVisible() && activeBoardMode !== '2d') {
+        try {
+          activateBoard('2d');
+          resumeBotTurnAfterBoardSwitch();
+        } catch (fallbackError) { console.error('Board2D:', fallbackError); }
       }
       toast('O modo 3D não está disponível neste navegador. O jogo continuará em 2D.', 'error', 6000);
       return false;
@@ -2549,6 +2558,26 @@
       window.clearTimeout(app.bot.pendingTimer);
       app.bot.pendingTimer = null;
     }
+  }
+
+  /*
+   * A troca de renderizador não deve deixar uma busca anterior pendurada.
+   * Invalida a resposta antiga, encerra o worker que pode estar ocupado e
+   * inicia uma busca nova usando o estado atual da partida.
+   */
+  function resumeBotTurnAfterBoardSwitch() {
+    if (app.mode !== 'bot' || !app.bot.active || app.game.status.over ||
+        app.game.state.turn !== app.bot.color) return;
+
+    cancelBotThinking();
+
+    const previousWorker = botWorker;
+    botWorker = null;
+    if (previousWorker && typeof previousWorker.terminate === 'function') {
+      previousWorker.terminate();
+    }
+    rejectBotPending(new Error('Busca reiniciada após trocar o modo do tabuleiro.'));
+    scheduleBotMove();
   }
 
   function scheduleBotMove() {
