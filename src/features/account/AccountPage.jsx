@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
@@ -139,6 +139,7 @@ function readableError(error, labels) {
     return labels.wrongCredentials;
   }
   if (code.includes("too-many-requests")) return "Muitas tentativas. Aguarde e tente novamente.";
+  if (code.includes("permission-denied")) return "O Firestore bloqueou esta operação. Publique as regras atualizadas do arquivo firestore.rules no Console do Firebase.";
   if (code.includes("operation-not-allowed")) return "Ative E-mail/senha em Authentication → Método de login no Firebase.";
   return error?.message || labels.genericError;
 }
@@ -159,6 +160,7 @@ const initialProfile = (username) => ({
 
 export function AccountPage({ locale = "pt-BR" }) {
   const t = text[locale] || text["pt-BR"];
+  const creatingProfileRef = useRef(false);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [profileMissing, setProfileMissing] = useState(false);
@@ -233,6 +235,7 @@ export function AccountPage({ locale = "pt-BR" }) {
     if (password.length < 8) return setError(t.passwordShort);
     if (password !== confirmPassword) return setError(t.passwordMismatch);
     setBusy(true);
+    creatingProfileRef.current = true;
     try {
       const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       await createProfile(credential.user, username);
@@ -242,6 +245,7 @@ export function AccountPage({ locale = "pt-BR" }) {
       if (auth.currentUser) setProfileMissing(true);
       setError(readableError(registerError, t));
     } finally {
+      creatingProfileRef.current = false;
       setBusy(false);
     }
   }
@@ -332,7 +336,7 @@ export function AccountPage({ locale = "pt-BR" }) {
         {error ? <p className="account-message is-error" role="alert">{error}</p> : null}
         {notice ? <p className="account-message is-success" role="status">{notice}</p> : null}
 
-        {user && profileMissing ? (
+        {user && profileMissing && !profile ? (
           <section className="account-panel">
             <h2>{t.profileTitle}</h2><p className="account-muted">{t.profileIntro}</p>
             <form className="account-form" onSubmit={finishProfile}>
