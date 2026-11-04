@@ -24,6 +24,7 @@ const exportsByPage = {
   challenges: "ChallengesPage",
   rules: "RulesPage",
   play: "PlayPage",
+  account: "AccountPage",
 };
 
 const pages = Object.fromEntries(
@@ -64,7 +65,7 @@ export default function App() {
 
   const content = (
     <ErrorBoundary key={`${route.locale}:${route.page}`}>
-      <Page />
+      <Page locale={route.locale} />
     </ErrorBoundary>
   );
 
