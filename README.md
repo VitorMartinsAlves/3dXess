@@ -70,7 +70,7 @@ Os testes usam o runner nativo do Node.js. O motor de xadrez é validado por cen
 
 ## Firebase e contas
 
-O 3dXess usa Firebase Authentication com e-mail/senha e Cloud Firestore para perfis/ranking. O nome de jogador é usado apenas para exibição no perfil e nas partidas. A recuperação de senha usa o e-mail automático do Firebase Authentication; não há TOTP, Cloudflare ou servidor próprio. Não há login Google nem exigência de verificação de e-mail.
+O 3dXess usa Firebase Authentication com e-mail/senha e Cloud Firestore para perfis/ranking. O nome de jogador é usado apenas para exibição no perfil e nas partidas. Ao entrar na conta, ele é sincronizado com o apelido local já utilizado pelo lobby P2P. A recuperação de senha usa o e-mail automático do Firebase Authentication; não há TOTP, Cloudflare ou servidor próprio. Não há login Google nem exigência de verificação de e-mail.
 
 Veja [FIREBASE_SETUP.md](FIREBASE_SETUP.md) para configurar Authentication, Firestore e as regras de segurança.
 
