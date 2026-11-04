@@ -23,4 +23,3 @@ export const db = firebaseApp ? getFirestore(firebaseApp) : null;
 export const realtimeDb = firebaseApp && firebaseConfig.databaseURL
   ? getDatabase(firebaseApp, firebaseConfig.databaseURL)
   : null;
-export const accountApiUrl = (import.meta.env.VITE_ACCOUNT_API_URL || "").replace(/\/$/, "");
