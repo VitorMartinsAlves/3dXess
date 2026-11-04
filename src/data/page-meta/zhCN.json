@@ -125,5 +125,21 @@
         "url": "https://github.com/VitorMartinsAlves"
       }
     }
+  },
+  "account": {
+    "title": "3dXess 账户 | 国际象棋等级分与排行榜",
+    "description": "创建 3dXess 账户，查看国际象棋等级分、等级、统计数据和全球排行榜.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "3dXess 账户 | 国际象棋等级分与排行榜",
+      "url": "https://vitormartinsalves.github.io/3dXess/zh-cn/account/",
+      "inLanguage": "zh-CN",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
   }
 }
