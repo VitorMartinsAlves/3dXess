@@ -1,0 +1,124 @@
+{
+  "home": {
+    "title": "Free Online 3D Chess | Play, Practice and Solve Challenges",
+    "description": "Play 3D chess online, train specific positions, and solve tactical challenges. Play against the bot or friends right in your browser.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/en/",
+      "inLanguage": "en",
+      "description": "Play 3D chess online, train specific positions, and solve tactical challenges. Play against the bot or friends right in your browser."
+    }
+  },
+  "about": {
+    "title": "About 3dXess | Independent 3D Chess Project",
+    "description": "Discover 3dXess, an independent 3D chess project with online games, a local bot, and browser-based training tools.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "About 3dXess | Independent 3D Chess Project",
+      "url": "https://vitormartinsalves.github.io/3dXess/en/about/",
+      "inLanguage": "en",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "learn": {
+    "title": "Learn Chess | Fundamentals, Tactics and Endgames | 3dXess",
+    "description": "Learn chess rules, king safety, tactics, strategy, and endgames through a practical learning path.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Learn Chess | Fundamentals, Tactics and Endgames | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/en/learn/",
+      "inLanguage": "en",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "practice": {
+    "title": "Chess Practice | Interactive 3D Scenarios | 3dXess",
+    "description": "Practice checkmate, queen capture, castling, and pawn promotion in interactive positions validated by the chess engine.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Chess Practice | Interactive 3D Scenarios | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/en/practice/",
+      "inLanguage": "en",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "challenges": {
+    "title": "Daily Chess Challenge | 3dXess",
+    "description": "Solve a daily chess challenge on a 3D board and track your local training streak.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Daily Chess Challenge | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/en/challenges/",
+      "inLanguage": "en",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "rules": {
+    "title": "Chess Rules | Piece Movement and Draws | 3dXess",
+    "description": "Review chess rules: piece movement, castling, en passant, promotion, checkmate, and draws.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Chess Rules | Piece Movement and Draws | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/en/rules/",
+      "inLanguage": "en",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "play": {
+    "title": "3D Chess Online — Play Chess in Your Browser",
+    "description": "Play 3D chess online in your browser. Play against the bot, invite friends, and practice chess positions without installing anything.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "3D Chess Online",
+      "url": "https://vitormartinsalves.github.io/3dXess/en/play/",
+      "description": "Play 3D chess online in your browser. Play against the bot, invite friends, and practice chess positions without installing anything.",
+      "applicationCategory": "GameApplication",
+      "applicationSubCategory": "Chess",
+      "operatingSystem": "Any modern browser",
+      "browserRequirements": "Requires JavaScript; WebGL is only needed for 3D mode.",
+      "inLanguage": "en",
+      "isAccessibleForFree": true,
+      "featureList": [
+        "Play against the bot",
+        "Online rooms with invite links",
+        "Local two-player mode",
+        "Chess clock and time controls",
+        "Works in modern desktop and mobile browsers"
+      ],
+      "image": "https://vitormartinsalves.github.io/3dXess/og-image.png",
+      "author": {
+        "@type": "Person",
+        "name": "Vitor Martins Alves",
+        "url": "https://github.com/VitorMartinsAlves"
+      }
+    }
+  }
+}

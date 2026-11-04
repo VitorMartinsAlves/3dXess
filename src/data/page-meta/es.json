@@ -1,0 +1,124 @@
+{
+  "home": {
+    "title": "Ajedrez 3D Gratis en Línea | Juega y Practica | 3dXess",
+    "description": "Juega ajedrez 3D en línea, entrena posiciones y resuelve desafíos tácticos. Contra el bot o amigos, desde el navegador.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/es/",
+      "inLanguage": "es",
+      "description": "Juega ajedrez 3D en línea, entrena posiciones y resuelve desafíos tácticos. Contra el bot o amigos, desde el navegador."
+    }
+  },
+  "about": {
+    "title": "Sobre 3dXess | Proyecto Independiente de Ajedrez 3D",
+    "description": "Conoce 3dXess: un proyecto independiente de ajedrez 3D con partidas en línea, bot local y herramientas de entrenamiento.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Sobre 3dXess | Proyecto Independiente de Ajedrez 3D",
+      "url": "https://vitormartinsalves.github.io/3dXess/es/acerca/",
+      "inLanguage": "es",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "learn": {
+    "title": "Aprender Ajedrez | Fundamentos, Táctica y Finales | 3dXess",
+    "description": "Aprende las reglas del ajedrez, seguridad del rey, táctica, estrategia y finales con una ruta práctica.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Aprender Ajedrez | Fundamentos, Táctica y Finales | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/es/aprender/",
+      "inLanguage": "es",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "practice": {
+    "title": "Practicar Ajedrez | Escenarios Interactivos 3D | 3dXess",
+    "description": "Practica jaque mate, captura de dama, enroque y promoción en posiciones interactivas validadas por el motor.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Practicar Ajedrez | Escenarios Interactivos 3D | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/es/practica/",
+      "inLanguage": "es",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "challenges": {
+    "title": "Desafío Diario de Ajedrez | 3dXess",
+    "description": "Resuelve un desafío diario de ajedrez en un tablero 3D y sigue tu racha local de entrenamiento.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Desafío Diario de Ajedrez | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/es/desafios/",
+      "inLanguage": "es",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "rules": {
+    "title": "Reglas del Ajedrez | Movimientos y Tablas | 3dXess",
+    "description": "Consulta las reglas del ajedrez: movimientos, enroque, captura al paso, promoción, jaque mate y tablas.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Reglas del Ajedrez | Movimientos y Tablas | 3dXess",
+      "url": "https://vitormartinsalves.github.io/3dXess/es/reglas/",
+      "inLanguage": "es",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "3dXess",
+        "url": "https://vitormartinsalves.github.io/3dXess/"
+      }
+    }
+  },
+  "play": {
+    "title": "Ajedrez 3D Online — Juega en tu navegador",
+    "description": "Juega ajedrez 3D en línea desde tu navegador. Juega contra el bot, invita a tus amigos y practica posiciones sin instalar nada.",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Ajedrez 3D en línea",
+      "url": "https://vitormartinsalves.github.io/3dXess/es/jugar/",
+      "description": "Juega ajedrez 3D en línea desde tu navegador. Juega contra el bot, invita a tus amigos y practica posiciones sin instalar nada.",
+      "applicationCategory": "GameApplication",
+      "applicationSubCategory": "Ajedrez",
+      "operatingSystem": "Any modern browser",
+      "browserRequirements": "Requires JavaScript; WebGL is only needed for 3D mode.",
+      "inLanguage": "es",
+      "isAccessibleForFree": true,
+      "featureList": [
+        "Jugar contra el bot",
+        "Salas en línea con enlaces de invitación",
+        "Modo local para dos jugadores",
+        "Reloj de ajedrez y controles de tiempo",
+        "Compatible con navegadores modernos de escritorio y móvil"
+      ],
+      "image": "https://vitormartinsalves.github.io/3dXess/og-image.png",
+      "author": {
+        "@type": "Person",
+        "name": "Vitor Martins Alves",
+        "url": "https://github.com/VitorMartinsAlves"
+      }
+    }
+  }
+}

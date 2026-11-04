@@ -18,7 +18,12 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.12.0
 
-      - name: Executar testes do motor
-        run: npm test
+      - name: Instalar dependências
+        run: npm install --no-audit --no-fund
+
+      - name: Testes e build
+        run: |
+          npm test
+          npm run build
