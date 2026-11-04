@@ -1,5 +1,47 @@
 import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db, firebaseConfigReady } from "../../../shared/firebase/client.js";
 import { loadLegacyScripts } from "../../../shared/lib/legacyScriptLoader.js";
+
+const GAME_SETTINGS_KEY = "xadrez3d.settings.v3";
+const ACCOUNT_SESSION_KEY = "3dxess.account.session.v1";
+
+function hasCachedAccountIdentity() {
+  try {
+    const value = JSON.parse(localStorage.getItem(ACCOUNT_SESSION_KEY) || "null");
+    return Boolean(value?.uid && value?.username);
+  } catch {
+    return false;
+  }
+}
+
+function clearCachedAccountIdentity() {
+  try {
+    localStorage.removeItem(ACCOUNT_SESSION_KEY);
+  } catch {
+    // The game can still run as a guest if storage is unavailable.
+  }
+}
+
+function cacheAccountIdentity(uid, value) {
+  const username = String(value || "")
+    .replace(/[\\u0000-\\u001f\\u007f]/g, "")
+    .trim()
+    .slice(0, 20);
+  if (!uid || !username) {
+    clearCachedAccountIdentity();
+    return;
+  }
+
+  try {
+    const settings = JSON.parse(localStorage.getItem(GAME_SETTINGS_KEY) || "{}");
+    localStorage.setItem(GAME_SETTINGS_KEY, JSON.stringify({ ...settings, nickname: username }));
+    localStorage.setItem(ACCOUNT_SESSION_KEY, JSON.stringify({ uid, username }));
+  } catch {
+    // Firestore remains the source of truth if storage is unavailable.
+  }
+}
 
 const GAME_SCRIPTS = [
   "legacy/game/game-i18n.js",
@@ -83,20 +125,61 @@ export function GameRuntime({ children }) {
   }, []);
 
   // The legacy controller queries the DOM by ID, so load it only after React
-  // has committed the game markup to the document.
+  // has committed the game markup and the saved Firebase player name is synced.
   useEffect(() => {
     if (!stylesReady || error) return undefined;
     let active = true;
+    let started = false;
+    let unsubscribe = null;
 
-    loadLegacyScripts(GAME_SCRIPTS).catch((loadError) => {
-      console.error("Falha ao carregar módulos do jogo:", loadError);
-      if (active) {
-        setError(loadError.message || "Falha ao carregar o jogo.");
-      }
-    });
+    const loadGame = () => {
+      if (!active || started) return;
+      started = true;
+      loadLegacyScripts(GAME_SCRIPTS).catch((loadError) => {
+        console.error("Falha ao carregar módulos do jogo:", loadError);
+        if (active) {
+          setError(loadError.message || "Falha ao carregar o jogo.");
+        }
+      });
+    };
+
+    // Existing sessions are cached locally, so don't delay the lobby.
+    if (hasCachedAccountIdentity() || !firebaseConfigReady || !auth || !db) {
+      loadGame();
+    } else {
+      unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (!active || started) return;
+        if (unsubscribe) unsubscribe();
+        unsubscribe = null;
+
+        const syncAndLoad = async () => {
+          if (!user) {
+            clearCachedAccountIdentity();
+            return;
+          }
+
+          try {
+            const snapshot = await getDoc(doc(db, "users", user.uid));
+            if (snapshot.exists()) {
+              cacheAccountIdentity(user.uid, snapshot.data().username);
+            } else {
+              clearCachedAccountIdentity();
+            }
+          } catch (syncError) {
+            console.warn("Não foi possível sincronizar o nome da conta:", syncError);
+          }
+        };
+
+        syncAndLoad().finally(loadGame);
+      }, (authError) => {
+        console.warn("Não foi possível restaurar a sessão Firebase:", authError);
+        loadGame();
+      });
+    }
 
     return () => {
       active = false;
+      if (unsubscribe) unsubscribe();
     };
   }, [stylesReady, error]);
 
