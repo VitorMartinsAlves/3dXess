@@ -59,7 +59,7 @@ O modo online continua dependendo de WebRTC e de relays públicos do Trystero. O
 
 ## GitHub Pages
 
-O workflow .github/workflows/pages.yml executa os testes, gera o bundle de produção e prepara os arquivos estáticos das 28 rotas. Em Settings → Pages, selecione GitHub Actions como fonte de publicação.
+O workflow .github/workflows/pages.yml executa os testes, gera o bundle de produção e publica o artefato pelo GitHub Actions. Como compatibilidade com repositórios que ainda estão configurados para publicar a branch main, ele também espelha o build estático gerado na raiz da branch. Em Settings → Pages, a configuração recomendada continua sendo GitHub Actions como fonte de publicação.
 
 O build usa a base /3dXess/, gera index.html em cada rota localizada e mantém canonical, hreflang, Open Graph, Twitter Cards e JSON-LD específicos por página.
 
