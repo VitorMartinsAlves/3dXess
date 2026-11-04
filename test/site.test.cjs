@@ -29,7 +29,7 @@ function readRoute(route) {
   throw new Error('Rota não encontrada: ' + route);
 }
 
-test('all 28 localized routes are represented by React page components and metadata', () => {
+test('all 32 localized routes are represented by React page components and metadata', () => {
   for (const [locale, pages] of Object.entries(locales)) {
     const source = fs.readFileSync(componentFile(locale), 'utf8');
     for (const [page, route] of Object.entries(pages)) {
