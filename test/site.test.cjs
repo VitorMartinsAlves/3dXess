@@ -8,7 +8,7 @@ const vm = require('node:vm');
 const BASE = 'https://vitormartinsalves.github.io/3dXess/';
 const localeDirs = { 'pt-BR': 'ptBR', en: 'en', es: 'es', 'zh-CN': 'zhCN' };
 const locales = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'site-routes.json'), 'utf8'));
-const pageNames = { home: 'HomePage', about: 'AboutPage', learn: 'LearnPage', practice: 'PracticePage', challenges: 'ChallengesPage', rules: 'RulesPage', play: 'PlayPage' };
+const pageNames = { home: 'HomePage', about: 'AboutPage', learn: 'LearnPage', practice: 'PracticePage', challenges: 'ChallengesPage', rules: 'RulesPage', play: 'PlayPage', account: 'AccountPage' };
 const pageMeta = Object.fromEntries(Object.entries(localeDirs).map(([locale, dir]) => [
   locale,
   JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'src', 'data', 'page-meta', dir + '.json'), 'utf8'))
@@ -33,7 +33,8 @@ test('all 28 localized routes are represented by React page components and metad
   for (const [locale, pages] of Object.entries(locales)) {
     const source = fs.readFileSync(componentFile(locale), 'utf8');
     for (const [page, route] of Object.entries(pages)) {
-      assert.ok(source.includes('function ' + pageNames[page] + '()'), locale + '/' + page + ' component missing');
+      if (page === 'account') assert.ok(source.includes('export { AccountPage }'), locale + '/account export missing');
+      else assert.ok(source.includes('function ' + pageNames[page] + '()'), locale + '/' + page + ' component missing');
       assert.ok(pageMeta[locale][page]?.title, locale + '/' + page + ' title missing');
       assert.ok(pageMeta[locale][page]?.description, locale + '/' + page + ' description missing');
       assert.ok(route !== undefined, locale + '/' + page + ' route missing');
@@ -51,7 +52,7 @@ test('SEO manager creates canonical, Open Graph, Twitter and hreflang metadata',
 test('sitemap contains all 28 localized routes and resolves against the route registry', () => {
   const sitemap = fs.readFileSync(path.join(__dirname, '..', 'public', 'sitemap.xml'), 'utf8');
   const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
-  assert.equal(locations.length, 28);
+  assert.equal(locations.length, 32);
   for (const [locale, pages] of Object.entries(locales)) {
     for (const route of Object.values(pages)) {
       assert.ok(locations.includes(BASE + route), 'sitemap missing ' + locale + ': ' + route);
@@ -74,7 +75,8 @@ test('localized pages contain readable React markup without serialized object la
     const source = fs.readFileSync(componentFile(locale), 'utf8');
     assert.doesNotMatch(source, /\[object Object\]/, locale + ' contains an unserialized object label');
     assert.match(source, /site-card|site-hero|site-section/, locale + ' public page content missing');
-    assert.equal(Object.keys(pages).length, 7);
+    assert.equal(Object.keys(pages).length, 8);
+    assert.ok(source.includes('export { AccountPage }'), locale + ' account page export missing');
   }
 });
 
@@ -380,4 +382,45 @@ test('game waits for its stylesheet before mounting the lobby markup', () => {
       runtime.indexOf("loadLegacyScripts(GAME_SCRIPTS)"),
     "game stylesheet must load before legacy scripts",
   );
+});
+
+
+test('Firebase account page exposes email/password, username login, TOTP recovery and leaderboard', () => {
+  const account = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'account', 'AccountPage.jsx'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'App.jsx'), 'utf8');
+  assert.match(app, /account: "AccountPage"/);
+  for (const required of [
+    'createUserWithEmailAndPassword',
+    'signInWithEmailAndPassword',
+    'signInWithCustomToken',
+    'totp/enroll',
+    'totp/confirm',
+    'auth/recover',
+    'orderBy("rating"',
+  ]) assert.ok(account.includes(required), 'account integration missing ' + required);
+  for (const [locale, pages] of Object.entries(locales)) {
+    assert.ok(pages.account, locale + ' account route missing');
+    assert.ok(pageMeta[locale].account?.title, locale + ' account SEO metadata missing');
+  }
+});
+
+test('Firebase private indexes and TOTP data are denied to browser clients', () => {
+  const rules = fs.readFileSync(path.join(__dirname, '..', 'firestore.rules'), 'utf8');
+  for (const name of ['usernameIndex', 'emailIndex', 'privateUsers', 'totpSecrets']) {
+    assert.ok(rules.includes('match /' + name), name + ' rule missing');
+  }
+  assert.match(rules, /match \/\{document=\*\*\} \{ allow read, write: if false; \}/);
+  const firebaseClient = fs.readFileSync(path.join(__dirname, '..', 'src', 'shared', 'firebase', 'client.js'), 'utf8');
+  assert.match(firebaseClient, /VITE_FIREBASE_API_KEY/);
+  assert.doesNotMatch(firebaseClient, /private_key|service_account/i);
+});
+
+test('Cloudflare account Worker uses Firestore and does not configure D1', () => {
+  const worker = fs.readFileSync(path.join(__dirname, '..', 'cloudflare', 'worker', 'src', 'index.js'), 'utf8');
+  const config = fs.readFileSync(path.join(__dirname, '..', 'cloudflare', 'worker', 'wrangler.toml'), 'utf8');
+  assert.match(worker, /firestore\.googleapis\.com/);
+  assert.match(worker, /TOTP_ENCRYPTION_KEY/);
+  assert.match(worker, /AES-GCM/);
+  assert.match(worker, /auth\/recover/);
+  assert.doesNotMatch(config, /\[\[d1_databases\]\]|database_id/);
 });
