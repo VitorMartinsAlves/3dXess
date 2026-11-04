@@ -353,6 +353,34 @@ test('switching board renderers restarts an in-flight bot turn', () => {
   assert.match(app, /activateBoard\('3d'\);\s*resumeBotTurnAfterBoardSwitch\(\)/);
 });
 
+test('bot workers are isolated per move and always terminate after a response', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const start = app.indexOf('function ensureBotWorker()');
+  const end = app.indexOf('function requestBotMove', start);
+  const workerFactory = app.slice(start, end);
+  assert.match(workerFactory, /new Worker\(new URL\('bot-worker\.js', document\.baseURI\)\.href\)/);
+  assert.doesNotMatch(workerFactory, /if \(botWorker\) return botWorker/);
+  assert.match(workerFactory, /worker\.onmessage = function/);
+  assert.match(workerFactory, /worker\.terminate\(\)/);
+  assert.match(workerFactory, /worker\.onerror = function/);
+  assert.match(workerFactory, /worker\.onmessageerror = function/);
+  assert.match(app, /function stopBotWorker\(error\)/);
+});
+
+test('stalled bot searches restart without requiring a board-mode change', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  assert.match(app, /watchdogTimer: null/);
+  assert.match(app, /Math\.max\(6500, budget \+ 5500\)/);
+  assert.match(app, /if \(forceMainThread\)/);
+  assert.match(app, /scheduleBotMove\(true\)/);
+  assert.match(app, /stopBotWorker\(new Error\('Busca do bot cancelada\.'\)\)/);
+
+  const commitStart = app.indexOf('function commitLocal(mv)');
+  const commitEnd = app.indexOf('function undoBotMove()', commitStart);
+  const commit = app.slice(commitStart, commitEnd);
+  assert.ok(commit.indexOf('botAfterMove(prevState.turn)') < commit.indexOf('announceMove('));
+});
+
 test('bot worker failures and timeouts release the worker and scheduler', () => {
   const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
   assert.match(app, /botWorker\.onmessageerror/);
