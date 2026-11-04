@@ -28,13 +28,15 @@ Cada idioma tem URLs próprias, HTML independente e conteúdo no idioma correspo
 - O motor de xadrez valida as jogadas dos exercícios. O progresso usa armazenamento local e não é apresentado como ranking global.
 - O modo de jogo fica em uma rota dedicada; a home funciona como portal de jogo e aprendizado.
 
-## Search Console
+## Search Console e SEO internacional
 
-1. Adicione a propriedade de prefixo de URL: `https://vitormartinsalves.github.io/3dXess/`.
-2. Faça a verificação por HTML tag ou arquivo de verificação. Isso exige acesso à conta do Google.
-3. Envie `sitemap.xml`.
-4. Use a inspeção de URL para solicitar rastreamento da home, das páginas de prática e do jogo.
-5. Confira cobertura, páginas duplicadas/canônicas e relatórios de experiência.
+1. Adicione uma única propriedade de prefixo de URL: `https://vitormartinsalves.github.io/3dXess/`. Ela cobre os quatro idiomas e todas as rotas abaixo desse caminho.
+2. Verifique a propriedade por meta tag ou arquivo HTML. Essa etapa exige acesso à conta Google do proprietário.
+3. Envie `https://vitormartinsalves.github.io/3dXess/sitemap.xml`. O sitemap contém as 28 URLs e as variantes `hreflang`; não é necessário criar um sitemap separado por idioma.
+4. Na Inspeção de URL, teste pelo menos as quatro páginas iniciais (`/`, `/en/`, `/es/` e `/zh-cn/`) e uma rota de jogo. Confira se cada URL está acessível, se a canônica selecionada é a própria versão e se não há bloqueio de indexação.
+5. Depois do rastreamento, use o relatório de desempenho com filtros de página (`/en/`, `/es/`, `/zh-cn/`) e país para comparar impressões, cliques e consultas de cada idioma.
+
+O envio do sitemap é uma indicação de rastreamento, não uma garantia de indexação ou posicionamento. A indexação depende da avaliação do Google e pode levar dias ou semanas. Evite pedir indexação repetidamente para a mesma URL; use o sitemap para descoberta em lote e a inspeção para poucas páginas prioritárias.
 
 Também é possível cadastrar o site no [Bing Webmaster Tools](https://www.bing.com/webmasters).
 
