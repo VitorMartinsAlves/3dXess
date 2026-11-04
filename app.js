@@ -2675,7 +2675,7 @@
         const result = window.Bot.chooseMove(state, {
           level: level,
           style: app.bot.style,
-          timeMs: Math.min(budget, 800),
+          timeMs: Math.min(budget, 900),
         });
         if (!result) throw new Error('Sem lance.');
         applyResult(result);
@@ -2694,9 +2694,12 @@
     Promise.resolve()
       .then(function () {
         const options = { level: level, style: app.bot.style, timeMs: budget };
-        if (forceMainThread) {
+        // O renderizador 2D usa o motor local diretamente. Isso remove a
+        // dependência de Worker nas partidas 2D, que era o caminho que ficava
+        // sem resposta. O limite evita bloquear a interface por muito tempo.
+        if (forceMainThread || activeBoardMode === '2d') {
           return window.Bot.chooseMove(state, Object.assign({}, options, {
-            timeMs: Math.min(budget, 800),
+            timeMs: Math.min(budget, 900),
           }));
         }
         return requestBotMove(state, options);
