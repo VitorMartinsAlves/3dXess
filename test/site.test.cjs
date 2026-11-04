@@ -365,6 +365,16 @@ test('bot workers are isolated per move and always terminate after a response', 
   assert.match(app, /function stopBotWorker\(error\)/);
 });
 
+test('2D bot turns bypass workers and use a bounded local calculation', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const start = app.indexOf('function scheduleBotMove');
+  const end = app.indexOf('function botAfterMove', start);
+  const scheduler = app.slice(start, end);
+  assert.match(scheduler, /forceMainThread \|\| activeBoardMode === '2d'/);
+  assert.match(scheduler, /timeMs: Math\.min\(budget, 900\)/);
+  assert.match(scheduler, /return requestBotMove\(state, options\)/);
+});
+
 test('stalled bot searches restart without requiring a board-mode change', () => {
   const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
   assert.match(app, /watchdogTimer: null/);
