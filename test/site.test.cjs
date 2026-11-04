@@ -377,6 +377,11 @@ test('game waits for its stylesheet before mounting the lobby markup', () => {
   assert.match(runtime, /if \(!stylesReady\) return <GameLoadingScreen error=\{error\} \/>;/);
   assert.match(runtime, /if \(!stylesReady \|\| error\) return undefined;/);
   assert.match(runtime, /loadLegacyScripts\(GAME_SCRIPTS\)/);
+  assert.match(runtime, /onAuthStateChanged\(auth/);
+  assert.match(runtime, /getDoc\(doc\(db, "users", user\.uid\)\)/);
+  assert.match(runtime, /cacheAccountIdentity\(user\.uid, snapshot\.data\(\)\.username\)/);
+  assert.match(runtime, /xadrez3d\.settings\.v3/);
+  assert.match(runtime, /3dxess\.account\.session\.v1/);
   assert.ok(
     runtime.indexOf('import("../../../styles/game.css")') <
       runtime.indexOf("loadLegacyScripts(GAME_SCRIPTS)"),
