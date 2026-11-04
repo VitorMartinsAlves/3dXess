@@ -62,10 +62,10 @@
   };
   const dict = dictionaries[lang] || {};
   const routes = {
-    "pt-BR": { home:"/", play:"/jogar/" },
-    en: { home:"/en/", play:"/en/play/" },
-    es: { home:"/es/", play:"/es/jugar/" },
-    "zh-CN": { home:"/zh-cn/", play:"/zh-cn/play/" }
+    "pt-BR": { home:"/3dXess/", play:"/3dXess/jogar/" },
+    en: { home:"/3dXess/en/", play:"/3dXess/en/play/" },
+    es: { home:"/3dXess/es/", play:"/3dXess/es/jugar/" },
+    "zh-CN": { home:"/3dXess/zh-cn/", play:"/3dXess/zh-cn/play/" }
   };
   function translateText(root) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
