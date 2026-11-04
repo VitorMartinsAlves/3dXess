@@ -172,7 +172,7 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
 .site-banner {
   display: flex; justify-content: space-between; align-items: center; gap: 24px;
   padding: clamp(26px, 4vw, 42px); border: 1px solid rgba(110,231,183,.22);
-  border-radius: 23px; background: radial-gradient(circle at 80% 0%, rgba(214,179,106,.12), transparent 28rem), #121a20;
+  border-radius: 23px; background: radial-gradient(circle at 80% 0%, rgba(110,231,183,.10), transparent 28rem), #121a20;
 }
 .site-banner h2 { margin: 0; font-size: clamp(24px, 3vw, 34px); letter-spacing: -.04em; line-height: 1.1; }
 .site-banner p { max-width: 630px; margin: 9px 0 0; color: var(--site-muted); font-size: 14px; }
