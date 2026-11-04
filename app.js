@@ -212,8 +212,16 @@
       };
       botWorker.onerror = function () {
         botWorkerBroken = true;
+        const failedWorker = botWorker;
         botWorker = null;
+        if (failedWorker && typeof failedWorker.terminate === 'function') failedWorker.terminate();
         rejectBotPending(new Error('Falha ao iniciar o worker do bot.'));
+      };
+      botWorker.onmessageerror = function () {
+        const failedWorker = botWorker;
+        botWorker = null;
+        if (failedWorker && typeof failedWorker.terminate === 'function') failedWorker.terminate();
+        rejectBotPending(new Error('Falha ao ler a resposta do bot.'));
       };
     } catch (e) {
       botWorkerBroken = true;
@@ -227,15 +235,26 @@
   function requestBotMove(state, options) {
     const fen = C.stateToFen(state);
     const worker = ensureBotWorker();
-    if (!worker) return Promise.resolve(window.Bot.chooseMove(state, options));
+    if (!worker) {
+      // Deixa a execução assíncrona para que erros síncronos caiam no catch do scheduler.
+      return Promise.resolve().then(function () {
+        return window.Bot.chooseMove(state, options);
+      });
+    }
 
     return new Promise(function (resolve, reject) {
       const id = ++botWorkerSeq;
       const budget = Math.max(300, Number(options.timeMs) || 1000);
       const timeout = window.setTimeout(function () {
         botPending.delete(id);
+        // Um worker que excede o prazo continua consumindo CPU. Encerra-o
+        // antes do fallback para impedir que a busca antiga bloqueie a próxima.
+        if (botWorker === worker) {
+          botWorker = null;
+          if (typeof worker.terminate === 'function') worker.terminate();
+        }
         reject(new Error('Tempo esgotado no bot.'));
-      }, budget + 6000);
+      }, budget + 3500);
 
       botPending.set(id, { resolve: resolve, reject: reject, timeout: timeout });
       try {
@@ -2601,7 +2620,10 @@
       }
     }
 
-    requestBotMove(state, { level: level, style: app.bot.style, timeMs: budget })
+    Promise.resolve()
+      .then(function () {
+        return requestBotMove(state, { level: level, style: app.bot.style, timeMs: budget });
+      })
       .then(applyResult)
       .catch(function (err) {
         if (requestId !== app.bot.requestSeq) return;
