@@ -257,3 +257,16 @@ test('2D renderer animates legal moves, captures and castling without a permanen
   assert.match(renderer, /prefers-reduced-motion/);
   assert.doesNotMatch(renderer, /requestAnimationFrame/);
 });
+
+
+test('2D move animation uses the new destination piece and a board-relative motion overlay', () => {
+  const renderer = fs.readFileSync(path.join(__dirname, '..', 'board2d.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
+  assert.match(renderer, /function animateLastMove\(previousBoard, move, nextBoard\)/);
+  assert.match(renderer, /movingPiece \|\| destinationPiece/);
+  assert.match(renderer, /motionLayer\.getBoundingClientRect\(\)/);
+  assert.match(renderer, /destination\.classList\.add\('is-animating-arrival'\)/);
+  assert.match(renderer, /options\.animate && boardChanged/);
+  assert.match(styles, /\.board2d-square\.is-animating-arrival\s*>\s*\.board2d-piece\s*\{\s*opacity:\s*0/);
+  assert.doesNotMatch(renderer, /typeof Element === 'undefined'/);
+});
