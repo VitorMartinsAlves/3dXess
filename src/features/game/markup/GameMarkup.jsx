@@ -27,7 +27,7 @@ export function GameLobby() { return (<div id="lobby" className="screen">
         <a className="game-nav-link" data-game-route="learn" href="/3dXess/aprender/">Aprender</a>
         <a className="game-nav-link" data-game-route="practice" href="/3dXess/praticar/">Praticar</a>
         <a className="game-nav-link" data-game-route="challenges" href="/3dXess/desafios/">Desafios</a>
-        <a className="game-nav-link" data-game-route="account" href="/3dXess/conta/">Conta</a>
+        <a className="game-nav-link" data-game-route="account" href="/3dXess/conta/" target="_blank" rel="noopener noreferrer" aria-label="Abrir a conta em uma nova aba">Conta</a>
       </nav>
 
       <div className="live-stats" id="live-stats" aria-label="Atividade agora no site">

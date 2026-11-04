@@ -10,7 +10,7 @@ const languageOptions = [
   ["es", "ES · Español"],
   ["zh-CN", "中文 · 简体"],
 ];
-const primaryNavigation = ["home", "play", "learn", "practice"];
+const primaryNavigation = ["home", "learn", "practice", "challenges", "play"];
 
 export function SiteHeader({ locale, page }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -53,11 +53,13 @@ export function SiteHeader({ locale, page }) {
         <nav className={`site-nav${menuOpen ? " is-open" : ""}`} id="site-navigation" aria-label={t("navLabel")}>
           {primaryNavigation.map((item) => (
             <a key={item} href={routeHref(locale, item)}
+              className={item === "play" ? "site-nav-play" : undefined}
               aria-current={page === item ? "page" : undefined}
               onClick={() => setMenuOpen(false)}>{t(item)}</a>
           ))}
           <div className="site-nav-mobile-tools">
-            <a href={routeHref(locale, "account")} aria-current={page === "account" ? "page" : undefined}>{t("account")}</a>
+            <a href={routeHref(locale, "account")} aria-current={page === "account" ? "page" : undefined}
+              onClick={() => setMenuOpen(false)}>{t("account")}</a>
             <label className="site-mobile-language"><span>{t("language")}</span>
               <select className="site-language" aria-label={t("language")} value={locale} onChange={onLanguageChange}>
                 {languageOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
