@@ -252,7 +252,7 @@ test('2D renderer animates legal moves, captures and castling without a permanen
   assert.match(renderer, /function animateCapture/);
   assert.match(renderer, /Element\.prototype\.animate/);
   assert.match(renderer, /move\.castle/);
-  assert.match(renderer, /move\.enPassant/);
+  assert.match(renderer, /lastMove\.enPassant/);
   assert.match(renderer, /options\.animate && boardChanged/);
   assert.match(renderer, /prefers-reduced-motion/);
   assert.doesNotMatch(renderer, /requestAnimationFrame/);
