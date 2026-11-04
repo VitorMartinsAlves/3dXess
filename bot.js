@@ -7,6 +7,7 @@
 
   const MATE = 1000000;
   const INF = 1000000000;
+  const MAX_QUIESCENCE_CHECK_EXTENSION = 8;
   const PIECE_VALUE = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
 
   /* Níveis: profundidade, tempo de busca, chance de lance aleatório,
@@ -599,7 +600,7 @@
 
   function quiesce(st, alpha, beta, ply, ctx) {
     ctx.nodes += 1;
-    if ((ctx.nodes & 1023) === 0 && Date.now() > ctx.deadline) {
+    if ((ctx.nodes & 127) === 0 && Date.now() > ctx.deadline) {
       ctx.aborted = true;
       return 0;
     }
@@ -616,6 +617,24 @@
       if (stand >= beta) return beta;
       if (stand > alpha) alpha = stand;
       if (ply >= ctx.quiescencePly) return alpha;
+    }
+
+    /*
+     * Evita uma extensão ilimitada em sequências de xeques/perpétuos.
+     * No limite, um lado em xeque ainda escolhe entre todas as evasões
+     * legais, mas avalia a posição resultante sem continuar a recursão.
+     */
+    const hardPlyLimit = ctx.quiescencePly + MAX_QUIESCENCE_CHECK_EXTENSION;
+    if (inCheck && ply >= hardPlyLimit) {
+      let best = -INF;
+      for (let i = 0; i < all.length; i++) {
+        const mv = all[i];
+        const undo = makeMove(st, mv);
+        const score = -evaluate(st, ctx);
+        unmakeMove(st, mv, undo);
+        if (score > best) best = score;
+      }
+      return best;
     }
 
     const moves = [];
