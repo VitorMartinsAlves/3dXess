@@ -115,6 +115,21 @@ function validUsername(value) {
   return /^[a-zA-Z0-9_]{3,20}$/.test(value.trim());
 }
 
+function syncGameNickname(value) {
+  const nickname = String(value || "")
+    .replace(/[\\u0000-\\u001f\\u007f]/g, "")
+    .trim()
+    .slice(0, 20);
+  if (!nickname) return;
+  try {
+    const key = "xadrez3.settings.v3";
+    const current = JSON.parse(localStorage.getItem(key) || "{}");
+    localStorage.setItem(key, JSON.stringify({ ...current, nickname }));
+  } catch {
+    // Account profile remains saved in Firestore even if local storage is unavailable.
+  }
+}
+
 function readableError(error, labels) {
   const code = error?.code || "";
   if (code.includes("email-already-in-use")) return "Este e-mail já está cadastrado.";
@@ -174,8 +189,11 @@ export function AccountPage({ locale = "pt-BR" }) {
       }
       try {
         const snapshot = await getDoc(doc(db, "users", nextUser.uid));
-        if (snapshot.exists()) setProfile(snapshot.data());
-        else setProfileMissing(true);
+        if (snapshot.exists()) {
+          const nextProfile = snapshot.data();
+          setProfile(nextProfile);
+          syncGameNickname(nextProfile.username);
+        } else setProfileMissing(true);
       } catch (loadError) {
         setError(readableError(loadError, t));
       } finally {
@@ -202,6 +220,7 @@ export function AccountPage({ locale = "pt-BR" }) {
     await setDoc(profileRef, initialProfile(playerName));
     const snapshot = await getDoc(profileRef);
     setProfile(snapshot.data());
+    syncGameNickname(snapshot.data().username);
     setProfileMissing(false);
     setNotice(t.created);
   }
