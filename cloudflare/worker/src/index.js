@@ -420,7 +420,6 @@ async function recoverPassword(request, env) {
   if (matchedCounter === null || matchedCounter <= Number(record.lastCounter ?? -1)) {
     return reply({ error: "Identificador ou código inválido." }, 400);
   }
-  await patchDoc(env, "totpSecrets/" + uid, { lastCounter: matchedCounter, lastRecoveryAt: new Date().toISOString() });
   const token = await customToken(uid, env);
   const session = await identity(env, "accounts:signInWithCustomToken", {
     token: token,
@@ -431,6 +430,7 @@ async function recoverPassword(request, env) {
     password: newPassword,
     returnSecureToken: true,
   });
+  await patchDoc(env, "totpSecrets/" + uid, { lastCounter: matchedCounter, lastRecoveryAt: new Date().toISOString() });
   return reply({ success: true }, 200);
 }
 function corsHeaders(request, env) {
