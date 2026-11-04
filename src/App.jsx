@@ -1,16 +1,21 @@
-import { lazy, Suspense, useLayoutEffect } from "react";
+import { useLayoutEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { resolveRoute } from "./app/routes.js";
+import * as ptBR from "./pages/locales/ptBR.jsx";
+import * as en from "./pages/locales/en.jsx";
+import * as es from "./pages/locales/es.jsx";
+import * as zhCN from "./pages/locales/zhCN.jsx";
 import { SeoManager } from "./components/seo/SeoManager.jsx";
 import { SiteLayout } from "./components/layout/SiteLayout.jsx";
 import { ErrorBoundary } from "./components/feedback/ErrorBoundary.jsx";
 
-const localeLoaders = {
-  "pt-BR": () => import("./pages/locales/ptBR.jsx"),
-  en: () => import("./pages/locales/en.jsx"),
-  es: () => import("./pages/locales/es.jsx"),
-  "zh-CN": () => import("./pages/locales/zhCN.jsx"),
+const localeModules = {
+  "pt-BR": ptBR,
+  en,
+  es,
+  "zh-CN": zhCN,
 };
+
 const exportsByPage = {
   home: "HomePage",
   about: "AboutPage",
@@ -21,22 +26,15 @@ const exportsByPage = {
   play: "PlayPage",
 };
 
-function createPage(locale, page) {
-  const loadLocale = localeLoaders[locale];
-  const exportName = exportsByPage[page];
-  if (!loadLocale || !exportName) return null;
-
-  return lazy(() => loadLocale().then((module) => {
-    const component = module[exportName];
-    if (!component) throw new Error(`Página React ausente: ${locale}/${page}`);
-    return { default: component };
-  }));
-}
-
 const pages = Object.fromEntries(
-  Object.keys(localeLoaders).map((locale) => [
+  Object.entries(localeModules).map(([locale, module]) => [
     locale,
-    Object.fromEntries(Object.keys(exportsByPage).map((page) => [page, createPage(locale, page)])),
+    Object.fromEntries(
+      Object.entries(exportsByPage).map(([page, exportName]) => [
+        page,
+        module[exportName] ?? null,
+      ]),
+    ),
   ]),
 );
 
@@ -46,7 +44,9 @@ function NotFoundPage() {
       <span className="site-eyebrow">404</span>
       <h1>Página não encontrada</h1>
       <p>O endereço acessado não corresponde a uma página do 3dXess.</p>
-      <a className="site-button site-button-primary" href="/3dXess/">Voltar ao início</a>
+      <a className="site-button site-button-primary" href="/3dXess/">
+        Voltar ao início
+      </a>
     </main>
   );
 }
@@ -64,16 +64,20 @@ export default function App() {
 
   const content = (
     <ErrorBoundary key={`${route.locale}:${route.page}`}>
-      <Suspense fallback={<div className="site-loading" role="status" aria-live="polite">Carregando…</div>}>
-        <Page />
-      </Suspense>
+      <Page />
     </ErrorBoundary>
   );
 
   return (
     <>
       <SeoManager locale={route.locale} page={route.page} />
-      {route.page === "play" ? content : <SiteLayout locale={route.locale} page={route.page}>{content}</SiteLayout>}
+      {route.page === "play" ? (
+        content
+      ) : (
+        <SiteLayout locale={route.locale} page={route.page}>
+          {content}
+        </SiteLayout>
+      )}
     </>
   );
 }
