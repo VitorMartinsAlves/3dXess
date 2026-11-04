@@ -2,7 +2,7 @@
   "name": "3dxess",
   "private": true,
   "scripts": {
-    "check": "node --check app.js && node --check engine.js && node --check bot.js && node --check bot-worker.js && node --check board3d.js",
+    "check": "node --check app.js && node --check engine.js && node --check bot.js && node --check bot-worker.js && node --check board3d.js && node --check site.js && node --check practice.js && node --check game-i18n.js",
     "test": "npm run check && node --test"
   },
   "engines": {
