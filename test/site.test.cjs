@@ -385,42 +385,44 @@ test('game waits for its stylesheet before mounting the lobby markup', () => {
 });
 
 
-test('Firebase account page exposes email/password, username login, TOTP recovery and leaderboard', () => {
+test('Firebase accounts use email/password, native password reset and public player names', () => {
   const account = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'account', 'AccountPage.jsx'), 'utf8');
   const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'App.jsx'), 'utf8');
   assert.match(app, /account: "AccountPage"/);
   for (const required of [
     'createUserWithEmailAndPassword',
     'signInWithEmailAndPassword',
-    'signInWithCustomToken',
-    'totp/enroll',
-    'totp/confirm',
-    'auth/recover',
+    'sendPasswordResetEmail',
+    'setDoc',
+    'serverTimestamp',
     'orderBy("rating"',
   ]) assert.ok(account.includes(required), 'account integration missing ' + required);
+  assert.doesNotMatch(account, /signInWithCustomToken|callAccountApi|totp|QRCode/);
+  assert.match(account, /type="email"/);
   for (const [locale, pages] of Object.entries(locales)) {
     assert.ok(pages.account, locale + ' account route missing');
     assert.ok(pageMeta[locale].account?.title, locale + ' account SEO metadata missing');
   }
 });
 
-test('Firebase private indexes and TOTP data are denied to browser clients', () => {
+test('Firestore rules allow safe self-created profiles but protect progression fields', () => {
   const rules = fs.readFileSync(path.join(__dirname, '..', 'firestore.rules'), 'utf8');
-  for (const name of ['usernameIndex', 'emailIndex', 'privateUsers', 'totpSecrets']) {
-    assert.ok(rules.includes('match /' + name), name + ' rule missing');
-  }
+  assert.match(rules, /match \/users\/\{uid\}/);
+  assert.match(rules, /allow create: if request\.auth != null/);
+  assert.match(rules, /request\.resource\.data\.rating == 1000/);
+  assert.match(rules, /request\.resource\.data\.xp == 0/);
+  assert.match(rules, /affectedKeys\(\)[\s\S]*hasOnly\(\['avatarUrl', 'bio', 'updatedAt'\]\)/);
   assert.match(rules, /match \/\{document=\*\*\} \{ allow read, write: if false; \}/);
   const firebaseClient = fs.readFileSync(path.join(__dirname, '..', 'src', 'shared', 'firebase', 'client.js'), 'utf8');
   assert.match(firebaseClient, /VITE_FIREBASE_API_KEY/);
-  assert.doesNotMatch(firebaseClient, /private_key|service_account/i);
+  assert.doesNotMatch(firebaseClient, /accountApiUrl|private_key|service_account/i);
 });
 
-test('Cloudflare account Worker uses Firestore and does not configure D1', () => {
-  const worker = fs.readFileSync(path.join(__dirname, '..', 'cloudflare', 'worker', 'src', 'index.js'), 'utf8');
-  const config = fs.readFileSync(path.join(__dirname, '..', 'cloudflare', 'worker', 'wrangler.toml'), 'utf8');
-  assert.match(worker, /firestore\.googleapis\.com/);
-  assert.match(worker, /TOTP_ENCRYPTION_KEY/);
-  assert.match(worker, /AES-GCM/);
-  assert.match(worker, /auth\/recover/);
-  assert.doesNotMatch(config, /\[\[d1_databases\]\]|database_id/);
+test('Firebase account pages do not depend on a separate backend', () => {
+  const account = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'account', 'AccountPage.jsx'), 'utf8');
+  const workflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'pages.yml'), 'utf8');
+  const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+  assert.doesNotMatch(account, /fetch\(|https?:\/\//);
+  assert.doesNotMatch(workflow, /VITE_ACCOUNT_API_URL/);
+  assert.doesNotMatch(packageJson.scripts.check, /cloudflare\/worker/);
 });
