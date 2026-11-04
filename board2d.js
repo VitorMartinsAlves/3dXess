@@ -77,7 +77,7 @@
         square.setAttribute('role', 'gridcell');
         square.dataset.viewRow = String(viewRow);
         square.dataset.viewCol = String(viewCol);
-        square.innerHTML = '<span class="board2d-piece" aria-hidden="true"></span>';
+        square.innerHTML = '<span class="board2d-target" aria-hidden="true"></span><span class="board2d-piece" aria-hidden="true"></span>';
         square.addEventListener('click', function () {
           if (!interactive || !clickHandler) return;
           const position = positionForView(Number(square.dataset.viewRow), Number(square.dataset.viewCol));
