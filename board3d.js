@@ -566,7 +566,7 @@
             t: 0,
             delay: spec.delay || 0,
             dur: 0.34 + Math.min(distance * 0.015, 0.1),
-            height: 0.86 + Math.min(distance * 0.075, 0.48),
+            height: 1.05 + Math.min(distance * 0.06, 0.42),
             baseScale: baseScale,
             baseRotation: baseRotation,
           });
@@ -601,6 +601,7 @@
           obj: ghost,
           t: 0,
           dur: 0.27,
+          origin: ghost.position.clone(),
           drift: new THREE.Vector3(push * 0.19, -0.12, 0.06),
           baseScale: ghost.scale.clone(),
           baseRotation: ghost.rotation.clone(),
@@ -693,9 +694,9 @@
       } else if (a.type === 'capture') {
         const fade = 1 - eased;
         a.obj.position.set(
-          a.obj.position.x + a.drift.x * dt / a.dur,
-          a.drift.y * eased + Math.sin(Math.PI * k) * 0.05,
-          a.obj.position.z + a.drift.z * dt / a.dur
+          a.origin.x + a.drift.x * eased,
+          a.origin.y + a.drift.y * eased + Math.sin(Math.PI * k) * 0.05,
+          a.origin.z + a.drift.z * eased
         );
         a.obj.rotation.z = a.baseRotation.z + 0.42 * eased;
         a.obj.scale.copy(a.baseScale).multiplyScalar(1 - eased * 0.36);
