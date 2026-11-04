@@ -70,8 +70,8 @@ Os testes usam o runner nativo do Node.js. O motor de xadrez é validado por cen
 
 ## Firebase e contas
 
-O 3dXess usa Firebase Authentication com e-mail/senha e login por username, Cloud Firestore para perfis/ranking e Realtime Database opcional para presença. A página de conta existe nos quatro idiomas, exige configurar TOTP no cadastro e usa o autenticador para recuperar a senha. Não há login Google nem verificação de e-mail.
+O 3dXess usa Firebase Authentication com e-mail/senha e Cloud Firestore para perfis/ranking. O nome de jogador é usado apenas para exibição no perfil e nas partidas. A recuperação de senha usa o e-mail automático do Firebase Authentication; não há TOTP, Cloudflare ou servidor próprio. Não há login Google nem exigência de verificação de e-mail.
 
-O Cloudflare Worker é uma API serverless sem banco próprio: lê e grava diretamente no Firestore. Não utiliza Cloudflare D1, KV ou outro banco. Veja [FIREBASE_SETUP.md](FIREBASE_SETUP.md) para configurar serviços, regras e secrets.
+Veja [FIREBASE_SETUP.md](FIREBASE_SETUP.md) para configurar Authentication, Firestore e as regras de segurança.
 
 O perfil inicia com rating 1000, nível 1, XP 0 e patente Bronze. O ranking consulta os perfis do Firestore, mas vitórias, XP e rating ainda não são atualizados ao terminar uma partida. O modo online atual é P2P e ainda não possui arbitragem confiável de resultados; não é seguro permitir que o navegador escreva esses pontos diretamente.
