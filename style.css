@@ -1114,6 +1114,7 @@ select { cursor: pointer; }
   height: 94%;
 }
 .board2d-motion-piece.is-capture-ghost { z-index: 1; }
+.board2d-square.is-animating-arrival > .board2d-piece { opacity: 0; }
 
 /* Variações de acabamento preservam as silhuetas e a leitura pixelada. */
 #board-2d .board2d-shell[data-piece-skin="neon"] .board2d-piece.is-white {
