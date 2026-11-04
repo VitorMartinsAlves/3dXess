@@ -26,7 +26,7 @@ function clearCachedAccountIdentity() {
 
 function cacheAccountIdentity(uid, value) {
   const username = String(value || "")
-    .replace(/[\\u0000-\\u001f\\u007f]/g, "")
+    .replace(/[\u0000-\u001f\u007f]/g, "")
     .trim()
     .slice(0, 20);
   if (!uid || !username) {
