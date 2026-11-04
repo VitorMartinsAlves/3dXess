@@ -397,7 +397,7 @@ test('Firebase accounts use email/password, native password reset and public pla
     'updateDoc',
     'serverTimestamp',
     'syncGameNickname',
-    'xadrez3.settings.v3',
+    'xadrez3d.settings.v3',
     'creatingProfileRef',
     'permission-denied',
     'orderBy("rating"',
@@ -430,4 +430,20 @@ test('Firebase account pages do not depend on a separate backend', () => {
   assert.doesNotMatch(account, /fetch\(|https?:\/\//);
   assert.doesNotMatch(workflow, /VITE_ACCOUNT_API_URL/);
   assert.doesNotMatch(packageJson.scripts.check, /cloudflare\/worker/);
+});
+
+test('game lobby reads the exact account nickname key and distinguishes guest players', () => {
+  const account = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'account', 'AccountPage.jsx'), 'utf8');
+  const game = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'app.js'), 'utf8');
+  assert.match(account, /xadrez3d\.settings\.v3/);
+  assert.match(account, /3dxess\.account\.session\.v1/);
+  assert.match(game, /const SETTINGS_KEY = 'xadrez3d\.settings\.v3'/);
+  assert.match(game, /const ACCOUNT_SESSION_KEY = '3dxess\.account\.session\.v1'/);
+  assert.match(game, /function accountIdentity\(\)/);
+  assert.match(game, /function isGuestPlayer\(\)/);
+  assert.match(game, /function displayPlayerName\(player\)/);
+  assert.match(game, /isGuest: isGuestPlayer\(\)/);
+  assert.match(game, /isGuest: !data \|\| data\.isGuest !== false/);
+  assert.match(game, /displayPlayerName\(p\)/);
+  assert.match(game, /displayPlayerName\(room\.spectators\[id\]\)/);
 });
