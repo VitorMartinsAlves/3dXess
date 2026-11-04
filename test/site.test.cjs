@@ -76,7 +76,7 @@ test('all localized pages include complete social metadata and valid structured 
         assert.ok(html.includes('name="' + key + '"'), locale + '/' + page + ' ' + key);
       }
 
-      const schemas = [...html.matchAll(/<script type="application\\/ld\\+json">([\\s\\S]*?)<\\/script>/gi)];
+      const schemas = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi)];
       assert.ok(schemas.length > 0, locale + '/' + page + ' structured data');
       for (const schema of schemas) {
         assert.doesNotThrow(() => JSON.parse(schema[1]), locale + '/' + page + ' valid JSON-LD');
