@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import { BASE_URL, SITE_ROUTES, routeHref } from "../../app/routes.js";
 
 const labels = {
-  "pt-BR": { home: "Início", learn: "Aprender", practice: "Praticar", challenges: "Desafios", about: "Sobre", play: "Jogar agora", brand: "Xadrez 3D", subtitle: "Salas, partidas rápidas e links de convite" },
-  en: { home: "Home", learn: "Learn", practice: "Practice", challenges: "Challenges", about: "About", play: "Play now", brand: "3D Chess", subtitle: "Rooms, quick games and invite links" },
-  es: { home: "Inicio", learn: "Aprender", practice: "Practicar", challenges: "Desafíos", about: "Acerca de", play: "Jugar ahora", brand: "Ajedrez 3D", subtitle: "Salas, partidas rápidas y enlaces de invitación" },
-  "zh-CN": { home: "首页", learn: "学习", practice: "练习", challenges: "挑战", about: "关于", play: "开始对局", brand: "3D 国际象棋", subtitle: "房间、快速对局和邀请链接" },
+  "pt-BR": { home: "Início", learn: "Aprender", practice: "Praticar", challenges: "Desafios", about: "Sobre", play: "Jogar agora", account: "Conta", brand: "Xadrez 3D", subtitle: "Salas, partidas rápidas e links de convite" },
+  en: { home: "Home", learn: "Learn", practice: "Practice", challenges: "Challenges", about: "About", play: "Play now", account: "Account", brand: "3D Chess", subtitle: "Rooms, quick games and invite links" },
+  es: { home: "Inicio", learn: "Aprender", practice: "Practicar", challenges: "Desafíos", about: "Acerca de", play: "Jugar ahora", account: "Cuenta", brand: "Ajedrez 3D", subtitle: "Salas, partidas rápidas y enlaces de invitación" },
+  "zh-CN": { home: "首页", learn: "学习", practice: "练习", challenges: "挑战", about: "关于", play: "开始对局", account: "账户", brand: "3D 国际象棋", subtitle: "房间、快速对局和邀请链接" },
 };
 const languageOptions = [
   ["pt-BR", "PT · Português"], ["en", "EN · English"],
@@ -16,7 +16,7 @@ const languageOptions = [
 export function SiteHeader({ locale, page }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const t = labels[locale] ?? labels["pt-BR"];
-  const navItems = ["home", "learn", "practice", "challenges", "about"];
+  const navItems = ["home", "learn", "practice", "challenges", "about", "account"];
 
   useEffect(() => {
     if (!menuOpen) return undefined;
