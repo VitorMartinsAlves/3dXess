@@ -1093,9 +1093,9 @@ select { cursor: pointer; }
 
 
 .board2d-motion-layer {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 6;
+  z-index: 1000;
   overflow: visible;
   pointer-events: none;
 }
