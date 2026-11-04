@@ -332,8 +332,32 @@
     B.setEffects(settings.effects);
   }
 
+  const ACCOUNT_SESSION_KEY = '3dxess.account.session.v1';
+
+  function accountIdentity() {
+    try {
+      const value = JSON.parse(localStorage.getItem(ACCOUNT_SESSION_KEY) || 'null');
+      if (!value || typeof value.uid !== 'string' || !value.uid ||
+          typeof value.username !== 'string' || !value.username.trim()) return null;
+      return { uid: value.uid, username: cleanName(value.username) };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function isGuestPlayer() {
+    return !accountIdentity();
+  }
+
+  function displayPlayerName(player) {
+    if (!player) return 'Jogador (guest)';
+    const name = cleanName(player.name);
+    return name + (player.isGuest === false ? '' : ' (guest)');
+  }
+
   function myName() {
-    return (settings.nickname || 'Jogador').slice(0, 20);
+    const identity = accountIdentity();
+    return (identity ? identity.username : settings.nickname || 'Jogador').slice(0, 20);
   }
 
   function cleanName(value) {
@@ -719,6 +743,7 @@
     room.players[hostColor] = {
       id: net.selfId,
       name: myName(),
+      isGuest: isGuestPlayer(),
       connected: true,
     };
 
@@ -726,6 +751,7 @@
       room.players[C.opponent(hostColor)] = {
         id: guest.id,
         name: guest.name || 'Jogador',
+        isGuest: guest.isGuest !== false,
         connected: true,
       };
     }
@@ -864,7 +890,10 @@
             if (net.isHost) sendStateTo(peerId);
           }, 300);
         } else {
-          actions.hello.send({ name: myName() }, { target: peerId }).catch(function () { /* ignore */ });
+          actions.hello.send({
+            name: myName(),
+            isGuest: isGuestPlayer(),
+          }, { target: peerId }).catch(function () { /* ignore */ });
         }
       };
 
@@ -959,7 +988,10 @@
     const peers = net.room.getPeers();
     const ids = Object.keys(peers);
     for (let i = 0; i < ids.length; i++) {
-      net.actions.hello.send({ name: myName() }, { target: ids[i] }).catch(function () { /* ignore */ });
+      net.actions.hello.send({
+        name: myName(),
+        isGuest: isGuestPlayer(),
+      }, { target: ids[i] }).catch(function () { /* ignore */ });
     }
   }
 
@@ -982,6 +1014,7 @@
 
     if (color) {
       room.players[color].name = name;
+      room.players[color].isGuest = !data || data.isGuest !== false;
       room.players[color].connected = true;
       if (net.graceTimers[peerId]) {
         window.clearTimeout(net.graceTimers[peerId]);
@@ -989,16 +1022,26 @@
       }
     } else if (room.spectators[peerId]) {
       room.spectators[peerId].name = name;
+      room.spectators[peerId].isGuest = !data || data.isGuest !== false;
       room.spectators[peerId].connected = true;
     } else {
       const free = ['w', 'b'].find(function (c) { return !room.players[c]; });
       if (free) {
-        room.players[free] = { id: peerId, name: name, connected: true };
+        room.players[free] = {
+          id: peerId,
+          name: name,
+          isGuest: !data || data.isGuest !== false,
+          connected: true,
+        };
         if (room.players.w && room.players.b && room.meta.status === 'waiting') {
           hostStartGame(room);
         }
       } else {
-        room.spectators[peerId] = { name: name, connected: true };
+        room.spectators[peerId] = {
+          name: name,
+          isGuest: !data || data.isGuest !== false,
+          connected: true,
+        };
       }
     }
 
@@ -1200,7 +1243,7 @@
     const clean = text.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 300);
     if (!clean) return;
 
-    const name = isRegisteredPlayer ? player.name : spectator.name;
+    const name = isRegisteredPlayer ? displayPlayerName(player) : displayPlayerName(spectator);
 
     room.chatSeq = (Number(room.chatSeq) || 0) + 1;
     const chatId = 'c' + String(room.chatSeq).padStart(6, '0');
@@ -1692,6 +1735,7 @@
     if (!net.quick.active || net.quick.claiming || !net.lobbyActions) return;
     net.lobbyActions.seek.send({
       name: myName(),
+      isGuest: isGuestPlayer(),
       tc: net.quick.tc,
       colorPref: net.quick.colorPref,
       peer: net.selfId,
@@ -1745,7 +1789,7 @@
       net.hostRoom = makeRoom(
         { name: roomName, public: false, tc: tc },
         colors.host,
-        { id: peerId, name: guestName }
+        { id: peerId, name: guestName, isGuest: seek.isGuest !== false }
       );
       net.quick.active = false;
       net.quick.claiming = false;
@@ -3185,7 +3229,9 @@
       }
       if (!room) return color === 'w' ? 'Brancas' : 'Pretas';
       const p = room.players && room.players[color];
-      return p && p.name ? p.name : (color === 'w' ? 'Brancas' : 'Pretas');
+      return p && p.name
+        ? displayPlayerName(p)
+        : (color === 'w' ? 'Brancas' : 'Pretas');
     }
 
     const topName = $('top-name');
@@ -3300,7 +3346,7 @@
     const spectators = $('spectators');
     if (spectators) {
       const names = room ? Object.keys(room.spectators || {}).map(function (id) {
-        return room.spectators[id].name;
+        return displayPlayerName(room.spectators[id]);
       }).filter(Boolean) : [];
       if (names.length) {
         spectators.textContent = 'Assistindo: ' + names.join(', ');
@@ -3604,10 +3650,24 @@
   }
 
   function renderLobbyIdentity() {
+    const identity = accountIdentity();
     const nick = $('nickname');
-    if (nick) nick.value = myName();
+    if (nick) {
+      nick.value = myName();
+      nick.readOnly = !!identity;
+      nick.title = identity
+        ? 'Nome da sua conta 3dXess. Altere-o na página Conta.'
+        : 'Você está jogando como convidado.';
+    }
+    const nickLabel = document.querySelector('label[for="nickname"]');
+    if (nickLabel) nickLabel.textContent = identity ? 'Nome da conta' : 'Seu nome (guest)';
     const optNick = $('opt-nickname');
-    if (optNick) optNick.value = myName();
+    if (optNick) {
+      optNick.value = myName();
+      optNick.readOnly = !!identity;
+    }
+    const optNickLabel = document.querySelector('label[for="opt-nickname"]');
+    if (optNickLabel) optNickLabel.textContent = identity ? 'Nome da conta' : 'Seu nome (guest)';
     const uid = $('uid-label');
     if (uid) {
       uid.textContent = net.selfId ? 'Peer ' + String(net.selfId).slice(0, 6) + '…' : '';
