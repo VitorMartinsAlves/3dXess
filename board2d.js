@@ -40,6 +40,9 @@
   let container = null;
   let root = null;
   let grid = null;
+  let motionLayer = null;
+  let motionAnimations = new Set();
+  let renderedBoardSnapshot = null;
   let squares = [];
   let rankCoordinates = [];
   let fileCoordinates = [];
@@ -97,6 +100,10 @@
     grid.setAttribute('role', 'grid');
     grid.setAttribute('aria-label', root.getAttribute('aria-label'));
 
+    motionLayer = document.createElement('div');
+    motionLayer.className = 'board2d-motion-layer';
+    motionLayer.setAttribute('aria-hidden', 'true');
+
     squares = [];
     for (let viewRow = 0; viewRow < 8; viewRow++) {
       const row = document.createElement('div');
@@ -133,6 +140,7 @@
     layout.appendChild(grid);
     layout.appendChild(fileStrip);
     root.appendChild(layout);
+    root.appendChild(motionLayer);
     container.appendChild(root);
     applyTheme(currentTheme);
     applySkin(currentSkin);
@@ -262,14 +270,175 @@
     if (root) root.dataset.pieceSkin = currentSkin;
   }
 
+  function copyBoard(board) {
+    return board.map(function (row) {
+      return row.map(function (piece) {
+        return piece ? { type: piece.type, color: piece.color } : null;
+      });
+    });
+  }
+
+  function boardsMatch(a, b) {
+    if (!a || !b) return false;
+    for (let r = 0; r < 8; r++) {
+      for (let f = 0; f < 8; f++) {
+        const first = a[r] && a[r][f];
+        const second = b[r] && b[r][f];
+        if (!first !== !second) return false;
+        if (first && (first.type !== second.type || first.color !== second.color)) return false;
+      }
+    }
+    return true;
+  }
+
+  function cancelMoveAnimations() {
+    motionAnimations.forEach(function (animation) {
+      try { animation.cancel(); } catch (e) { /* ignore */ }
+    });
+    motionAnimations.clear();
+    if (motionLayer) motionLayer.replaceChildren();
+  }
+
+  function squareForPosition(position) {
+    if (!position) return null;
+    const view = viewForPosition(position.r, position.f);
+    return squares[view.row * 8 + view.col] || null;
+  }
+
+  function makeMotionPiece(piece, position, rootRect) {
+    const square = squareForPosition(position);
+    if (!square || !piece) return null;
+    const rect = square.getBoundingClientRect();
+    const element = document.createElement('div');
+    element.className = 'board2d-motion-piece';
+    element.style.left = (rect.left - rootRect.left) + 'px';
+    element.style.top = (rect.top - rootRect.top) + 'px';
+    element.style.width = rect.width + 'px';
+    element.style.height = rect.height + 'px';
+
+    const sprite = document.createElement('span');
+    sprite.className = 'board2d-piece ' + (piece.color === 'w' ? 'is-white' : 'is-black');
+    sprite.appendChild(createPieceSprite(piece));
+    element.appendChild(sprite);
+    return { element: element, rect: rect };
+  }
+
+  function animateMove(previousBoard, move, from, to, delay) {
+    const movingPiece = previousBoard[from.r] && previousBoard[from.r][from.f];
+    if (!movingPiece || !motionLayer || typeof Element === 'undefined' ||
+        !Element.prototype.animate || prefersReducedMotion()) return;
+
+    const rootRect = root.getBoundingClientRect();
+    const start = makeMotionPiece(movingPiece, from, rootRect);
+    const destination = squareForPosition(to);
+    if (!start || !destination) return;
+
+    const end = destination.getBoundingClientRect();
+    const dx = end.left - start.rect.left;
+    const dy = end.top - start.rect.top;
+    const distance = Math.hypot(dx, dy);
+    const knightJump = movingPiece.type === 'n';
+    const arc = Math.min(start.rect.height * (knightJump ? 0.36 : 0.17), knightJump ? 30 : 16);
+    motionLayer.appendChild(start.element);
+
+    const animation = start.element.animate([
+      { transform: 'translate3d(0, 0, 0) scale(1)' },
+      { transform: 'translate3d(' + (dx * 0.5) + 'px, ' + (dy * 0.5 - arc) + 'px, 0) scale(1.055)', offset: 0.48 },
+      { transform: 'translate3d(' + dx + 'px, ' + dy + 'px, 0) scale(1)' }
+    ], {
+      duration: 330 + Math.min(distance * 0.045, 90),
+      delay: delay || 0,
+      easing: 'cubic-bezier(.2,.78,.24,1)',
+      fill: 'forwards'
+    });
+
+    motionAnimations.add(animation);
+    animation.onfinish = function () {
+      motionAnimations.delete(animation);
+      start.element.remove();
+    };
+    animation.oncancel = function () {
+      motionAnimations.delete(animation);
+      start.element.remove();
+    };
+  }
+
+  function animateCapture(previousBoard, lastMove) {
+    if (!lastMove || !motionLayer || prefersReducedMotion() ||
+        typeof Element === 'undefined' || !Element.prototype.animate) return;
+
+    const square = lastMove.enPassant
+      ? { r: lastMove.from.r, f: lastMove.to.f }
+      : lastMove.to;
+    const captured = previousBoard[square.r] && previousBoard[square.r][square.f];
+    if (!captured) return;
+
+    const rootRect = root.getBoundingClientRect();
+    const ghost = makeMotionPiece(captured, square, rootRect);
+    if (!ghost) return;
+    ghost.element.classList.add('is-capture-ghost');
+    motionLayer.appendChild(ghost.element);
+
+    const animation = ghost.element.animate([
+      { opacity: 1, transform: 'scale(1) translateY(0)' },
+      { opacity: 0, transform: 'scale(.72) translateY(7px)' }
+    ], { duration: 245, easing: 'ease-out', fill: 'forwards' });
+
+    motionAnimations.add(animation);
+    animation.onfinish = function () {
+      motionAnimations.delete(animation);
+      ghost.element.remove();
+    };
+    animation.oncancel = function () {
+      motionAnimations.delete(animation);
+      ghost.element.remove();
+    };
+  }
+
+  function animateLastMove(previousBoard, move) {
+    if (!previousBoard || !move || !move.from || !move.to ||
+        prefersReducedMotion() || typeof Element === 'undefined' ||
+        !Element.prototype.animate) return;
+
+    cancelMoveAnimations();
+    animateMove(previousBoard, move, move.from, move.to, 0);
+
+    if (move.castle) {
+      const kingSide = move.to.f > move.from.f;
+      const rookFrom = { r: move.from.r, f: kingSide ? 7 : 0 };
+      const rookTo = { r: move.from.r, f: kingSide ? 5 : 3 };
+      const rook = previousBoard[rookFrom.r] && previousBoard[rookFrom.r][rookFrom.f];
+      if (rook && rook.type === 'r') animateMove(previousBoard, move, rookFrom, rookTo, 45);
+    }
+
+    animateCapture(previousBoard, move);
+  }
+
+  function prefersReducedMotion() {
+    return !!(global.matchMedia &&
+      global.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
   function setState(state, options) {
     options = options || {};
+    const previousBoard = renderedBoardSnapshot;
+    const nextBoard = state && state.board;
+    const boardChanged = !boardsMatch(previousBoard, nextBoard);
+
     currentState = state;
     lastMove = options.lastMove || null;
     selected = options.selected || null;
     legalMoves = options.legalMoves || [];
     checkSquare = options.checkSquare || null;
     render();
+
+    if (options.animate && boardChanged && previousBoard) {
+      animateLastMove(previousBoard, lastMove);
+    } else if (boardChanged) {
+      cancelMoveAnimations();
+    }
+
+    if (nextBoard) renderedBoardSnapshot = copyBoard(nextBoard);
   }
 
   function setOrientation(color) {
@@ -300,6 +469,9 @@
     getTheme: function () { return currentTheme; },
     getSkin: function () { return currentSkin; },
     getOrientation: function () { return orientation; },
-    setActive: function (value) { setInteractive(!!value); }
+    setActive: function (value) {
+      if (!value) cancelMoveAnimations();
+      setInteractive(!!value);
+    }
   };
 })(typeof window !== 'undefined' ? window : globalThis);
