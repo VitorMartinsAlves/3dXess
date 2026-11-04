@@ -6,7 +6,7 @@
   'use strict';
 
   const C = window.Chess;
-  const B = window.Board3D;
+  let B = window.Board2D || null;
   const $ = function (id) { return document.getElementById(id); };
 
   const APP_ID = 'xadrez3d-online-v1-2026';
@@ -272,6 +272,7 @@
     sound: true,
     autoFocus: true,
     showPresence: true,
+    boardMode: '2d',
   };
 
   let settings = Object.assign({}, DEFAULT_SETTINGS);
@@ -2126,27 +2127,159 @@
   };
 
   let boardReady = false;
+  let activeBoardMode = null;
+  let board3DLoadPromise = null;
+  const boardInitialized = { '2d': false, '3d': false };
+  const board3DScripts = ['vendor/three.min.js', 'vendor/OrbitControls.js', 'board3d.js'];
+
+  function gameIsVisible() {
+    const game = $('game-ui');
+    return !!game && !game.classList.contains('hidden');
+  }
+
+  function syncBoardModeControls() {
+    const selected = settings.boardMode === '3d' ? '3d' : '2d';
+    const controls = document.querySelectorAll('[data-board-mode]');
+    for (let i = 0; i < controls.length; i++) {
+      const active = controls[i].dataset.boardMode === selected;
+      controls[i].classList.toggle('active', active);
+      controls[i].setAttribute('aria-pressed', String(active));
+    }
+  }
+
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      const script = document.createElement('script');
+      script.src = new URL(src, document.baseURI).href;
+      script.async = true;
+      script.onload = function () { resolve(); };
+      script.onerror = function () {
+        script.remove();
+        reject(new Error('Falha ao carregar ' + src));
+      };
+      document.head.appendChild(script);
+    });
+  }
+
+  function loadBoard3DAssets() {
+    if (window.Board3D) return Promise.resolve(window.Board3D);
+    if (board3DLoadPromise) return board3DLoadPromise;
+
+    board3DLoadPromise = board3DScripts.reduce(function (chain, src) {
+      return chain.then(function () { return loadScript(src); });
+    }, Promise.resolve()).then(function () {
+      if (!window.Board3D) throw new Error('O renderizador 3D não foi inicializado.');
+      return window.Board3D;
+    }).catch(function (error) {
+      board3DLoadPromise = null;
+      throw error;
+    });
+
+    return board3DLoadPromise;
+  }
+
+  function activateBoard(mode) {
+    const nextMode = mode === '3d' ? '3d' : '2d';
+    const nextBoard = nextMode === '3d' ? window.Board3D : window.Board2D;
+    if (!nextBoard) throw new Error('Renderizador ' + nextMode + ' indisponível.');
+
+    const previousBoard = B;
+    const previousOrientation = previousBoard && previousBoard.getOrientation
+      ? previousBoard.getOrientation()
+      : 'w';
+
+    if (previousBoard && previousBoard !== nextBoard) {
+      previousBoard.setInteractive(false);
+      if (previousBoard.setActive) previousBoard.setActive(false);
+    }
+
+    B = nextBoard;
+    activeBoardMode = nextMode;
+
+    const stage2d = $('board-2d');
+    const stage3d = $('board-3d');
+    if (stage2d) stage2d.classList.toggle('hidden', nextMode !== '2d');
+    if (stage3d) stage3d.classList.toggle('hidden', nextMode !== '3d');
+
+    if (!boardInitialized[nextMode]) {
+      B.init($('board-' + nextMode));
+      B.onSquareClick(handleSquareClick);
+      boardInitialized[nextMode] = true;
+    }
+
+    if (B.setActive) B.setActive(true);
+    B.setTheme(settings.theme);
+    B.setSkin(settings.skin);
+    B.setEffects(settings.effects);
+    B.setOrientation(settings.autoFocus && app.myColor ? app.myColor : previousOrientation);
+    boardReady = true;
+
+    if (app.game && app.game.state) renderBoard(false);
+    B.setInteractive(gameIsVisible());
+    syncBoardModeControls();
+  }
+
+  function setBoardMode(mode, persist) {
+    const nextMode = mode === '3d' ? '3d' : '2d';
+    settings.boardMode = nextMode;
+    if (persist !== false) saveSettings();
+    syncBoardModeControls();
+
+    if (nextMode === '2d') {
+      if (gameIsVisible() && activeBoardMode !== '2d') {
+        try { activateBoard('2d'); } catch (error) {
+          console.error('Board2D:', error);
+          toast('Não foi possível iniciar o tabuleiro 2D.', 'error');
+        }
+      }
+      return Promise.resolve(true);
+    }
+
+    return loadBoard3DAssets().then(function () {
+      if (settings.boardMode === '3d' && gameIsVisible()) activateBoard('3d');
+      return true;
+    }).catch(function (error) {
+      console.error('Board3D:', error);
+      settings.boardMode = '2d';
+      saveSettings();
+      syncBoardModeControls();
+      if (gameIsVisible()) {
+        try { activateBoard('2d'); } catch (fallbackError) { console.error('Board2D:', fallbackError); }
+      }
+      toast('O modo 3D não está disponível neste navegador. O jogo continuará em 2D.', 'error', 6000);
+      return false;
+    });
+  }
 
   function ensureBoard() {
-    if (boardReady) return;
     try {
-      B.init($('app'));
-      B.onSquareClick(handleSquareClick);
-      boardReady = true;
-      applyVisualSettings();
-      B.setInteractive(false);
+      if (settings.boardMode === '3d' && window.Board3D) {
+        activateBoard('3d');
+        return;
+      }
+
+      activateBoard('2d');
+      if (settings.boardMode === '3d') {
+        loadBoard3DAssets().then(function () {
+          if (settings.boardMode === '3d' && gameIsVisible()) activateBoard('3d');
+        }).catch(function (error) {
+          console.error('Board3D:', error);
+          settings.boardMode = '2d';
+          saveSettings();
+          syncBoardModeControls();
+          toast('O modo 3D não carregou. A partida foi mantida em 2D.', 'error', 6000);
+        });
+      }
     } catch (err) {
       boardReady = false;
-      console.error('Board3D:', err);
+      console.error('Board:', err);
       const error = $('load-error');
       if (error) {
         const text = error.querySelector('p');
-        if (text) {
-          text.textContent = 'Seu navegador não conseguiu iniciar o WebGL, necessário para o tabuleiro 3D. Ative a aceleração de hardware e recarregue a página.';
-        }
+        if (text) text.textContent = 'Não foi possível iniciar o tabuleiro. Atualize o navegador e recarregue a página.';
         error.hidden = false;
       } else {
-        toast('Não foi possível iniciar o tabuleiro 3D. Recarregue a página.', 'error', 6000);
+        toast('Não foi possível iniciar o tabuleiro. Recarregue a página.', 'error', 6000);
       }
     }
   }
@@ -3548,6 +3681,13 @@
   }
 
   function wireEvents() {
+    const boardModeButtons = document.querySelectorAll('[data-board-mode]');
+    for (let i = 0; i < boardModeButtons.length; i++) {
+      boardModeButtons[i].addEventListener('click', function () {
+        setBoardMode(this.dataset.boardMode, true);
+      });
+    }
+
     const tabs = document.querySelectorAll('.tab');
     for (let i = 0; i < tabs.length; i++) {
       tabs[i].addEventListener('click', function () {
@@ -3737,13 +3877,15 @@
      INICIALIZAÇÃO
      ------------------------------------------------------------ */
   function init() {
-    if (!C || !B) {
+    if (!C || !window.Board2D) {
       const error = $('load-error');
       if (error) error.hidden = false;
       return;
     }
 
     loadSettings();
+    syncBoardModeControls();
+    if (settings.boardMode === '3d') setBoardMode('3d', false);
     loadBotPrefs();
     populateSettingsOptions();
     applyBotPrefsToForm();
