@@ -309,6 +309,31 @@ test('quiescence search caps consecutive check extensions', () => {
   assert.match(bot, /if \(inCheck && ply >= hardPlyLimit\)/);
 });
 
+test('2D animations cannot leave destination pieces hidden', () => {
+  const renderer = fs.readFileSync(path.join(__dirname, '..', 'board2d.js'), 'utf8');
+  assert.match(renderer, /cleanupTimer = window\.setTimeout\(cleanup, 1400\)/);
+  assert.match(renderer, /cleanupTimer = window\.setTimeout\(cleanup, 1000\)/);
+  assert.match(renderer, /try \{\s*animation = start\.element\.animate/);
+  assert.match(renderer, /try \{\s*animation = ghost\.element\.animate/);
+  assert.match(renderer, /try \{\s*animateLastMove\(previousBoard, lastMove, nextBoard\)/);
+  assert.match(renderer, /renderedBoardSnapshot = copyBoard\(nextBoard\)/);
+});
+
+test('bot scheduling and HUD updates are independent from board render failures', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const commitStart = app.indexOf('function commitLocal(mv)');
+  const commitEnd = app.indexOf('function undoBotMove()', commitStart);
+  const commit = app.slice(commitStart, commitEnd);
+  assert.ok(commit.indexOf('botAfterMove(prevState.turn)') < commit.indexOf('renderAll(true)'));
+
+  const renderStart = app.indexOf('function renderAll(animate)');
+  const renderEnd = app.indexOf('function renderBoard(animate)', renderStart);
+  const renderAll = app.slice(renderStart, renderEnd);
+  assert.match(renderAll, /try \{\s*renderBoard\(!!animate\)/);
+  assert.match(renderAll, /catch \(error\)[\s\S]*renderBoard\(false\)/);
+  assert.ok(renderAll.indexOf('renderHUD()') > renderAll.indexOf('catch (error)'));
+});
+
 test('switching board renderers restarts an in-flight bot turn', () => {
   const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
   const start = app.indexOf('function resumeBotTurnAfterBoardSwitch');
