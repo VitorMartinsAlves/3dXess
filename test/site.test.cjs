@@ -284,11 +284,12 @@ test('bot completes multiple consecutive turns within its bounded search budget'
 
   let state = context.Chess.createInitialState();
   for (let ply = 0; ply < 12; ply++) {
-    const result = context.Bot.chooseMove(state, {
-      level: 1,
-      style: 'balanced',
-      timeMs: 100
-    });
+    context.state = state;
+    const result = vm.runInContext(
+      "Bot.chooseMove(state, { level: 1, style: 'balanced', timeMs: 100 })",
+      context,
+      { timeout: 1500 }
+    );
     assert.ok(result && result.uci, 'bot should return a move on ply ' + ply);
     const move = context.Chess.findLegalMove(
       state,
