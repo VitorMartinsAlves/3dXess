@@ -236,3 +236,24 @@ test('2D board uses original pixel-art SVG sprites and readable outside coordina
   assert.match(styles, /board2d-coordinates/);
   assert.match(styles, /--piece-outline-color/);
 });
+
+
+test('2D legal move markers stay hidden until a piece is selected', () => {
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
+  assert.match(styles, /\.board2d-target\s*\{[^}]*display:\s*none/s);
+  assert.match(styles, /\.board2d-square\.is-legal\s+\.board2d-target[^}]*display:\s*block/s);
+  assert.match(styles, /\.board2d-square\.is-capture\s+\.board2d-target[^}]*display:\s*block/s);
+});
+
+test('2D renderer animates legal moves, captures and castling without a permanent frame loop', () => {
+  const renderer = fs.readFileSync(path.join(__dirname, '..', 'board2d.js'), 'utf8');
+  assert.match(renderer, /function animateLastMove/);
+  assert.match(renderer, /function animateMove/);
+  assert.match(renderer, /function animateCapture/);
+  assert.match(renderer, /Element\.prototype\.animate/);
+  assert.match(renderer, /move\.castle/);
+  assert.match(renderer, /move\.enPassant/);
+  assert.match(renderer, /options\.animate && boardChanged/);
+  assert.match(renderer, /prefers-reduced-motion/);
+  assert.doesNotMatch(renderer, /requestAnimationFrame/);
+});
