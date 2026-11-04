@@ -250,3 +250,26 @@ Para testar o online, abra a mesma URL em dois navegadores ou em uma janela anô
 ## Licença
 
 Uso livre para estudo, diversão e adaptação. Three.js, Trystero e OrbitControls mantêm suas próprias licenças.
+
+
+## Site, idiomas e treinamento
+
+O site tem uma home editorial e rotas separadas para jogar, aprender, praticar e consultar regras. O conteúdo está disponível em português, inglês, espanhol e chinês simplificado:
+
+| Página | Português | English | Español | 简体中文 |
+| --- | --- | --- | --- | --- |
+| Início | `/` | `/en/` | `/es/` | `/zh-cn/` |
+| Sobre | `/sobre/` | `/en/about/` | `/es/acerca/` | `/zh-cn/about/` |
+| Aprender | `/aprender/` | `/en/learn/` | `/es/aprender/` | `/zh-cn/learn/` |
+| Praticar | `/praticar/` | `/en/practice/` | `/es/practica/` | `/zh-cn/practice/` |
+| Desafios | `/desafios/` | `/en/challenges/` | `/es/desafios/` | `/zh-cn/challenges/` |
+| Regras | `/regras/` | `/en/rules/` | `/es/reglas/` | `/zh-cn/rules/` |
+| Jogar | `/jogar/` | `/en/play/` | `/es/jugar/` | `/zh-cn/play/` |
+
+### Treinamento interativo
+
+A página de prática oferece quatro posições validadas pelo motor: mate em um lance, captura da dama, roque e promoção. O desafio diário alterna entre elas conforme a data local. Tentativas, exercícios resolvidos e sequência ficam no `localStorage` do navegador; não há conta, sincronização entre dispositivos ou ranking global.
+
+Os arquivos `site.css` e `site.js` definem o design system e a navegação das páginas públicas. `practice.js` integra o treinador ao motor `engine.js` e à cena `board3d.js`. `game-i18n.js` traduz os principais textos do lobby do jogo.
+
+O sitemap e as instruções de indexação estão em [SEO.md](SEO.md). Para publicar, o workflow existente do GitHub Pages continua copiando a árvore estática do repositório e executando `npm test` antes do deploy.
