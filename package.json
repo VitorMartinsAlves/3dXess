@@ -9,15 +9,14 @@
     "dev": "node scripts/restore-index-template.mjs && vite --host 0.0.0.0",
     "build": "node scripts/restore-index-template.mjs && node scripts/prepare-public.mjs && vite build && node scripts/generate-routes.mjs",
     "preview": "vite preview --host 0.0.0.0",
-    "check": "node --check legacy/game/app.js && node --check legacy/game/engine.js && node --check legacy/game/bot.js && node --check legacy/game/bot-worker.js && node --check legacy/game/board2d.js && node --check legacy/game/board3d.js && node --check legacy/game/game-i18n.js && node --check legacy/training/practice.js && node --check cloudflare/worker/src/index.js",
+    "check": "node --check legacy/game/app.js && node --check legacy/game/engine.js && node --check legacy/game/bot.js && node --check legacy/game/bot-worker.js && node --check legacy/game/board2d.js && node --check legacy/game/board3d.js && node --check legacy/game/game-i18n.js && node --check legacy/training/practice.js",
     "test": "npm run check && node --test"
   },
   "dependencies": {
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-router-dom": "7.18.5",
-    "firebase": "^13.2.0",
-    "qrcode": "^1.5.4"
+    "firebase": "^13.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "6.2.1",
