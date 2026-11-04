@@ -14,7 +14,7 @@ Instale as dependências e inicie o servidor de desenvolvimento:
 Comandos principais:
 
     npm test       # valida sintaxe e executa os testes automatizados
-    npm run build  # prepara o bundle e gera as 28 rotas
+    npm run build  # prepara o bundle e gera as 32 rotas
     npm run preview
 
 ## Organização
@@ -66,3 +66,12 @@ O build usa a base /3dXess/, gera index.html em cada rota localizada e mantém c
 ## Testes
 
 Os testes usam o runner nativo do Node.js. O motor de xadrez é validado por cenários de movimentos, regras especiais e perft; os testes de interface validam a estrutura React, rotas, SEO e integração com os módulos do jogo.
+
+
+## Firebase e contas
+
+O 3dXess usa Firebase Authentication com e-mail/senha e login por username, Cloud Firestore para perfis/ranking e Realtime Database opcional para presença. A página de conta existe nos quatro idiomas, exige configurar TOTP no cadastro e usa o autenticador para recuperar a senha. Não há login Google nem verificação de e-mail.
+
+O Cloudflare Worker é uma API serverless sem banco próprio: lê e grava diretamente no Firestore. Não utiliza Cloudflare D1, KV ou outro banco. Veja [FIREBASE_SETUP.md](FIREBASE_SETUP.md) para configurar serviços, regras e secrets.
+
+O perfil inicia com rating 1000, nível 1, XP 0 e patente Bronze. O ranking consulta os perfis do Firestore, mas vitórias, XP e rating ainda não são atualizados ao terminar uma partida. O modo online atual é P2P e ainda não possui arbitragem confiável de resultados; não é seguro permitir que o navegador escreva esses pontos diretamente.
