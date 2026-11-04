@@ -309,6 +309,25 @@ test('quiescence search caps consecutive check extensions', () => {
   assert.match(bot, /if \(inCheck && ply >= hardPlyLimit\)/);
 });
 
+test('switching board renderers restarts an in-flight bot turn', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const start = app.indexOf('function resumeBotTurnAfterBoardSwitch');
+  const end = app.indexOf('function scheduleBotMove', start);
+  assert.ok(start >= 0 && end > start, 'bot resume helper exists');
+  const resume = app.slice(start, end);
+
+  assert.match(resume, /app\.mode !== 'bot'/);
+  assert.match(resume, /app\.game\.state\.turn !== app\.bot\.color/);
+  assert.match(resume, /cancelBotThinking\(\)/);
+  assert.match(resume, /botWorker = null/);
+  assert.match(resume, /previousWorker\.terminate\(\)/);
+  assert.match(resume, /rejectBotPending\(/);
+  assert.match(resume, /scheduleBotMove\(\)/);
+
+  assert.match(app, /activateBoard\('2d'\);\s*resumeBotTurnAfterBoardSwitch\(\)/);
+  assert.match(app, /activateBoard\('3d'\);\s*resumeBotTurnAfterBoardSwitch\(\)/);
+});
+
 test('bot worker failures and timeouts release the worker and scheduler', () => {
   const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
   assert.match(app, /botWorker\.onmessageerror/);
