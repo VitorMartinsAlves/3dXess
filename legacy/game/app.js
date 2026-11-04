@@ -3709,6 +3709,7 @@
       const color = findColorByPeer(net.hostRoom, net.selfId);
       if (color && net.hostRoom.players[color]) {
         net.hostRoom.players[color].name = myName();
+        net.hostRoom.players[color].isGuest = isGuestPlayer();
         hostCommit(net.hostRoom);
       }
     } else {
@@ -4102,6 +4103,11 @@
     }
 
     loadSettings();
+    const storedIdentity = accountIdentity();
+    if (storedIdentity) {
+      settings.nickname = storedIdentity.username;
+      saveSettings();
+    }
     syncBoardModeControls();
     if (settings.boardMode === '3d') setBoardMode('3d', false);
     loadBotPrefs();
@@ -4118,6 +4124,27 @@
 
     window.addEventListener('resize', function () {
       if (!isMobile() || isCompactLandscape()) setPanelCollapsed(false);
+    });
+
+    // Keep an already-open game tab in sync when the player signs in/out in another tab.
+    window.addEventListener('storage', function (event) {
+      if (event.key !== ACCOUNT_SESSION_KEY) return;
+      const identity = accountIdentity();
+      if (identity) settings.nickname = identity.username;
+      saveSettings();
+      renderLobbyIdentity();
+
+      if (net.isHost && net.hostRoom) {
+        const color = findColorByPeer(net.hostRoom, net.selfId);
+        if (color && net.hostRoom.players[color]) {
+          net.hostRoom.players[color].name = myName();
+          net.hostRoom.players[color].isGuest = isGuestPlayer();
+          hostCommit(net.hostRoom);
+        }
+      } else if (app.mode === 'online') {
+        sendHelloToAll();
+      }
+      if (app.room) renderAll(false);
     });
 
     window.setInterval(function () {
