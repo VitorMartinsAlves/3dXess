@@ -24,10 +24,10 @@
   };
 
   const LABELS = {
-    'pt-BR': { w: 'branca', b: 'azul', k: 'rei', q: 'dama', r: 'torre', bsh: 'bispo', n: 'cavalo', p: 'peão', square: 'Casa' },
-    en: { w: 'white', b: 'blue', k: 'king', q: 'queen', r: 'rook', bsh: 'bishop', n: 'knight', p: 'pawn', square: 'Square' },
-    es: { w: 'blanca', b: 'azul', k: 'rey', q: 'dama', r: 'torre', bsh: 'alfil', n: 'caballo', p: 'peón', square: 'Casilla' },
-    'zh-CN': { w: '白色', b: '蓝色', k: '王', q: '后', r: '车', bsh: '象', n: '马', p: '兵', square: '格子' }
+    'pt-BR': { w: 'branca', b: 'preta', k: 'rei', q: 'dama', r: 'torre', bsh: 'bispo', n: 'cavalo', p: 'peão', square: 'Casa' },
+    en: { w: 'white', b: 'black', k: 'king', q: 'queen', r: 'rook', bsh: 'bishop', n: 'knight', p: 'pawn', square: 'Square' },
+    es: { w: 'blanca', b: 'negra', k: 'rey', q: 'dama', r: 'torre', bsh: 'alfil', n: 'caballo', p: 'peón', square: 'Casilla' },
+    'zh-CN': { w: '白色', b: '黑色', k: '王', q: '后', r: '车', bsh: '象', n: '马', p: '兵', square: '格子' }
   };
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -171,6 +171,8 @@
     sprite.setAttribute('aria-hidden', 'true');
     const use = document.createElementNS(SVG_NS, 'use');
     const href = SPRITE_URL + '#' + piece.type;
+    use.setAttribute('width', '48');
+    use.setAttribute('height', '56');
     use.setAttribute('href', href);
     use.setAttributeNS(XLINK_NS, 'xlink:href', href);
     sprite.appendChild(use);
