@@ -215,3 +215,21 @@ test('new lobby copy is translated in English, Spanish and Simplified Chinese', 
     assert.ok(i18n.includes(copy), 'missing lobby translation: ' + copy);
   }
 });
+
+
+test('2D board uses original pixel-art SVG sprites and readable outside coordinates', () => {
+  const renderer = fs.readFileSync(path.join(__dirname, '..', 'board2d.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
+  const sprites = fs.readFileSync(path.join(__dirname, '..', 'assets', 'pixel-chess-pieces.svg'), 'utf8');
+  assert.match(renderer, /assets\/pixel-chess-pieces\.svg/);
+  for (const piece of ['p', 'r', 'n', 'b', 'q', 'k']) {
+    assert.match(sprites, new RegExp('<symbol id="' + piece + '"'));
+    assert.ok(renderer.includes("piece.type"), 'piece renderer resolves chess type');
+  }
+  assert.match(renderer, /createCoordinateStrip/);
+  assert.match(renderer, /updateCoordinates/);
+  assert.match(renderer, /setAttribute\('role', 'grid'\)/);
+  assert.match(styles, /image-rendering: pixelated/);
+  assert.match(styles, /board2d-coordinates/);
+  assert.match(styles, /--piece-outline-color/);
+});
