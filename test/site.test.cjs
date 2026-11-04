@@ -265,7 +265,9 @@ test('2D move animation uses the new destination piece and a board-relative moti
   assert.match(renderer, /function animateLastMove\(previousBoard, move, nextBoard\)/);
   assert.match(renderer, /movingPiece \|\| destinationPiece/);
   assert.match(renderer, /motionLayer\.getBoundingClientRect\(\)/);
+  assert.match(renderer, /document\.body\.appendChild\(motionLayer\)/);
   assert.match(renderer, /destination\.classList\.add\('is-animating-arrival'\)/);
+  assert.match(styles, /\.board2d-motion-layer\s*\{\s*position:\s*fixed/);
   assert.match(renderer, /options\.animate && boardChanged/);
   assert.match(styles, /\.board2d-square\.is-animating-arrival\s*>\s*\.board2d-piece\s*\{\s*opacity:\s*0/);
   assert.doesNotMatch(renderer, /typeof Element === 'undefined'/);
