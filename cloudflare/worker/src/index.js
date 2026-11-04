@@ -231,7 +231,7 @@ function secureEqual(left, right) {
 }
 async function verifyTotp(secret, supplied, now) {
   const code = String(supplied || "").trim();
-  if (!/^\d{6}$/.test(code)) return false;
+  if (!/^\d{6}$/.test(code)) return null;
   const key = await crypto.subtle.importKey("raw", base32Decode(secret), {
     name: "HMAC", hash: "SHA-1",
   }, false, ["sign"]);
