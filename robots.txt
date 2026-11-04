@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://vitormartinsalves.github.io/3dXess/sitemap.xml

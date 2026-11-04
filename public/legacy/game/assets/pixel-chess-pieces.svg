@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 56">
+  <title>Pixel chess piece sprites</title>
+  <defs>
+    <style>
+      .piece-outline{fill:var(--piece-fill,#edf2f5);stroke:var(--piece-outline-color,#303b49);stroke-width:3;stroke-linejoin:miter;stroke-linecap:square;shape-rendering:crispEdges}
+      .piece-shade{fill:var(--piece-shade,#a7b5c1);shape-rendering:crispEdges}
+      .piece-highlight{fill:var(--piece-highlight,#fff);shape-rendering:crispEdges}
+      .piece-detail{fill:var(--piece-detail,#526477);shape-rendering:crispEdges}
+    </style>
+  </defs>
+
+  <symbol id="p" viewBox="0 0 48 56">
+    <path class="piece-outline" d="M18 5h12v3h3v9h-3v4h4v4h4v5h-4v5h-4v5H14v-5h-4v-5H6v-5h4v-4h4v-4h4v-4h-3V8h3z M13 40h22v4h5v7H8v-7h5z"/>
+    <path class="piece-shade" d="M29 8h4v9h-4v4h4v4h4v5h-4v5h-4v5H18v-5h6v-5h4v-5h-4v-4h4v-4h-3v-9z M32 44h8v7H14v-3h18z"/>
+    <path class="piece-highlight" d="M18 8h8v3h-8z M14 28h5v7h-5z M12 44h5v3h-5z"/>
+  </symbol>
+
+  <symbol id="r" viewBox="0 0 48 56">
+    <path class="piece-outline" d="M9 6h7v5h5V6h7v5h5V6h7v16h-5v5h3v12h4v7H6v-7h4V27h3v-5H9z"/>
+    <path class="piece-shade" d="M33 11h7v11h-5v5h3v12h4v7H24v-4h8V27h-4v-5h5z"/>
+    <path class="piece-highlight" d="M12 10h4v5h-4z M21 10h5v5h-5z M31 10h4v5h-4z M14 28h5v8h-5z M10 44h8v3h-8z"/>
+    <path class="piece-detail" d="M18 37h12v3H18z"/>
+  </symbol>
+
+  <symbol id="n" viewBox="0 0 48 56">
+    <path class="piece-outline" d="M10 43h4V35h-4v-8h5v-7h5v-6h-3V8h8v4h7v5h7v8h-5v5h-4v8h5v5h5v6H6v-6z"/>
+    <path class="piece-shade" d="M25 12h7v5h7v8h-5v5h-4v8h5v5H21v-4h7v-9h4v-5h4v-5h-7v-5h-4z"/>
+    <path class="piece-highlight" d="M17 21h5v7h-5z M21 15h5v4h-5z M13 39h6v4h-6z"/>
+    <path class="piece-detail" d="M28 21h3v3h-3z M17 31h7v3h-7z"/>
+  </symbol>
+
+  <symbol id="b" viewBox="0 0 48 56">
+    <path class="piece-outline" d="M22 5h5v4h4v5h-3v4h5v5h4v7h-4v5h-4v5H15v-5h-4v-5H7v-7h5v-5h4v-5h4v-4h-3V9h5z M13 40h22v4h5v7H8v-7h5z"/>
+    <path class="piece-shade" d="M27 9h4v5h-3v4h5v5h4v7h-4v5h-4v5H18v-5h6v-5h4v-7h-4v-5h3v-4h-3z M32 44h8v7H14v-3h18z"/>
+    <path class="piece-highlight" d="M22 9h4v4h-4z M15 28h5v7h-5z M12 44h5v3h-5z"/>
+    <path class="piece-detail" d="M21 20l7 7-3 3-7-7z"/>
+  </symbol>
+
+  <symbol id="q" viewBox="0 0 48 56">
+    <path class="piece-outline" d="M8 8h6v5h-3v5h5l3-8h4l1 8h3l3-8h4l2 8h4v-5h-3V8h6v11h-4v7h-3v9h-4v5H15v-5h-4v-9H8v-7H4V8h4z M13 40h22v4h5v7H8v-7h5z"/>
+    <path class="piece-shade" d="M34 11h4v8h4v7h-3v9h-4v5H22v-4h8v-5h4v-9h3v-4h-4v-7z M32 44h8v7H14v-3h18z"/>
+    <path class="piece-highlight" d="M9 11h3v4H9z M20 17h4v5h-4z M31 17h4v5h-4z M12 28h5v7h-5z"/>
+    <path class="piece-detail" d="M17 30h14v3H17z"/>
+  </symbol>
+
+  <symbol id="k" viewBox="0 0 48 56">
+    <path class="piece-outline" d="M21 3h6v5h5v5h-5v4h-4v-4h-5V8h3z M13 19h22v5h-4v5h4v7h4v5H9v-5h4v-7h4v-5h-4z M13 40h22v4h5v7H8v-7h5z"/>
+    <path class="piece-shade" d="M29 11h3v2h-3v4h-4v-2h4z M31 19h4v5h-4v5h4v7h4v5H22v-4h7v-7h-4v-5h4z M32 44h8v7H14v-3h18z"/>
+    <path class="piece-highlight" d="M21 8h4v4h-4z M15 28h5v7h-5z M12 44h5v3h-5z"/>
+    <path class="piece-detail" d="M20 23h8v3h-8z"/>
+  </symbol>
+</svg>
