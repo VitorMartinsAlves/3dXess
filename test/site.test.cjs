@@ -33,13 +33,45 @@ test('all 32 localized routes are represented by React page components and metad
   for (const [locale, pages] of Object.entries(locales)) {
     const source = fs.readFileSync(componentFile(locale), 'utf8');
     for (const [page, route] of Object.entries(pages)) {
-      if (page === 'account') assert.ok(source.includes('export { AccountPage }'), locale + '/account export missing');
-      else assert.ok(source.includes('function ' + pageNames[page] + '()'), locale + '/' + page + ' component missing');
+      if (page === 'account') {
+        assert.ok(source.includes('export { AccountPage }'), locale + '/account export missing');
+      } else if (page === 'home') {
+        assert.ok(source.includes('import { HomePage } from "../HomePage.jsx"'), locale + '/home shared component import missing');
+        assert.ok(source.includes('export { HomePage }'), locale + '/home shared component export missing');
+      } else {
+        assert.ok(source.includes('function ' + pageNames[page] + '()'), locale + '/' + page + ' component missing');
+      }
       assert.ok(pageMeta[locale][page]?.title, locale + '/' + page + ' title missing');
       assert.ok(pageMeta[locale][page]?.description, locale + '/' + page + ' description missing');
       assert.ok(route !== undefined, locale + '/' + page + ' route missing');
     }
   }
+});
+
+test('React i18n is installed and initialized before localized pages render', () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+  const lockfile = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package-lock.json'), 'utf8'));
+  const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.jsx'), 'utf8');
+  const i18n = fs.readFileSync(path.join(__dirname, '..', 'src', 'shared', 'i18n', 'index.js'), 'utf8');
+
+  assert.ok(packageJson.dependencies.i18next, 'i18next dependency missing');
+  assert.ok(packageJson.dependencies['react-i18next'], 'react-i18next dependency missing');
+  assert.ok(lockfile.packages['node_modules/i18next'], 'i18next lock entry missing');
+  assert.ok(lockfile.packages['node_modules/react-i18next'], 'react-i18next lock entry missing');
+  assert.ok(main.includes('I18nextProvider'));
+  assert.ok(main.includes('getLocaleI18n(locale)'));
+  assert.ok(main.includes('document.documentElement.lang'));
+  assert.ok(i18n.includes('SUPPORTED_LOCALES = ["pt-BR", "en", "es", "zh-CN"]'));
+});
+
+test('global and in-game navigation expose the main destinations without closing the active game', () => {
+  const header = fs.readFileSync(path.join(__dirname, '..', 'src', 'components', 'layout', 'SiteHeader.jsx'), 'utf8');
+  const markup = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'game', 'markup', 'GameMarkup.jsx'), 'utf8');
+
+  assert.ok(header.includes('primaryNavigation = ["home", "learn", "practice", "challenges", "play"]'));
+  assert.ok(header.includes('routeHref(locale, "account")'));
+  assert.ok(markup.includes('data-game-route="account" href="/3dXess/conta/" target="_blank" rel="noopener noreferrer"'));
+  assert.ok(markup.includes('aria-label="Abrir a conta em uma nova aba"'));
 });
 
 test('SEO manager creates canonical, Open Graph, Twitter and hreflang metadata', () => {

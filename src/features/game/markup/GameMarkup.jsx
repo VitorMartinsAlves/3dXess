@@ -22,6 +22,14 @@ export function GameLobby() { return (<div id="lobby" className="screen">
         </div>
       </header>
 
+      <nav className="game-site-nav" aria-label="Navegação do site">
+        <a className="game-nav-link" data-game-route="home" href="/3dXess/">Início</a>
+        <a className="game-nav-link" data-game-route="learn" href="/3dXess/aprender/">Aprender</a>
+        <a className="game-nav-link" data-game-route="practice" href="/3dXess/praticar/">Praticar</a>
+        <a className="game-nav-link" data-game-route="challenges" href="/3dXess/desafios/">Desafios</a>
+        <a className="game-nav-link" data-game-route="account" href="/3dXess/conta/" target="_blank" rel="noopener noreferrer" aria-label="Abrir a conta em uma nova aba">Conta</a>
+      </nav>
+
       <div className="live-stats" id="live-stats" aria-label="Atividade agora no site">
         <span className="live-item" title="Pessoas com o jogo aberto agora">
           <span className="live-dot"></span><strong id="live-online">—</strong>&nbsp;online
@@ -263,6 +271,9 @@ export function GameSession() { return (<div id="game-ui" className="hidden">
       </div>
 
       <div className="actions">
+        <a id="game-account-link" className="site-game-account-link" data-game-route="account" href="/3dXess/conta/" target="_blank" rel="noopener noreferrer" aria-label="Abrir a conta em uma nova aba">
+          <span>Conta</span><span aria-hidden="true">↗</span>
+        </a>
       <div className="board-mode-switch" role="group" aria-label="Visual do tabuleiro">
         <button className="board-mode-switch-btn" type="button" data-board-mode="2d" aria-label="Modo 2D" title="Modo 2D" aria-pressed="true">2D</button>
         <button className="board-mode-switch-btn" type="button" data-board-mode="3d" aria-label="Modo 3D" title="Modo 3D" aria-pressed="false">3D</button>
