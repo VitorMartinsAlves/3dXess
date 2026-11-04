@@ -103,10 +103,13 @@
       row.className = 'board2d-row';
       row.setAttribute('role', 'row');
       for (let viewCol = 0; viewCol < 8; viewCol++) {
+        const cell = document.createElement('div');
+        cell.className = 'board2d-cell';
+        cell.setAttribute('role', 'gridcell');
+
         const square = document.createElement('button');
         square.type = 'button';
         square.className = 'board2d-square';
-        square.setAttribute('role', 'gridcell');
         square.dataset.viewRow = String(viewRow);
         square.dataset.viewCol = String(viewCol);
         square.innerHTML = '<span class="board2d-target" aria-hidden="true"></span><span class="board2d-piece" aria-hidden="true"></span>';
@@ -116,7 +119,8 @@
           clickHandler(position.r, position.f);
         });
         square.addEventListener('keydown', onSquareKeydown);
-        row.appendChild(square);
+        cell.appendChild(square);
+        row.appendChild(cell);
         squares.push(square);
       }
       grid.appendChild(row);
