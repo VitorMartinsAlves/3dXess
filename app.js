@@ -2877,10 +2877,13 @@
     app.pendingPromotion = null;
 
     announceMove(mv, prevState, app.game.status);
+
+    // O scheduler é parte da lógica da partida, não da renderização.
+    // Uma falha visual no tabuleiro nunca pode impedir a resposta do bot.
+    if (app.mode === 'bot') botAfterMove(prevState.turn);
+
     renderAll(true);
     maybeShowLocalResult();
-
-    if (app.mode === 'bot') botAfterMove(prevState.turn);
   }
 
   function undoBotMove() {
@@ -3028,7 +3031,17 @@
      RENDERIZAÇÃO
      ------------------------------------------------------------ */
   function renderAll(animate) {
-    renderBoard(!!animate);
+    try {
+      renderBoard(!!animate);
+    } catch (error) {
+      console.error('Falha ao renderizar o tabuleiro:', error);
+      // Recupera sem animação para não deixar HUD, relógio ou turno parados
+      // por uma exceção do renderer.
+      try { renderBoard(false); } catch (fallbackError) {
+        console.error('Falha ao recuperar o tabuleiro:', fallbackError);
+      }
+    }
+
     renderHUD();
     updateMoves();
     updateChat();
