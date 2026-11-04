@@ -3663,11 +3663,16 @@
   function switchTab(name) {
     const tabs = document.querySelectorAll('.tab');
     for (let i = 0; i < tabs.length; i++) {
-      tabs[i].classList.toggle('active', tabs[i].dataset.tab === name);
+      const active = tabs[i].dataset.tab === name;
+      tabs[i].classList.toggle('active', active);
+      tabs[i].setAttribute('aria-selected', String(active));
+      tabs[i].tabIndex = active ? 0 : -1;
     }
     const panels = document.querySelectorAll('.tab-panel');
     for (let i = 0; i < panels.length; i++) {
-      panels[i].classList.toggle('active', panels[i].id === 'tab-' + name);
+      const active = panels[i].id === 'tab-' + name;
+      panels[i].classList.toggle('active', active);
+      panels[i].setAttribute('aria-hidden', String(!active));
     }
 
     if (name === 'public') {
@@ -3706,6 +3711,18 @@
     for (let i = 0; i < tabs.length; i++) {
       tabs[i].addEventListener('click', function () {
         switchTab(this.dataset.tab);
+      });
+      tabs[i].addEventListener('keydown', function (event) {
+        let nextIndex = i;
+        if (event.key === 'ArrowRight') nextIndex = (i + 1) % tabs.length;
+        else if (event.key === 'ArrowLeft') nextIndex = (i - 1 + tabs.length) % tabs.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = tabs.length - 1;
+        else return;
+
+        event.preventDefault();
+        switchTab(tabs[nextIndex].dataset.tab);
+        tabs[nextIndex].focus();
       });
     }
 
