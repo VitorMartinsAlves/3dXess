@@ -344,8 +344,7 @@ test('switching board renderers restarts an in-flight bot turn', () => {
   assert.match(resume, /app\.mode !== 'bot'/);
   assert.match(resume, /app\.game\.state\.turn !== app\.bot\.color/);
   assert.match(resume, /cancelBotThinking\(\)/);
-  assert.match(resume, /botWorker = null/);
-  assert.match(resume, /previousWorker\.terminate\(\)/);
+  assert.match(resume, /stopBotWorker\(/);
   assert.match(resume, /rejectBotPending\(/);
   assert.match(resume, /scheduleBotMove\(\)/);
 
@@ -383,7 +382,7 @@ test('stalled bot searches restart without requiring a board-mode change', () =>
 
 test('bot worker failures and timeouts release the worker and scheduler', () => {
   const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
-  assert.match(app, /botWorker\.onmessageerror/);
+  assert.match(app, /worker\.onmessageerror/);
   assert.match(app, /worker\.terminate\(\)/);
   assert.match(app, /budget \+ 3500/);
   assert.match(app, /Promise\.resolve\(\)\s*\.then\(function \(\) \{\s*return requestBotMove/);
