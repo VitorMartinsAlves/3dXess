@@ -1,0 +1,67 @@
+.account-page {
+  min-height: calc(100vh - 76px);
+  padding: clamp(36px, 6vw, 72px) 24px;
+  background: radial-gradient(circle at 50% 0, rgba(56,189,248,.09), transparent 28rem);
+}
+.account-shell { width: min(760px, 100%); margin: 0 auto; }
+.account-heading { margin-bottom: 24px; text-align: center; }
+.account-heading h1 { margin: 12px 0 8px; font-size: clamp(30px, 5vw, 48px); line-height: 1.08; letter-spacing: -.05em; }
+.account-eyebrow { color: var(--site-accent); font-size: 11px; font-weight: 800; letter-spacing: .16em; }
+.account-muted { color: var(--site-muted); line-height: 1.7; }
+.account-panel {
+  margin-top: 16px; padding: clamp(20px, 4vw, 30px);
+  border: 1px solid var(--site-line); border-radius: 18px;
+  background: var(--site-panel); box-shadow: 0 18px 55px rgba(0,0,0,.18);
+}
+.account-panel h2 { margin: 0 0 8px; font-size: 21px; letter-spacing: -.03em; }
+.account-form { display: grid; gap: 15px; margin-top: 18px; }
+.account-form label, .account-totp label { display: grid; gap: 7px; color: var(--site-text); font-size: 13px; font-weight: 650; }
+.account-form input, .account-totp input {
+  width: 100%; min-height: 46px; padding: 10px 13px;
+  border: 1px solid var(--site-line-strong); border-radius: 11px;
+  background: rgba(5,10,16,.65); color: var(--site-text);
+}
+.account-form input:focus, .account-totp input:focus { border-color: var(--site-accent); outline: 2px solid rgba(110,231,183,.14); }
+.account-form button { width: 100%; margin-top: 3px; }
+.account-tabs { display: flex; gap: 6px; padding: 4px; border-radius: 12px; background: rgba(255,255,255,.04); }
+.account-tabs button {
+  flex: 1; min-height: 39px; border: 0; border-radius: 9px;
+  color: var(--site-muted); background: transparent; font-weight: 700; cursor: pointer;
+}
+.account-tabs button.is-active { color: var(--site-text); background: rgba(110,231,183,.12); }
+.account-link {
+  margin-top: 14px; padding: 4px 0; border: 0; color: var(--site-accent);
+  background: transparent; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.account-message { padding: 12px 15px; border-radius: 11px; font-size: 13px; }
+.account-message.is-error { color: #fecdd3; background: rgba(251,113,133,.1); }
+.account-message.is-success { color: #a7f3d0; background: rgba(110,231,183,.1); }
+.account-totp { display: grid; justify-items: center; gap: 14px; margin-top: 20px; }
+.account-totp p { margin: 0; text-align: center; }
+.account-totp label { width: 100%; }
+.account-qr { width: 220px; height: 220px; padding: 10px; border-radius: 12px; background: white; }
+.account-secret {
+  display: block; padding: 13px; border: 1px dashed var(--site-line-strong);
+  border-radius: 10px; color: var(--site-accent); background: rgba(255,255,255,.035);
+  overflow-wrap: anywhere; user-select: all; text-align: center;
+}
+.account-stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin: 20px 0; }
+.account-stats article, .account-profile > div {
+  display: grid; gap: 5px; padding: 16px 12px; border: 1px solid var(--site-line);
+  border-radius: 13px; background: var(--site-panel); text-align: center;
+}
+.account-stats span, .account-profile span { color: var(--site-muted); font-size: 11px; }
+.account-stats strong { font-size: 24px; }
+.account-profile { display: grid; grid-template-columns: repeat(4, 1fr) auto; align-items: center; gap: 10px; }
+.account-profile strong { font-size: 18px; }
+.account-table-wrap { overflow-x: auto; margin-top: 14px; }
+.account-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.account-table th, .account-table td { padding: 12px 10px; border-bottom: 1px solid var(--site-line); text-align: left; }
+.account-table th { color: var(--site-muted); font-size: 11px; font-weight: 700; }
+.account-table tr.is-current td { color: var(--site-accent); font-weight: 750; }
+@media (max-width: 600px) {
+  .account-page { padding-inline: 16px; }
+  .account-stats { grid-template-columns: repeat(2, 1fr); }
+  .account-profile { grid-template-columns: repeat(2, 1fr); }
+  .account-profile button { grid-column: 1 / -1; }
+}
