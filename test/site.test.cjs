@@ -505,3 +505,22 @@ test('game lobby reads the exact account nickname key and distinguishes guest pl
   assert.match(game, /displayPlayerName\(p\)/);
   assert.match(game, /displayPlayerName\(room\.spectators\[id\]\)/);
 });
+
+
+test('learning, practice, and daily challenge pages expose consistent responsive UX hooks', () => {
+  for (const locale of Object.keys(locales)) {
+    const source = fs.readFileSync(componentFile(locale), 'utf8');
+    assert.match(source, /className="site-learn-page"/, locale + ' learning page UX hook missing');
+    assert.match(source, /className="site-practice-page"/, locale + ' practice page UX hook missing');
+    assert.match(source, /className="site-challenges-page"/, locale + ' challenges page UX hook missing');
+    assert.doesNotMatch(source, /<h3>[1-5] · /, locale + ' learning steps contain duplicate numbering');
+  }
+
+  const siteCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', 'site.css'), 'utf8');
+  const accountCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'account', 'account.css'), 'utf8');
+  for (const selector of ['.site-learn-page .site-step', '.site-practice-page .site-progress', '.site-challenges-page .site-progress', 'position: sticky']) {
+    assert.ok(siteCss.includes(selector), 'responsive training style missing: ' + selector);
+  }
+  assert.ok(accountCss.includes('Stage 3 — account clarity'));
+  assert.ok(accountCss.includes('account-table-wrap'));
+});

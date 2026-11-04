@@ -748,3 +748,105 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
   .account-profile { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .account-profile button { grid-column: 1 / -1; justify-self: stretch; }
 }
+
+
+/* Stage 3 — focused learning and training layouts */
+.site-learn-page .site-step {
+  align-items: start;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+.site-learn-page .site-step:hover {
+  border-color: rgba(110, 231, 183, .28);
+  background: rgba(110, 231, 183, .035);
+  transform: translateY(-1px);
+}
+.site-learn-page .site-step > div { min-width: 0; }
+.site-learn-page .site-step h3 {
+  color: var(--site-text);
+  font-size: 15px;
+  line-height: 1.4;
+}
+.site-learn-page .site-step p {
+  max-width: 68ch;
+  line-height: 1.65;
+}
+.site-learn-page .site-step .site-button {
+  margin-top: 8px;
+  justify-content: flex-start;
+}
+.site-practice-page .site-trainer {
+  grid-template-columns: minmax(270px, .86fr) minmax(0, 1.14fr);
+  gap: 20px;
+}
+.site-practice-page .site-trainer-panel {
+  display: flex;
+  flex-direction: column;
+}
+.site-practice-page .site-scenario-button {
+  min-height: 72px;
+  padding: 14px 15px;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+.site-practice-page .site-scenario-button:hover { transform: translateY(-1px); }
+.site-practice-page .site-scenario-button strong {
+  color: var(--site-text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.site-practice-page .site-scenario-button span { line-height: 1.5; }
+.site-practice-page .site-progress,
+.site-challenges-page .site-progress {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.site-practice-page .site-progress span,
+.site-challenges-page .site-progress span {
+  min-width: 0;
+  padding: 9px 8px;
+  border: 1px solid var(--site-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .025);
+  line-height: 1.45;
+}
+.site-practice-page .site-progress strong,
+.site-challenges-page .site-progress strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.site-practice-page .site-training-status { line-height: 1.6; }
+.site-practice-page .site-training-actions button { flex: 1 1 auto; }
+.site-challenges-page .site-trainer-panel {
+  border-color: rgba(110, 231, 183, .18);
+}
+@media (min-width: 901px) {
+  .site-practice-page .site-board-panel,
+  .site-challenges-page .site-board-panel {
+    position: sticky;
+    top: 90px;
+  }
+}
+@media (max-width: 900px) {
+  .site-practice-page .site-trainer { grid-template-columns: minmax(0, 1fr); }
+  .site-practice-page .site-board-panel,
+  .site-challenges-page .site-board-panel { position: static; }
+}
+@media (max-width: 700px) {
+  .site-practice-page .site-progress,
+  .site-challenges-page .site-progress { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .site-practice-page .site-progress span,
+  .site-challenges-page .site-progress span {
+    padding: 8px 6px;
+    font-size: 10px;
+    overflow-wrap: anywhere;
+  }
+  .site-practice-page .site-progress strong,
+  .site-challenges-page .site-progress strong { font-size: 15px; }
+  .site-practice-page .site-training-actions button { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-learn-page .site-step,
+  .site-practice-page .site-scenario-button { transform: none !important; }
+}
