@@ -159,4 +159,9 @@ test('game loads the 3D renderer only when selected and persists the choice', ()
   assert.match(app, /function setBoardMode/);
   assert.match(app, /saveSettings\(\)/);
   assert.match(app, /data-board-mode/);
+  const ensureStart = app.indexOf('function ensureBoard');
+  const ensureEnd = app.indexOf('function clearBotRuntime', ensureStart);
+  const ensureBoard = app.slice(ensureStart, ensureEnd);
+  assert.match(ensureBoard, /settings\.boardMode === '3d'/);
+  assert.match(ensureBoard, /activateBoard\('2d'\)/);
 });
