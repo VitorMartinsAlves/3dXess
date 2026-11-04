@@ -528,19 +528,22 @@
       }
     }
 
-    // O cavalo pode cruzar uma das casas intermediárias do seu movimento em L.
+    // No movimento em L do cavalo, verifica as duas casas tocadas
+    // pela trajetória entre os centros das casas inicial e final.
     if (absR === 2 && absF === 1) {
+      const middleRank = from.r + Math.sign(dr);
       const candidates = [
-        { r: from.r + Math.sign(dr), f: from.f },
-        { r: from.r, f: from.f + Math.sign(df) },
+        { r: middleRank, f: from.f },
+        { r: middleRank, f: to.f },
       ];
       if (candidates.some(function (square) {
         return !!(board[square.r] && board[square.r][square.f]);
       })) return true;
     } else if (absR === 1 && absF === 2) {
+      const middleFile = from.f + Math.sign(df);
       const candidates = [
-        { r: from.r, f: from.f + Math.sign(df) },
-        { r: from.r + Math.sign(dr), f: from.f },
+        { r: from.r, f: middleFile },
+        { r: to.r, f: middleFile },
       ];
       if (candidates.some(function (square) {
         return !!(board[square.r] && board[square.r][square.f]);
