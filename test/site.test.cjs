@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 
 const BASE = 'https://vitormartinsalves.github.io/3dXess/';
 const locales = {
@@ -271,4 +272,47 @@ test('2D move animation uses the new destination piece and a board-relative moti
   assert.match(renderer, /options\.animate && boardChanged/);
   assert.match(styles, /\.board2d-square\.is-animating-arrival\s*>\s*\.board2d-piece\s*\{\s*opacity:\s*0/);
   assert.doesNotMatch(renderer, /typeof Element === 'undefined'/);
+});
+
+
+test('bot completes multiple consecutive turns within its bounded search budget', () => {
+  const context = vm.createContext({});
+  const engine = fs.readFileSync(path.join(__dirname, '..', 'engine.js'), 'utf8');
+  const bot = fs.readFileSync(path.join(__dirname, '..', 'bot.js'), 'utf8');
+  vm.runInContext(engine, context, { timeout: 1000 });
+  vm.runInContext(bot, context, { timeout: 1000 });
+
+  let state = context.Chess.createInitialState();
+  for (let ply = 0; ply < 12; ply++) {
+    const result = context.Bot.chooseMove(state, {
+      level: 1,
+      style: 'balanced',
+      timeMs: 100
+    });
+    assert.ok(result && result.uci, 'bot should return a move on ply ' + ply);
+    const move = context.Chess.findLegalMove(
+      state,
+      result.move.from,
+      result.move.to,
+      result.move.promotion || null
+    );
+    assert.ok(move, 'bot move must be legal on ply ' + ply);
+    context.Chess.applyMove(state, move);
+  }
+});
+
+test('quiescence search caps consecutive check extensions', () => {
+  const bot = fs.readFileSync(path.join(__dirname, '..', 'bot.js'), 'utf8');
+  assert.match(bot, /MAX_QUIESCENCE_CHECK_EXTENSION = 8/);
+  assert.match(bot, /const hardPlyLimit = ctx\.quiescencePly \+ MAX_QUIESCENCE_CHECK_EXTENSION/);
+  assert.match(bot, /if \(inCheck && ply >= hardPlyLimit\)/);
+});
+
+test('bot worker failures and timeouts release the worker and scheduler', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  assert.match(app, /botWorker\.onmessageerror/);
+  assert.match(app, /worker\.terminate\(\)/);
+  assert.match(app, /budget \+ 3500/);
+  assert.match(app, /Promise\.resolve\(\)\.then\(function \(\) \{\s*return requestBotMove/);
+  assert.match(app, /app\.bot\.thinking = false;\s*commitLocal\(move\)/);
 });
