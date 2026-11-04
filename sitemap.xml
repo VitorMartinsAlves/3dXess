@@ -1,14 +1,317 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://vitormartinsalves.github.io/3dXess/</loc>
     <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/"/>
     <image:image>
       <image:loc>https://vitormartinsalves.github.io/3dXess/og-image.png</image:loc>
-      <image:title>Xadrez 3D Online — tabuleiro 3D no navegador</image:title>
+      <image:title>3dXess — Xadrez 3D Online</image:title>
     </image:image>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/en/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/es/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/zh-cn/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/sobre/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/sobre/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/about/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/acerca/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/about/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/sobre/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/en/about/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/sobre/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/about/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/acerca/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/about/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/sobre/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/es/acerca/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/sobre/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/about/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/acerca/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/about/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/sobre/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/zh-cn/about/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/sobre/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/about/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/acerca/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/about/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/sobre/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/aprender/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/aprender/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/learn/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/aprender/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/learn/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/aprender/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/en/learn/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/aprender/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/learn/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/aprender/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/learn/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/aprender/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/es/aprender/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/aprender/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/learn/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/aprender/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/learn/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/aprender/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/zh-cn/learn/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/aprender/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/learn/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/aprender/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/learn/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/aprender/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/praticar/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/praticar/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/practice/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/practica/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/practice/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/praticar/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/en/practice/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/praticar/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/practice/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/practica/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/practice/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/praticar/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/es/practica/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/praticar/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/practice/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/practica/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/practice/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/praticar/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/zh-cn/practice/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/praticar/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/practice/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/practica/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/practice/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/praticar/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/desafios/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/desafios/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/challenges/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/desafios/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/challenges/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/desafios/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/en/challenges/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/desafios/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/challenges/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/desafios/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/challenges/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/desafios/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/es/desafios/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/desafios/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/challenges/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/desafios/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/challenges/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/desafios/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/zh-cn/challenges/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/desafios/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/challenges/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/desafios/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/challenges/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/desafios/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/regras/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/regras/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/rules/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/reglas/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/rules/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/regras/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/en/rules/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/regras/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/rules/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/reglas/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/rules/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/regras/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/es/reglas/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/regras/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/rules/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/reglas/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/rules/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/regras/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/zh-cn/rules/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/regras/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/rules/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/reglas/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/rules/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/regras/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/jogar/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/jogar/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/play/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/jugar/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/play/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/jogar/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/en/play/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/jogar/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/play/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/jugar/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/play/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/jogar/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/es/jugar/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/jogar/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/play/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/jugar/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/play/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/jogar/"/>
+  </url>
+  <url>
+    <loc>https://vitormartinsalves.github.io/3dXess/zh-cn/play/</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+      <xhtml:link rel="alternate" hreflang="pt-BR" href="https://vitormartinsalves.github.io/3dXess/jogar/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://vitormartinsalves.github.io/3dXess/en/play/"/>
+      <xhtml:link rel="alternate" hreflang="es" href="https://vitormartinsalves.github.io/3dXess/es/jugar/"/>
+      <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vitormartinsalves.github.io/3dXess/zh-cn/play/"/>
+      <xhtml:link rel="alternate" hreflang="x-default" href="https://vitormartinsalves.github.io/3dXess/jogar/"/>
   </url>
 </urlset>
