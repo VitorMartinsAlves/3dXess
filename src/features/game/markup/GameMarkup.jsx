@@ -431,7 +431,7 @@ export function GameDialogs() { return (<><div id="promotion" className="modal h
       </div>
     </div>
   </div>
-<div id="loader" className="modal hidden">
+<div id="loader" className="modal hidden" hidden>
     <div className="loader-card">
       <div className="spinner"></div>
       <p id="loader-text">Conectando…</p>
