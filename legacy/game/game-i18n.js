@@ -109,12 +109,6 @@
     }
   };
   const dict = dictionaries[lang] || {};
-  const routes = {
-    "pt-BR": { home:"/3dXess/", play:"/3dXess/jogar/" },
-    en: { home:"/3dXess/en/", play:"/3dXess/en/play/" },
-    es: { home:"/3dXess/es/", play:"/3dXess/es/jugar/" },
-    "zh-CN": { home:"/3dXess/zh-cn/", play:"/3dXess/zh-cn/play/" }
-  };
   const translatedText = new WeakMap();
 
   const routes = {
