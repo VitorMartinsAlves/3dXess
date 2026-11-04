@@ -139,7 +139,8 @@ test('2D renderer is independent from WebGL and exposes keyboard-accessible squa
   const renderer = fs.readFileSync(path.join(__dirname, '..', 'board2d.js'), 'utf8');
   assert.doesNotMatch(renderer, /THREE\./);
   assert.match(renderer, /global\.Board2D/);
-  assert.match(renderer, /role', 'grid'/);
+  assert.match(renderer, /role', 'group'/);
+  assert.match(renderer, /square.type = 'button'/);
   assert.match(renderer, /ArrowUp/);
   assert.match(renderer, /ArrowDown/);
   assert.match(renderer, /ArrowLeft/);
