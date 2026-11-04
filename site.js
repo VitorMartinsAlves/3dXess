@@ -39,6 +39,12 @@
       if (target !== undefined) window.location.assign(BASE + target);
     });
   }
+  document.querySelectorAll('a[href="#main"]').forEach(el => {
+    el.setAttribute("href", BASE + routes[lang][page] + "#main");
+  });
+  document.querySelectorAll('a[href="#training-board"]').forEach(el => {
+    el.setAttribute("href", BASE + routes[lang][page] + "#training-board");
+  });
   document.querySelectorAll("[data-current-year]").forEach(el => {
     el.textContent = String(new Date().getFullYear());
   });
