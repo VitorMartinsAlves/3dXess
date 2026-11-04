@@ -122,23 +122,23 @@ test('trainer pages load the 3D engine and shared trainer module', () => {
 test('localized game pages expose both board modes without eagerly loading WebGL', () => {
   for (const [locale, routes] of Object.entries(locales)) {
     const html = readRoute(routes.play);
-    assert.match(html, /game-i18n\\.js/);
-    assert.match(html, /board2d\\.js/);
+    assert.match(html, /game-i18n\.js/);
+    assert.match(html, /board2d\.js/);
     assert.match(html, /id="game-language-switch"/);
     assert.match(html, /id="board-2d"/);
     assert.match(html, /id="board-3d"/);
     assert.match(html, /data-board-mode="2d"/);
     assert.match(html, /data-board-mode="3d"/);
-    assert.doesNotMatch(html, /vendor\\/three\\.min\\.js|vendor\\/OrbitControls\\.js/);
-    assert.doesNotMatch(html, /src="board3d\\.js"/);
+    assert.doesNotMatch(html, /vendor\/three\.min\.js|vendor\/OrbitControls\.js/);
+    assert.doesNotMatch(html, /src="board3d\.js"/);
     assert.ok(html.includes('lang="' + locale + '"'));
   }
 });
 
 test('2D renderer is independent from WebGL and exposes keyboard-accessible squares', () => {
   const renderer = fs.readFileSync(path.join(__dirname, '..', 'board2d.js'), 'utf8');
-  assert.doesNotMatch(renderer, /THREE\\./);
-  assert.match(renderer, /global\\.Board2D/);
+  assert.doesNotMatch(renderer, /THREE\./);
+  assert.match(renderer, /global\.Board2D/);
   assert.match(renderer, /role', 'grid'/);
   assert.match(renderer, /ArrowUp/);
   assert.match(renderer, /ArrowDown/);
@@ -153,9 +153,9 @@ test('game loads the 3D renderer only when selected and persists the choice', ()
   const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
   assert.match(app, /boardMode: '2d'/);
   assert.match(app, /function loadBoard3DAssets/);
-  assert.match(app, /vendor\\/three\\.min\\.js/);
-  assert.match(app, /vendor\\/OrbitControls\\.js/);
+  assert.match(app, /vendor\/three\.min\.js/);
+  assert.match(app, /vendor\/OrbitControls\.js/);
   assert.match(app, /function setBoardMode/);
-  assert.match(app, /saveSettings\\(\\)/);
+  assert.match(app, /saveSettings\(\)/);
   assert.match(app, /data-board-mode/);
 });
