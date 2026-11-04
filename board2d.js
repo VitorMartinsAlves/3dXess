@@ -353,36 +353,48 @@
     destination.classList.add('is-animating-arrival');
     animatedTargets.add(destination);
 
-    if (typeof start.element.animate !== 'function') {
-      start.element.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0)';
-      window.setTimeout(function () {
-        start.element.remove();
-        destination.classList.remove('is-animating-arrival');
-        animatedTargets.delete(destination);
-      }, 420);
-      return true;
-    }
-
-    const animation = start.element.animate([
-      { transform: 'translate3d(0, 0, 0) scale(1)' },
-      { transform: 'translate3d(' + (dx * 0.5) + 'px, ' + (dy * 0.5 - arc) + 'px, 0) scale(1.08)', offset: 0.48 },
-      { transform: 'translate3d(' + dx + 'px, ' + dy + 'px, 0) scale(1)' }
-    ], {
-      duration: 520 + Math.min(distance * 0.065, 130),
-      delay: delay || 0,
-      easing: 'cubic-bezier(.2,.78,.24,1)',
-      fill: 'forwards'
-    });
-
-    motionAnimations.add(animation);
+    let animation = null;
+    let cleanupTimer = null;
+    let cleaned = false;
     function cleanup() {
-      motionAnimations.delete(animation);
+      if (cleaned) return;
+      cleaned = true;
+      if (cleanupTimer !== null) window.clearTimeout(cleanupTimer);
+      if (animation) motionAnimations.delete(animation);
       start.element.remove();
       destination.classList.remove('is-animating-arrival');
       animatedTargets.delete(destination);
     }
+
+    if (typeof start.element.animate !== 'function') {
+      start.element.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0)';
+      cleanupTimer = window.setTimeout(cleanup, 700);
+      return true;
+    }
+
+    try {
+      animation = start.element.animate([
+        { transform: 'translate3d(0, 0, 0) scale(1)' },
+        { transform: 'translate3d(' + (dx * 0.5) + 'px, ' + (dy * 0.5 - arc) + 'px, 0) scale(1.08)', offset: 0.48 },
+        { transform: 'translate3d(' + dx + 'px, ' + dy + 'px, 0) scale(1)' }
+      ], {
+        duration: 520 + Math.min(distance * 0.065, 130),
+        delay: delay || 0,
+        easing: 'cubic-bezier(.2,.78,.24,1)',
+        fill: 'forwards'
+      });
+    } catch (error) {
+      console.warn('Board2D move animation:', error);
+      cleanup();
+      return false;
+    }
+
+    motionAnimations.add(animation);
     animation.onfinish = cleanup;
     animation.oncancel = cleanup;
+    // Alguns navegadores podem não disparar finish/cancel ao ocultar o board.
+    // O watchdog garante que a peça de destino nunca permaneça invisível.
+    cleanupTimer = window.setTimeout(cleanup, 1400);
     return true;
   }
 
@@ -401,24 +413,36 @@
     ghost.element.classList.add('is-capture-ghost');
     motionLayer.appendChild(ghost.element);
 
+    let animation = null;
+    let cleanupTimer = null;
+    let cleaned = false;
+    function cleanup() {
+      if (cleaned) return;
+      cleaned = true;
+      if (cleanupTimer !== null) window.clearTimeout(cleanupTimer);
+      if (animation) motionAnimations.delete(animation);
+      ghost.element.remove();
+    }
+
     if (typeof ghost.element.animate !== 'function') {
-      window.setTimeout(function () { ghost.element.remove(); }, 260);
+      cleanupTimer = window.setTimeout(cleanup, 420);
       return;
     }
-    const animation = ghost.element.animate([
-      { opacity: 1, transform: 'scale(1) translateY(0)' },
-      { opacity: 0, transform: 'scale(.72) translateY(7px)' }
-    ], { duration: 330, easing: 'ease-out', fill: 'forwards' });
+    try {
+      animation = ghost.element.animate([
+        { opacity: 1, transform: 'scale(1) translateY(0)' },
+        { opacity: 0, transform: 'scale(.72) translateY(7px)' }
+      ], { duration: 330, easing: 'ease-out', fill: 'forwards' });
+    } catch (error) {
+      console.warn('Board2D capture animation:', error);
+      cleanup();
+      return;
+    }
 
     motionAnimations.add(animation);
-    animation.onfinish = function () {
-      motionAnimations.delete(animation);
-      ghost.element.remove();
-    };
-    animation.oncancel = function () {
-      motionAnimations.delete(animation);
-      ghost.element.remove();
-    };
+    animation.onfinish = cleanup;
+    animation.oncancel = cleanup;
+    cleanupTimer = window.setTimeout(cleanup, 1000);
   }
 
   function animateLastMove(previousBoard, move, nextBoard) {
@@ -464,13 +488,20 @@
     checkSquare = options.checkSquare || null;
     render();
 
+    // Atualiza o snapshot antes da animação: a camada visual nunca deve
+    // controlar o estado lógico nem impedir o próximo lance.
+    if (nextBoard) renderedBoardSnapshot = copyBoard(nextBoard);
+
     if (options.animate && boardChanged) {
-      animateLastMove(previousBoard, lastMove, nextBoard);
+      try {
+        animateLastMove(previousBoard, lastMove, nextBoard);
+      } catch (error) {
+        console.warn('Board2D move animation:', error);
+        cancelMoveAnimations();
+      }
     } else if (boardChanged) {
       cancelMoveAnimations();
     }
-
-    if (nextBoard) renderedBoardSnapshot = copyBoard(nextBoard);
   }
 
   function setOrientation(color) {
