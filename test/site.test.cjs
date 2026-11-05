@@ -428,7 +428,7 @@ test('game waits for its stylesheet before mounting the lobby markup', () => {
   const runtime = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'game', 'components', 'GameRuntime.jsx'), 'utf8');
   assert.match(runtime, /const \[stylesReady, setStylesReady\] = useState\(false\)/);
   assert.match(runtime, /import\("\.\.\/\.\.\/\.\.\/styles\/game\.css"\)/);
-  assert.match(runtime, /if \(!stylesReady\) return <GameLoadingScreen error=\{error\} \/>;/);
+  assert.match(runtime, /if \(!stylesReady\) return <GameLoadingScreen error=\{error\} locale=\{i18n\.resolvedLanguage \|\| i18n\.language\} \/>;/);
   assert.match(runtime, /if \(!stylesReady \|\| error\) return undefined;/);
   assert.match(runtime, /loadLegacyScripts\(GAME_SCRIPTS\)/);
   assert.match(runtime, /onAuthStateChanged\(client\.auth/);
