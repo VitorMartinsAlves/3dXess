@@ -3887,6 +3887,89 @@
     if (el) el.addEventListener(event, handler);
   }
 
+  const DIALOG_FOCUSABLE = [
+    'button:not([disabled])',
+    'input:not([disabled]):not([type="hidden"])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    'a[href]',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(',');
+  let activeAccessibleDialog = null;
+  let dialogReturnFocus = null;
+
+  function getDialogFocusables(dialog) {
+    return Array.from(dialog.querySelectorAll(DIALOG_FOCUSABLE)).filter(function (element) {
+      return element.getClientRects().length > 0 &&
+        !element.closest('[aria-hidden="true"]');
+    });
+  }
+
+  function syncAccessibleDialog() {
+    const openDialogs = Array.from(document.querySelectorAll('.modal[role="dialog"]:not(.hidden)'))
+      .filter(function (dialog) { return !dialog.hidden; });
+    const nextDialog = openDialogs[openDialogs.length - 1] || null;
+    if (nextDialog === activeAccessibleDialog) return;
+
+    if (activeAccessibleDialog) activeAccessibleDialog.setAttribute('aria-hidden', 'true');
+    if (!activeAccessibleDialog && nextDialog) dialogReturnFocus = document.activeElement;
+    activeAccessibleDialog = nextDialog;
+
+    if (activeAccessibleDialog) {
+      activeAccessibleDialog.setAttribute('aria-hidden', 'false');
+      const focusables = getDialogFocusables(activeAccessibleDialog);
+      const target = focusables[0] || activeAccessibleDialog.querySelector('.modal-card') || activeAccessibleDialog;
+      if (!target.hasAttribute('tabindex')) target.tabIndex = -1;
+      requestAnimationFrame(function () {
+        if (activeAccessibleDialog === nextDialog) target.focus({ preventScroll: true });
+      });
+      return;
+    }
+
+    const restoreTarget = dialogReturnFocus;
+    dialogReturnFocus = null;
+    if (restoreTarget && restoreTarget.isConnected && !restoreTarget.disabled) {
+      restoreTarget.focus({ preventScroll: true });
+    }
+  }
+
+  function trapDialogFocus(event) {
+    if (!activeAccessibleDialog || event.key !== 'Tab') return;
+    const focusables = getDialogFocusables(activeAccessibleDialog);
+    if (!focusables.length) {
+      event.preventDefault();
+      activeAccessibleDialog.focus();
+      return;
+    }
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (!activeAccessibleDialog.contains(document.activeElement)) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus();
+    } else if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  function setupDialogAccessibility() {
+    const dialogs = document.querySelectorAll('.modal[role="dialog"]');
+    dialogs.forEach(function (dialog) {
+      dialog.setAttribute('aria-hidden', String(dialog.classList.contains('hidden') || dialog.hidden));
+    });
+    const observer = new MutationObserver(syncAccessibleDialog);
+    dialogs.forEach(function (dialog) {
+      observer.observe(dialog, { attributes: true, attributeFilter: ['class', 'hidden'] });
+    });
+    document.addEventListener('keydown', trapDialogFocus, true);
+    syncAccessibleDialog();
+  }
+
+
   function wireEvents() {
     const boardModeButtons = document.querySelectorAll('[data-board-mode]');
     for (let i = 0; i < boardModeButtons.length; i++) {
@@ -4076,6 +4159,8 @@
       if (event.key !== 'Escape') return;
       if (!$('promotion').classList.contains('hidden')) {
         closePromotion();
+      } else if (!$('confirm').classList.contains('hidden')) {
+        closeConfirm(false);
       } else if (app.selected) {
         clearSelection();
       } else if (!$('settings').classList.contains('hidden')) {
@@ -4096,6 +4181,7 @@
      INICIALIZAÇÃO
      ------------------------------------------------------------ */
   function init() {
+    setupDialogAccessibility();
     if (!C || !window.Board2D) {
       const error = $('load-error');
       if (error) error.hidden = false;
