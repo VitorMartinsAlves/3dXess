@@ -447,7 +447,8 @@ test('game waits for its stylesheet before mounting the lobby markup', () => {
 test('Firebase accounts use email/password, native password reset and public player names', () => {
   const account = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'account', 'AccountPage.jsx'), 'utf8');
   const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'App.jsx'), 'utf8');
-  assert.match(app, /const AccountPage = lazy\(\(\) =>/);\n  assert.ok(app.includes('import("./features/account/AccountPage.jsx")'));
+  assert.match(app, /const AccountPage = lazy\(\(\) =>/);
+  assert.ok(app.includes('import("./features/account/AccountPage.jsx")'));
   for (const required of [
     'createUserWithEmailAndPassword',
     'signInWithEmailAndPassword',
