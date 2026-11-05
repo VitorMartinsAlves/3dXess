@@ -1611,3 +1611,25 @@ body[data-trainer-mode] { overflow-x: hidden; overflow-y: auto; }
   .lobby-head-actions { gap: 6px; }
   .site-game-account-link span:first-child { display: none; }
 }
+
+
+/* Stage 4 — visible keyboard path into the game lobby */
+.game-skip-link {
+  position: fixed;
+  z-index: 1000;
+  top: 8px;
+  left: 8px;
+  padding: 10px 14px;
+  border-radius: 9px;
+  color: #04121a;
+  background: var(--accent);
+  font-size: 13px;
+  font-weight: 750;
+  transform: translateY(-160%);
+  transition: transform .15s ease;
+}
+.game-skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}

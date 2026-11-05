@@ -850,3 +850,16 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
   .site-learn-page .site-step,
   .site-practice-page .site-scenario-button { transform: none !important; }
 }
+
+
+/* Stage 4 — asynchronous route feedback */
+.site-page-loading {
+  min-height: 42vh;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+}
+.site-page-loading p {
+  margin: 12px 0 0;
+  color: var(--site-muted);
+}
