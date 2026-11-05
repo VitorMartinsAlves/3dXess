@@ -68,7 +68,7 @@ export function GameLobby() { return (<div id="lobby" className="screen">
         </section>
       </section>
 
-      <div id="lobby-intro" className="lobby-intro">
+      <div id="lobby-intro" className="lobby-intro" tabIndex="-1">
         <h2>Escolha como jogar</h2>
         <p>Partidas online, desafios contra o bot ou salas com amigos.</p>
       </div>

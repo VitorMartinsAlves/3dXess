@@ -4,7 +4,7 @@ Xadrez 2D/3D no navegador, com partidas locais, bot, salas P2P e treinamento por
 
 ## Desenvolvimento
 
-Requisitos: Node.js 22.12 ou superior.
+Requisitos: Node.js 24.12 ou superior.
 
 Instale as dependências e inicie o servidor de desenvolvimento:
 

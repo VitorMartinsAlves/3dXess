@@ -564,3 +564,10 @@ test('custom game dialogs are labelled and trap keyboard focus', () => {
   assert.ok(markup.includes('className="game-skip-link"'));
   assert.ok(markup.includes('className="lobby-wrap" role="main"'));
 });
+
+
+test('the game lobby skip link moves keyboard users to a focusable main heading', () => {
+  const markup = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'game', 'markup', 'GameMarkup.jsx'), 'utf8');
+  assert.ok(markup.includes('href="#lobby-intro"'));
+  assert.ok(markup.includes('id="lobby-intro" className="lobby-intro" tabIndex="-1"'));
+});
