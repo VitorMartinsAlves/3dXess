@@ -431,8 +431,8 @@ test('game waits for its stylesheet before mounting the lobby markup', () => {
   assert.match(runtime, /if \(!stylesReady\) return <GameLoadingScreen error=\{error\} \/>;/);
   assert.match(runtime, /if \(!stylesReady \|\| error\) return undefined;/);
   assert.match(runtime, /loadLegacyScripts\(GAME_SCRIPTS\)/);
-  assert.match(runtime, /onAuthStateChanged\(auth/);
-  assert.match(runtime, /getDoc\(doc\(db, "users", user\.uid\)\)/);
+  assert.match(runtime, /onAuthStateChanged\(client\.auth/);
+  assert.match(runtime, /getDoc\(doc\(client\.db, "users", user\.uid\)\)/);
   assert.match(runtime, /cacheAccountIdentity\(user\.uid, snapshot\.data\(\)\.username\)/);
   assert.match(runtime, /xadrez3d\.settings\.v3/);
   assert.match(runtime, /3dxess\.account\.session\.v1/);
@@ -447,7 +447,7 @@ test('game waits for its stylesheet before mounting the lobby markup', () => {
 test('Firebase accounts use email/password, native password reset and public player names', () => {
   const account = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'account', 'AccountPage.jsx'), 'utf8');
   const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'App.jsx'), 'utf8');
-  assert.match(app, /account: "AccountPage"/);
+  assert.match(app, /const AccountPage = lazy\(\(\) =>/);\n  assert.ok(app.includes('import("./features/account/AccountPage.jsx")'));
   for (const required of [
     'createUserWithEmailAndPassword',
     'signInWithEmailAndPassword',
