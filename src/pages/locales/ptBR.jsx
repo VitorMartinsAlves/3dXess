@@ -31,4 +31,4 @@ export function PlayPage() { return (<GameRuntime><GameBoardStage /><GameLobby /
 
 
 
-export { HomePage };
+export { AboutPage, HomePage };

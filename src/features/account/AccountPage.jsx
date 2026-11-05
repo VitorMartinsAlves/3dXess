@@ -242,7 +242,17 @@ export function AccountPage() {
   }
 
   if (loading) {
-    return <main id="main" className="account-page"><div className="account-shell"><section className="account-panel">{t("loading")}</section></div></main>;
+    return (
+      <main id="main" className="account-page">
+        <div className="account-shell">
+          <header className="account-heading">
+            <p className="account-eyebrow">{t("eyebrow")}</p>
+            <h1>{t("title")}</h1>
+            <p className="account-muted">{t("loading")}</p>
+          </header>
+        </div>
+      </main>
+    );
   }
 
   return (

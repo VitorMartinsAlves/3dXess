@@ -38,7 +38,7 @@ test('all 32 localized routes are represented by React page components and metad
         assert.ok(app.includes('import("./features/account/AccountPage.jsx")'), locale + '/account lazy module missing');
       } else if (page === 'home') {
         assert.ok(source.includes('import { HomePage } from "../HomePage.jsx"'), locale + '/home shared component import missing');
-        assert.ok(source.includes('export { HomePage }'), locale + '/home shared component export missing');
+        assert.ok(source.includes('export { AboutPage, HomePage }'), locale + '/localized page exports missing');
       } else {
         assert.ok(source.includes('function ' + pageNames[page] + '()'), locale + '/' + page + ' component missing');
       }
@@ -428,7 +428,7 @@ test('game waits for its stylesheet before mounting the lobby markup', () => {
   const runtime = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'game', 'components', 'GameRuntime.jsx'), 'utf8');
   assert.match(runtime, /const \[stylesReady, setStylesReady\] = useState\(false\)/);
   assert.match(runtime, /import\("\.\.\/\.\.\/\.\.\/styles\/game\.css"\)/);
-  assert.match(runtime, /if \(!stylesReady\) return <GameLoadingScreen error=\{error\} \/>;/);
+  assert.match(runtime, /if \(!stylesReady\) return <GameLoadingScreen error=\{error\} locale=\{i18n\.resolvedLanguage \|\| i18n\.language\} \/>;/);
   assert.match(runtime, /if \(!stylesReady \|\| error\) return undefined;/);
   assert.match(runtime, /loadLegacyScripts\(GAME_SCRIPTS\)/);
   assert.match(runtime, /onAuthStateChanged\(client\.auth/);

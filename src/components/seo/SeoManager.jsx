@@ -73,14 +73,20 @@ export function SeoManager({ locale, page }) {
     upsertCanonical(canonical);
     updateAlternates(page);
 
-    let schema = document.getElementById("react-page-schema");
-    if (schema) schema.remove();
-    if (entry.schema) {
-      schema = document.createElement("script");
-      schema.id = "react-page-schema";
-      schema.type = "application/ld+json";
-      schema.textContent = JSON.stringify(entry.schema);
-      document.head.appendChild(schema);
+    const legacySchema = document.getElementById("react-page-schema");
+    if (legacySchema) legacySchema.remove();
+
+    let schema = document.getElementById("page-structured-data");
+    if (!entry.schema) {
+      schema?.remove();
+    } else {
+      if (!schema) {
+        schema = document.createElement("script");
+        schema.id = "page-structured-data";
+        schema.type = "application/ld+json";
+        document.head.appendChild(schema);
+      }
+      schema.textContent = JSON.stringify(entry.schema).replace(/</g, "\\u003c");
     }
   }, [locale, page]);
 
