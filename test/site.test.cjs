@@ -8,7 +8,7 @@ const vm = require('node:vm');
 const BASE = 'https://vitormartinsalves.github.io/3dXess/';
 const localeDirs = { 'pt-BR': 'ptBR', en: 'en', es: 'es', 'zh-CN': 'zhCN' };
 const locales = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'site-routes.json'), 'utf8'));
-const pageNames = { home: 'HomePage', about: 'AboutPage', learn: 'LearnPage', practice: 'PracticePage', challenges: 'ChallengesPage', rules: 'RulesPage', play: 'PlayPage', account: 'AccountPage' };
+const pageNames = { home: 'HomePage', about: 'AboutPage', learn: 'LearnPage', practice: 'PracticePage', challenges: 'ChallengesPage', rules: 'RulesPage', play: 'PlayPage' };
 const pageMeta = Object.fromEntries(Object.entries(localeDirs).map(([locale, dir]) => [
   locale,
   JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'src', 'data', 'page-meta', dir + '.json'), 'utf8'))
@@ -34,7 +34,8 @@ test('all 32 localized routes are represented by React page components and metad
     const source = fs.readFileSync(componentFile(locale), 'utf8');
     for (const [page, route] of Object.entries(pages)) {
       if (page === 'account') {
-        assert.ok(source.includes('export { AccountPage }'), locale + '/account export missing');
+        const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'App.jsx'), 'utf8');
+        assert.ok(app.includes('import("./features/account/AccountPage.jsx")'), locale + '/account lazy module missing');
       } else if (page === 'home') {
         assert.ok(source.includes('import { HomePage } from "../HomePage.jsx"'), locale + '/home shared component import missing');
         assert.ok(source.includes('export { HomePage }'), locale + '/home shared component export missing');
@@ -108,7 +109,7 @@ test('localized pages contain readable React markup without serialized object la
     assert.doesNotMatch(source, /\[object Object\]/, locale + ' contains an unserialized object label');
     assert.match(source, /site-card|site-hero|site-section/, locale + ' public page content missing');
     assert.equal(Object.keys(pages).length, 8);
-    assert.ok(source.includes('export { AccountPage }'), locale + ' account page export missing');
+    assert.doesNotMatch(source, /features\/account\/AccountPage\.jsx/, locale + ' account module must remain lazy');
   }
 });
 
@@ -430,8 +431,8 @@ test('game waits for its stylesheet before mounting the lobby markup', () => {
   assert.match(runtime, /if \(!stylesReady\) return <GameLoadingScreen error=\{error\} \/>;/);
   assert.match(runtime, /if \(!stylesReady \|\| error\) return undefined;/);
   assert.match(runtime, /loadLegacyScripts\(GAME_SCRIPTS\)/);
-  assert.match(runtime, /onAuthStateChanged\(auth/);
-  assert.match(runtime, /getDoc\(doc\(db, "users", user\.uid\)\)/);
+  assert.match(runtime, /onAuthStateChanged\(client\.auth/);
+  assert.match(runtime, /getDoc\(doc\(client\.db, "users", user\.uid\)\)/);
   assert.match(runtime, /cacheAccountIdentity\(user\.uid, snapshot\.data\(\)\.username\)/);
   assert.match(runtime, /xadrez3d\.settings\.v3/);
   assert.match(runtime, /3dxess\.account\.session\.v1/);
@@ -446,7 +447,8 @@ test('game waits for its stylesheet before mounting the lobby markup', () => {
 test('Firebase accounts use email/password, native password reset and public player names', () => {
   const account = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'account', 'AccountPage.jsx'), 'utf8');
   const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'App.jsx'), 'utf8');
-  assert.match(app, /account: "AccountPage"/);
+  assert.match(app, /const AccountPage = lazy\(\(\) =>/);
+  assert.ok(app.includes('import("./features/account/AccountPage.jsx")'));
   for (const required of [
     'createUserWithEmailAndPassword',
     'signInWithEmailAndPassword',
@@ -523,4 +525,49 @@ test('learning, practice, and daily challenge pages expose consistent responsive
   }
   assert.ok(accountCss.includes('Stage 3 — account clarity'));
   assert.ok(accountCss.includes('account-table-wrap'));
+});
+
+
+test('public routes and account page are split into on-demand chunks', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'App.jsx'), 'utf8');
+  assert.match(app, /const localeLoaders =/);
+  for (const file of ['ptBR', 'en', 'es', 'zhCN']) {
+    assert.ok(app.includes('./pages/locales/' + file + '.jsx'), 'missing lazy locale loader: ' + file);
+  }
+  assert.ok(app.includes('import("./features/account/AccountPage.jsx")'));
+  assert.ok(app.includes('<Suspense fallback={<PageLoading locale={route.locale} />}>'));
+});
+
+test('Firebase SDK is deferred until the game is opened without a cached identity', () => {
+  const runtime = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'game', 'components', 'GameRuntime.jsx'), 'utf8');
+  assert.doesNotMatch(runtime, /from ["']firebase\//);
+  assert.doesNotMatch(runtime, /from ["']\.\.\/\.\.\/\.\.\/shared\/firebase\/client\.js["']/);
+  assert.ok(runtime.includes('import("../../../shared/firebase/client.js")'));
+  assert.ok(runtime.includes('hasCachedAccountIdentity()'));
+});
+
+test('custom game dialogs are labelled and trap keyboard focus', () => {
+  const markup = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'game', 'markup', 'GameMarkup.jsx'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'game', 'app.js'), 'utf8');
+  for (const [id, label] of [
+    ['promotion', 'promotion-title'],
+    ['settings', 'settings-title'],
+    ['result', 'result-title'],
+    ['confirm', 'confirm-title'],
+  ]) {
+    assert.ok(markup.includes('id="' + id + '" className="modal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="' + label + '"'), id + ' dialog must expose its title');
+  }
+  assert.ok(app.includes('function setupDialogAccessibility()'));
+  assert.ok(app.includes('function trapDialogFocus(event)'));
+  assert.ok(app.includes("document.addEventListener('keydown', trapDialogFocus, true)"));
+  assert.ok(app.includes('closeConfirm(false)'));
+  assert.ok(markup.includes('className="game-skip-link"'));
+  assert.ok(markup.includes('className="lobby-wrap" role="main"'));
+});
+
+
+test('the game lobby skip link moves keyboard users to a focusable main heading', () => {
+  const markup = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'game', 'markup', 'GameMarkup.jsx'), 'utf8');
+  assert.ok(markup.includes('href="#lobby-intro"'));
+  assert.ok(markup.includes('id="lobby-intro" className="lobby-intro" tabIndex="-1"'));
 });

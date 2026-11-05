@@ -1,7 +1,4 @@
 import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db, firebaseConfigReady } from "../../../shared/firebase/client.js";
 import { loadLegacyScripts } from "../../../shared/lib/legacyScriptLoader.js";
 
 const GAME_SETTINGS_KEY = "xadrez3d.settings.v3";
@@ -143,39 +140,62 @@ export function GameRuntime({ children }) {
       });
     };
 
-    // Existing sessions are cached locally, so don't delay the lobby.
-    if (hasCachedAccountIdentity() || !firebaseConfigReady || !auth || !db) {
-      loadGame();
-    } else {
-      unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (!active || started) return;
-        if (unsubscribe) unsubscribe();
-        unsubscribe = null;
-
-        const syncAndLoad = async () => {
-          if (!user) {
-            clearCachedAccountIdentity();
-            return;
-          }
-
-          try {
-            const snapshot = await getDoc(doc(db, "users", user.uid));
-            if (snapshot.exists()) {
-              cacheAccountIdentity(user.uid, snapshot.data().username);
-            } else {
-              clearCachedAccountIdentity();
-            }
-          } catch (syncError) {
-            console.warn("Não foi possível sincronizar o nome da conta:", syncError);
-          }
-        };
-
-        syncAndLoad().finally(loadGame);
-      }, (authError) => {
-        console.warn("Não foi possível restaurar a sessão Firebase:", authError);
+    // Firebase is only needed when a player without a cached identity opens the game.
+    async function restoreAccountAndLoad() {
+      if (hasCachedAccountIdentity()) {
         loadGame();
-      });
+        return;
+      }
+
+      try {
+        const client = await import("../../../shared/firebase/client.js");
+        if (!active) return;
+        if (!client.firebaseConfigReady || !client.auth || !client.db) {
+          loadGame();
+          return;
+        }
+
+        const [{ onAuthStateChanged }, { doc, getDoc }] = await Promise.all([
+          import("firebase/auth"),
+          import("firebase/firestore"),
+        ]);
+        if (!active) return;
+
+        unsubscribe = onAuthStateChanged(client.auth, (user) => {
+          if (!active || started) return;
+          if (unsubscribe) unsubscribe();
+          unsubscribe = null;
+
+          const syncAndLoad = async () => {
+            if (!user) {
+              clearCachedAccountIdentity();
+              return;
+            }
+
+            try {
+              const snapshot = await getDoc(doc(client.db, "users", user.uid));
+              if (snapshot.exists()) {
+                cacheAccountIdentity(user.uid, snapshot.data().username);
+              } else {
+                clearCachedAccountIdentity();
+              }
+            } catch (syncError) {
+              console.warn("Não foi possível sincronizar o nome da conta:", syncError);
+            }
+          };
+
+          syncAndLoad().finally(loadGame);
+        }, (authError) => {
+          console.warn("Não foi possível restaurar a sessão Firebase:", authError);
+          loadGame();
+        });
+      } catch (bootstrapError) {
+        console.warn("Firebase indisponível; o jogo continuará como visitante:", bootstrapError);
+        loadGame();
+      }
     }
+
+    restoreAccountAndLoad();
 
     return () => {
       active = false;

@@ -1,7 +1,8 @@
 export function GameBoardStage() { return (<div id="app"><div id="board-2d" className="board-stage"></div><div id="board-3d" className="board-stage hidden"></div></div>); }
 
 export function GameLobby() { return (<div id="lobby" className="screen">
-    <div className="lobby-wrap">
+    <a className="game-skip-link" href="#lobby-intro">Pular para o conteúdo</a>
+    <div className="lobby-wrap" role="main">
       <header className="lobby-head">
         <div className="brand big">
           <span className="brand-icon" aria-hidden="true">&#9822;</span>
@@ -67,7 +68,7 @@ export function GameLobby() { return (<div id="lobby" className="screen">
         </section>
       </section>
 
-      <div className="lobby-intro">
+      <div id="lobby-intro" className="lobby-intro" tabIndex="-1">
         <h2>Escolha como jogar</h2>
         <p>Partidas online, desafios contra o bot ou salas com amigos.</p>
       </div>
@@ -254,7 +255,7 @@ export function GameLobby() { return (<div id="lobby" className="screen">
     </div>
   </div>); }
 
-export function GameSession() { return (<div id="game-ui" className="hidden">
+export function GameSession() { return (<div id="game-ui" className="hidden" role="main">
     <header id="topbar">
       <button id="home-btn" className="brand compact" type="button" title="Voltar ao lobby">
         <span className="brand-icon">&#9822;</span>
@@ -356,10 +357,10 @@ export function GameSession() { return (<div id="game-ui" className="hidden">
 
 export function GameNotifications() { return (<div id="toasts" className="toasts" aria-live="polite"></div>); }
 
-export function GameDialogs() { return (<><div id="promotion" className="modal hidden" role="dialog" aria-modal="true">
+export function GameDialogs() { return (<><div id="promotion" className="modal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="promotion-title" aria-describedby="promotion-description">
     <div className="modal-card">
-      <h2>Promoção</h2>
-      <p>Escolha a peça para promover</p>
+      <h2 id="promotion-title">Promoção</h2>
+      <p id="promotion-description">Escolha a peça para promover</p>
       <div className="promo-buttons">
         <button type="button" data-piece="q" aria-label="Dama">&#9813;</button>
         <button type="button" data-piece="r" aria-label="Torre">&#9814;</button>
@@ -368,10 +369,10 @@ export function GameDialogs() { return (<><div id="promotion" className="modal h
       </div>
     </div>
   </div>
-<div id="settings" className="modal hidden" role="dialog" aria-modal="true">
+<div id="settings" className="modal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="settings-title">
     <div className="modal-card wide">
       <div className="modal-head">
-        <h2>Configurações</h2>
+        <h2 id="settings-title">Configurações</h2>
         <button id="close-settings" className="icon-btn small" type="button" aria-label="Fechar">&times;</button>
       </div>
 
@@ -422,7 +423,7 @@ export function GameDialogs() { return (<><div id="promotion" className="modal h
       </div>
     </div>
   </div>
-<div id="result" className="modal hidden" role="dialog" aria-modal="true">
+<div id="result" className="modal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="result-title" aria-describedby="result-text">
     <div className="modal-card">
       <h2 id="result-title">Fim de jogo</h2>
       <p id="result-text"></p>
@@ -432,7 +433,7 @@ export function GameDialogs() { return (<><div id="promotion" className="modal h
       </div>
     </div>
   </div>
-<div id="confirm" className="modal hidden" role="dialog" aria-modal="true">
+<div id="confirm" className="modal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="confirm-title" aria-describedby="confirm-text">
     <div className="modal-card">
       <h2 id="confirm-title">Confirmar</h2>
       <p id="confirm-text"></p>
