@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { loadLegacyScripts } from "../../../shared/lib/legacyScriptLoader.js";
 
 const GAME_SETTINGS_KEY = "xadrez3d.settings.v3";
@@ -48,7 +49,31 @@ const GAME_SCRIPTS = [
   "legacy/game/app.js",
 ];
 
-function GameLoadingScreen({ error }) {
+const loadingCopy = {
+  "pt-BR": {
+    title: "Xadrez 3D online",
+    description: "Jogue contra o bot, convide amigos ou pratique no tabuleiro 3D, direto no navegador.",
+    loading: "Preparando o tabuleiro…",
+  },
+  en: {
+    title: "Online 3D chess",
+    description: "Play against the bot, invite friends, or practice on a 3D board right in your browser.",
+    loading: "Preparing the board…",
+  },
+  es: {
+    title: "Ajedrez 3D en línea",
+    description: "Juega contra el bot, invita a tus amigos o practica en un tablero 3D desde el navegador.",
+    loading: "Preparando el tablero…",
+  },
+  "zh-CN": {
+    title: "在线 3D 国际象棋",
+    description: "直接在浏览器中与电脑对弈、邀请朋友或练习 3D 棋局。",
+    loading: "正在准备棋盘…",
+  },
+};
+
+function GameLoadingScreen({ error, locale }) {
+  const copy = loadingCopy[locale] || loadingCopy["pt-BR"];
   return (
     <main
       role={error ? "alert" : "status"}
@@ -68,8 +93,10 @@ function GameLoadingScreen({ error }) {
     >
       <div style={{ maxWidth: 420 }}>
         <strong style={{ color: "#6ee7b7", fontSize: 20 }}>3dXess</strong>
+        <h1 style={{ margin: "12px 0 0", color: "#e8eef7", fontSize: 20 }}>{copy.title}</h1>
+        <p style={{ margin: "8px 0 0", color: "#aab8c8", fontSize: 14 }}>{copy.description}</p>
         <p style={{ margin: "12px 0 0", color: "#aab8c8", fontSize: 14 }}>
-          {error || "Preparando o tabuleiro…"}
+          {error || copy.loading}
         </p>
         {error ? (
           <button
@@ -95,6 +122,7 @@ function GameLoadingScreen({ error }) {
 }
 
 export function GameRuntime({ children }) {
+  const { i18n } = useTranslation();
   const [stylesReady, setStylesReady] = useState(false);
   const [error, setError] = useState("");
 
@@ -203,7 +231,7 @@ export function GameRuntime({ children }) {
     };
   }, [stylesReady, error]);
 
-  if (!stylesReady) return <GameLoadingScreen error={error} />;
+  if (!stylesReady) return <GameLoadingScreen error={error} locale={i18n.resolvedLanguage || i18n.language} />;
 
   return (
     <>
