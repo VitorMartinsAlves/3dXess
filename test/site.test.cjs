@@ -38,7 +38,7 @@ test('all 32 localized routes are represented by React page components and metad
         assert.ok(app.includes('import("./features/account/AccountPage.jsx")'), locale + '/account lazy module missing');
       } else if (page === 'home') {
         assert.ok(source.includes('import { HomePage } from "../HomePage.jsx"'), locale + '/home shared component import missing');
-        assert.ok(source.includes('export { HomePage }'), locale + '/home shared component export missing');
+        assert.ok(source.includes('export { AboutPage, HomePage }'), locale + '/localized page exports missing');
       } else {
         assert.ok(source.includes('function ' + pageNames[page] + '()'), locale + '/' + page + ' component missing');
       }
