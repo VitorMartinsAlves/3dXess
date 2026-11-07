@@ -11,7 +11,8 @@
     neon: { label: 'Neon', bg: '#05060a', light: '#172a4a', dark: '#080f1e', accent: '#22d3ee', accent2: '#e879f9' },
     forest: { label: 'Floresta', bg: '#0a1410', light: '#d9c9a3', dark: '#3f6b4a', accent: '#86efac', accent2: '#fde68a' },
     sunset: { label: 'Pôr do sol', bg: '#1a0f14', light: '#f0c9a8', dark: '#8a4b3f', accent: '#fca5a5', accent2: '#fdba74' },
-    ice: { label: 'Gelo', bg: '#081018', light: '#dfeef7', dark: '#6b93ad', accent: '#7dd3fc', accent2: '#e0f2fe' }
+    ice: { label: 'Gelo', bg: '#081018', light: '#dfeef7', dark: '#6b93ad', accent: '#7dd3fc', accent2: '#e0f2fe' },
+    christmas: { label: 'Natal', bg: '#071521', light: '#eaf2ef', dark: '#285247', accent: '#e5b95c', accent2: '#dc6470' }
   };
 
   const SKINS = {
@@ -20,7 +21,8 @@
     metal: { label: 'Metal' },
     neon: { label: 'Neon' },
     glass: { label: 'Vidro' },
-    wood: { label: 'Madeira' }
+    wood: { label: 'Madeira' },
+    christmas: { label: 'Natal' }
   };
 
   const LABELS = {

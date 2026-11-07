@@ -62,6 +62,15 @@
       accent: '#7dd3fc',
       accent2: '#e0f2fe',
     },
+    christmas: {
+      label: 'Natal',
+      bg: 0x071521,
+      light: 0xeaf2ef,
+      dark: 0x285247,
+      frame: 0x463024,
+      accent: '#e5b95c',
+      accent2: '#dc6470',
+    },
   };
 
   /* ------------------------------------------------------------
@@ -98,6 +107,11 @@
       w: { color: 0xd8b98c, roughness: 0.72, metalness: 0.02 },
       b: { color: 0x4a3226, roughness: 0.75, metalness: 0.02 },
     },
+    christmas: {
+      label: 'Natal',
+      w: { color: 0xfff0d5, roughness: 0.27, metalness: 0.22, emissive: 0x5b3a0a, emissiveIntensity: 0.045 },
+      b: { color: 0x174536, roughness: 0.28, metalness: 0.24, emissive: 0x082419, emissiveIntensity: 0.08 },
+    },
   };
 
   /* ------------------------------------------------------------
@@ -120,6 +134,18 @@
   let frameMat = null;
   let groundMat = null;
   const pieceMaterials = {};
+  let christmasGoldMat = null;
+  let christmasPineMat = null;
+  let christmasSnowMat = null;
+  let christmasRedMat = null;
+  let christmasLightMat = null;
+  let christmasTrunkMat = null;
+  let christmasDecorGroup = null;
+  let christmasBoardGroup = null;
+  let snowPoints = null;
+  let snowAttribute = null;
+  let snowPositions = null;
+  let snowDriftTime = 0;
 
   let squareMeshes = [];
   let pickables = [];
@@ -324,7 +350,28 @@
 
     group.scale.setScalar(1.15);
     group.userData = { kind: 'piece', type: type, color: color };
+    syncPieceTrim(group);
     return group;
+  }
+
+  function syncPieceTrim(piece) {
+    if (!piece) return;
+    const existing = piece.getObjectByName('christmas-trim');
+    if (existing) {
+      piece.remove(existing);
+      if (existing.geometry) existing.geometry.dispose();
+    }
+    if (currentSkin !== 'christmas' || piece.userData.kind !== 'piece' || !christmasGoldMat) return;
+
+    const trim = new THREE.Mesh(
+      new THREE.TorusGeometry(0.205, 0.017, 8, 28),
+      christmasGoldMat
+    );
+    trim.name = 'christmas-trim';
+    trim.rotation.x = Math.PI / 2;
+    trim.position.y = 0.095;
+    trim.castShadow = true;
+    piece.add(trim);
   }
 
   /* ------------------------------------------------------------
@@ -371,6 +418,280 @@
   }
 
   /* ------------------------------------------------------------
+     CENÁRIO DE NATAL
+     ------------------------------------------------------------ */
+  function addWinterTree(parent, x, z, scale) {
+    const tree = new THREE.Group();
+    tree.position.set(x, -0.53, z);
+    tree.scale.setScalar(scale);
+
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.13, 0.38, 10), christmasTrunkMat);
+    trunk.position.y = 0.19;
+    trunk.castShadow = true;
+    tree.add(trunk);
+
+    const layers = [
+      { radius: 0.76, height: 0.92, y: 0.62 },
+      { radius: 0.59, height: 0.82, y: 1.06 },
+      { radius: 0.42, height: 0.7, y: 1.47 },
+    ];
+    layers.forEach(function (layer, index) {
+      const branch = new THREE.Mesh(
+        new THREE.ConeGeometry(layer.radius, layer.height, 12),
+        christmasPineMat
+      );
+      branch.position.y = layer.y;
+      branch.castShadow = true;
+      branch.receiveShadow = true;
+      tree.add(branch);
+
+      const snowCount = 7;
+      for (let i = 0; i < snowCount; i++) {
+        const angle = (i / snowCount) * Math.PI * 2 + index * 0.24;
+        const radius = layer.radius * 0.72;
+        const flake = new THREE.Mesh(
+          new THREE.SphereGeometry(0.065 - index * 0.008, 8, 6),
+          christmasSnowMat
+        );
+        flake.position.set(
+          Math.cos(angle) * radius,
+          layer.y - layer.height * 0.17,
+          Math.sin(angle) * radius
+        );
+        tree.add(flake);
+      }
+
+      for (let i = 0; i < 4; i++) {
+        const angle = (i / 4) * Math.PI * 2 + index * 0.52;
+        const ornament = new THREE.Mesh(
+          new THREE.SphereGeometry(0.075, 12, 10),
+          (i + index) % 2 === 0 ? christmasRedMat : christmasGoldMat
+        );
+        const radius = layer.radius * 0.78;
+        ornament.position.set(
+          Math.cos(angle) * radius,
+          layer.y - layer.height * 0.06,
+          Math.sin(angle) * radius
+        );
+        ornament.castShadow = true;
+        tree.add(ornament);
+      }
+    });
+
+    const cablePoints = [];
+    for (let i = 0; i <= 64; i++) {
+      const t = i / 64;
+      const angle = t * Math.PI * 5.5;
+      const radius = 0.69 * (1 - t * 0.78);
+      cablePoints.push(new THREE.Vector3(Math.cos(angle) * radius, 0.34 + t * 1.48, Math.sin(angle) * radius));
+    }
+    const cable = new THREE.Mesh(
+      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(cablePoints), 80, 0.014, 5, false),
+      christmasGoldMat
+    );
+    tree.add(cable);
+
+    for (let i = 2; i < 62; i += 4) {
+      const point = cablePoints[i];
+      const bulb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.036, 8, 6),
+        christmasLightMat
+      );
+      bulb.position.copy(point);
+      tree.add(bulb);
+    }
+
+    const star = new THREE.Mesh(new THREE.OctahedronGeometry(0.17, 0), christmasGoldMat);
+    star.position.y = 2.0;
+    star.rotation.y = Math.PI / 4;
+    star.castShadow = true;
+    tree.add(star);
+
+    parent.add(tree);
+    return tree;
+  }
+
+  function addSnowGlobe(parent, x, z, scale) {
+    const globe = new THREE.Group();
+    globe.position.set(x, -0.53, z);
+    globe.scale.setScalar(scale);
+
+    const base = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.42, 0.48, 0.22, 32),
+      christmasPineMat
+    );
+    base.position.y = 0.13;
+    base.castShadow = true;
+    globe.add(base);
+
+    const baseBand = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.45, 0.45, 0.045, 32),
+      christmasGoldMat
+    );
+    baseBand.position.y = 0.23;
+    globe.add(baseBand);
+
+    const glass = new THREE.Mesh(
+      new THREE.SphereGeometry(0.6, 32, 24),
+      new THREE.MeshPhysicalMaterial({
+        color: 0xdcefff,
+        roughness: 0.06,
+        metalness: 0.04,
+        transmission: 0.78,
+        thickness: 0.24,
+        transparent: true,
+        opacity: 0.42,
+        depthWrite: false,
+      })
+    );
+    glass.position.y = 0.82;
+    globe.add(glass);
+
+    const miniature = new THREE.Group();
+    miniature.position.set(0, 0.28, 0);
+    miniature.scale.setScalar(0.28);
+    [
+      { radius: 0.76, height: 0.92, y: 0.62 },
+      { radius: 0.59, height: 0.82, y: 1.06 },
+      { radius: 0.42, height: 0.7, y: 1.47 },
+    ].forEach(function (layer) {
+      const branch = new THREE.Mesh(
+        new THREE.ConeGeometry(layer.radius, layer.height, 10),
+        christmasPineMat
+      );
+      branch.position.y = layer.y;
+      miniature.add(branch);
+    });
+    const topper = new THREE.Mesh(new THREE.OctahedronGeometry(0.17, 0), christmasGoldMat);
+    topper.position.y = 2.0;
+    miniature.add(topper);
+    globe.add(miniature);
+
+    for (let i = 0; i < 12; i++) {
+      const flake = new THREE.Mesh(
+        new THREE.SphereGeometry(0.022, 6, 5),
+        christmasSnowMat
+      );
+      const angle = i * 2.399;
+      const radius = 0.18 + (i % 3) * 0.1;
+      flake.position.set(Math.cos(angle) * radius, 0.54 + (i % 4) * 0.16, Math.sin(angle) * radius);
+      globe.add(flake);
+    }
+
+    parent.add(globe);
+  }
+
+  function addGift(parent, x, z, color, scale) {
+    const gift = new THREE.Group();
+    gift.position.set(x, -0.52, z);
+    gift.scale.setScalar(scale);
+    const wrapping = new THREE.MeshStandardMaterial({ color: color, roughness: 0.3, metalness: 0.12 });
+    const box = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.42, 0.62), wrapping);
+    box.position.y = 0.21;
+    box.castShadow = true;
+    box.receiveShadow = true;
+    gift.add(box);
+
+    const ribbonX = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.44, 0.64), christmasGoldMat);
+    ribbonX.position.y = 0.22;
+    gift.add(ribbonX);
+    const ribbonZ = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.44, 0.1), christmasGoldMat);
+    ribbonZ.position.y = 0.22;
+    gift.add(ribbonZ);
+    const bowLeft = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.025, 8, 16, Math.PI), christmasGoldMat);
+    bowLeft.position.set(-0.1, 0.48, 0);
+    bowLeft.rotation.z = Math.PI / 2;
+    gift.add(bowLeft);
+    const bowRight = bowLeft.clone();
+    bowRight.position.x = 0.1;
+    bowRight.rotation.z = -Math.PI / 2;
+    gift.add(bowRight);
+    parent.add(gift);
+  }
+
+  function buildChristmasEnvironment(compact, lowPower) {
+    christmasGoldMat = new THREE.MeshStandardMaterial({ color: 0xd8b15a, roughness: 0.24, metalness: 0.84 });
+    christmasPineMat = new THREE.MeshStandardMaterial({ color: 0x123d31, roughness: 0.78, metalness: 0.02 });
+    christmasSnowMat = new THREE.MeshStandardMaterial({ color: 0xf4f8fa, roughness: 0.92 });
+    christmasRedMat = new THREE.MeshStandardMaterial({ color: 0xb73543, roughness: 0.28, metalness: 0.35 });
+    christmasLightMat = new THREE.MeshStandardMaterial({
+      color: 0xffe4a0,
+      emissive: 0xffc75e,
+      emissiveIntensity: 1.15,
+      roughness: 0.22,
+    });
+    christmasTrunkMat = new THREE.MeshStandardMaterial({ color: 0x593a29, roughness: 0.9 });
+
+    christmasDecorGroup = new THREE.Group();
+    scene.add(christmasDecorGroup);
+    addWinterTree(christmasDecorGroup, -6.15, -5.7, 1.0);
+    addWinterTree(christmasDecorGroup, 6.15, -5.8, 0.82);
+    addSnowGlobe(christmasDecorGroup, -5.9, 2.2, 0.9);
+    addSnowGlobe(christmasDecorGroup, 5.9, 2.0, 0.82);
+    addGift(christmasDecorGroup, -5.25, -4.45, 0x9d2f3d, 0.95);
+    addGift(christmasDecorGroup, 5.25, -4.5, 0x1e684e, 0.85);
+    christmasDecorGroup.visible = false;
+
+    christmasBoardGroup = new THREE.Group();
+    const snowEdgeMaterial = new THREE.MeshStandardMaterial({ color: 0xf4f8fa, roughness: 0.9 });
+    const frontEdge = new THREE.Mesh(new THREE.BoxGeometry(9.05, 0.065, 0.16), snowEdgeMaterial);
+    frontEdge.position.set(0, -0.008, 4.48);
+    christmasBoardGroup.add(frontEdge);
+    const backEdge = frontEdge.clone();
+    backEdge.position.z = -4.48;
+    christmasBoardGroup.add(backEdge);
+    const sideEdgeGeometry = new THREE.BoxGeometry(0.16, 0.065, 8.8);
+    const leftEdge = new THREE.Mesh(sideEdgeGeometry, snowEdgeMaterial);
+    leftEdge.position.set(-4.48, -0.008, 0);
+    christmasBoardGroup.add(leftEdge);
+    const rightEdge = leftEdge.clone();
+    rightEdge.position.x = 4.48;
+    christmasBoardGroup.add(rightEdge);
+    boardGroup.add(christmasBoardGroup);
+    christmasBoardGroup.visible = false;
+
+    const count = lowPower ? 88 : compact ? 144 : 260;
+    snowPositions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const offset = i * 3;
+      snowPositions[offset] = (Math.random() - 0.5) * 20;
+      snowPositions[offset + 1] = Math.random() * 10;
+      snowPositions[offset + 2] = (Math.random() - 0.5) * 18;
+    }
+    const snowGeometry = new THREE.BufferGeometry();
+    snowAttribute = new THREE.BufferAttribute(snowPositions, 3);
+    snowGeometry.setAttribute('position', snowAttribute);
+    snowPoints = new THREE.Points(
+      snowGeometry,
+      new THREE.PointsMaterial({
+        color: 0xf4f8ff,
+        size: compact ? 0.07 : 0.055,
+        transparent: true,
+        opacity: 0.78,
+        depthWrite: false,
+        sizeAttenuation: true,
+      })
+    );
+    snowPoints.visible = false;
+    scene.add(snowPoints);
+  }
+
+  function updateSnow(dt) {
+    if (!snowPoints || !snowPoints.visible || prefersReducedMotion()) return;
+    snowDriftTime += dt;
+    for (let i = 0; i < snowPositions.length; i += 3) {
+      snowPositions[i + 1] -= dt * (0.85 + (i % 7) * 0.035);
+      snowPositions[i] += Math.sin(snowDriftTime * 0.8 + i * 0.17) * dt * 0.12;
+      if (snowPositions[i + 1] < -0.65) {
+        snowPositions[i] = (Math.random() - 0.5) * 20;
+        snowPositions[i + 1] = 8 + Math.random() * 3;
+        snowPositions[i + 2] = (Math.random() - 0.5) * 18;
+      }
+    }
+    snowAttribute.needsUpdate = true;
+  }
+
+  /* ------------------------------------------------------------
      TEMAS E SKINS
      ------------------------------------------------------------ */
   function applyTheme(name) {
@@ -379,6 +700,11 @@
 
     scene.background = new THREE.Color(t.bg);
     scene.fog.color.set(t.bg);
+    scene.fog.near = currentTheme === 'christmas' ? 17 : 20;
+    scene.fog.far = currentTheme === 'christmas' ? 48 : 42;
+    if (christmasDecorGroup) christmasDecorGroup.visible = currentTheme === 'christmas';
+    if (christmasBoardGroup) christmasBoardGroup.visible = currentTheme === 'christmas';
+    if (snowPoints) snowPoints.visible = currentTheme === 'christmas';
     lightSquareMat.color.set(t.light);
     darkSquareMat.color.set(t.dark);
     frameMat.color.set(t.frame);
@@ -411,6 +737,9 @@
       mat.needsUpdate = true;
     });
 
+    if (piecesGroup) {
+      piecesGroup.children.forEach(syncPieceTrim);
+    }
     document.documentElement.dataset.pieceSkin = currentSkin;
   }
 
@@ -1001,6 +1330,7 @@
     const dt = Math.min(clock.getDelta(), 0.05);
     updateAnimations(dt);
     updateEffects(dt);
+    updateSnow(dt);
     controls.update();
     renderer.render(scene, camera);
     animationFrameId = requestAnimationFrame(animate);
@@ -1150,6 +1480,8 @@
 
     effectsGroup = new THREE.Group();
     scene.add(effectsGroup);
+
+    buildChristmasEnvironment(compact, lowPower);
 
     raycaster = new THREE.Raycaster();
     pointer = new THREE.Vector2();
