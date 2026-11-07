@@ -42,7 +42,7 @@ A navegação, o layout, as páginas públicas, os metadados e a composição da
 
 O motor de regras, o bot, o renderizador 2D, a cena Three.js e a comunicação P2P foram mantidos em legacy/ como módulos isolados. O controlador atual manipula elementos identificados por IDs e coordena relógios, workers, WebRTC e renderizadores. Por isso, a árvore do jogo é montada uma vez em componentes JSX e o controlador é inicializado por GameRuntime. Essa fronteira impede que o React e o controlador disputem a propriedade dos mesmos nós durante uma partida. A integração pode ser substituída gradualmente por hooks e serviços React sem reescrever o motor ou alterar o protocolo P2P.
 
-O renderizador 3D é carregado somente quando selecionado no jogo. O treinamento carrega seus módulos quando a página correspondente é aberta.
+O renderizador 3D é carregado somente quando selecionado no jogo. As peças usam os modelos do arquivo ChessGLB.glb do projeto mrabhin03/3D-Chess-Game; o script de preparação baixa uma revisão fixada, valida o hash Git e serve o arquivo localmente. Se o download não estiver disponível, o renderizador mantém as peças procedurais como alternativa. O treinamento carrega seus módulos quando a página correspondente é aberta.
 
 ## Funcionalidades preservadas
 
@@ -59,7 +59,7 @@ O modo online continua dependendo de WebRTC e de relays públicos do Trystero. O
 
 ## GitHub Pages
 
-O workflow .github/workflows/pages.yml executa os testes, gera o bundle de produção e publica o artefato pelo GitHub Actions. Como compatibilidade com repositórios que ainda estão configurados para publicar a branch main, ele também espelha o build estático gerado na raiz da branch. Em Settings → Pages, a configuração recomendada continua sendo GitHub Actions como fonte de publicação.
+O workflow .github/workflows/pages.yml executa os testes, gera o bundle de produção e sincroniza o site estático gerado na raiz da branch main. O GitHub Pages publica a raiz da main; cada push também aciona o workflow automático pages build and deployment. Em Settings → Pages, a fonte deve permanecer configurada para Deploy from a branch, branch main e pasta / (root).
 
 O build usa a base /3dXess/, gera index.html em cada rota localizada e mantém canonical, hreflang, Open Graph, Twitter Cards e JSON-LD específicos por página.
 
