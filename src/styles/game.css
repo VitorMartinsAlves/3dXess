@@ -1194,8 +1194,22 @@ html[data-board-theme="christmas"] #board-2d::after {
   filter: drop-shadow(0 2px 0 rgba(28, 40, 52, .38)) drop-shadow(0 0 4px rgba(229, 185, 92, .18));
 }
 #board-2d .board2d-shell[data-piece-skin="christmas"] .board2d-piece.is-black {
-  --piece-fill: #1c634b; --piece-shade: #103d30; --piece-highlight: #8cc7a5; --piece-detail: #09291f; --piece-outline-color: #08261d;
-  filter: drop-shadow(0 2px 0 rgba(5, 22, 16, .48)) drop-shadow(0 0 4px rgba(229, 185, 92, .12));
+  --piece-fill: #bd3748; --piece-shade: #751d2b; --piece-highlight: #f28b8b; --piece-detail: #54121e; --piece-outline-color: #3d101a;
+  filter: drop-shadow(0 2px 0 rgba(38, 8, 15, .48)) drop-shadow(0 0 4px rgba(229, 185, 92, .2));
+}
+#board-2d .board2d-shell[data-piece-skin="christmas"] .board2d-piece::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 15%;
+  right: 15%;
+  bottom: 5%;
+  height: 9%;
+  border: clamp(1px, .22vmin, 2px) solid rgba(242, 199, 105, .96);
+  border-bottom-color: rgba(139, 91, 29, .95);
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(242, 199, 105, .42);
+  pointer-events: none;
 }
 #board-2d .board2d-shell[data-theme="christmas"] {
   border-color: rgba(229, 185, 92, .46);
