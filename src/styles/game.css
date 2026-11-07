@@ -930,12 +930,54 @@ select { cursor: pointer; }
   background:
     radial-gradient(ellipse at 42% 43%, rgba(80, 111, 137, .18), transparent 66%),
     radial-gradient(ellipse at 52% 90%, rgba(0, 0, 0, .2), transparent 65%);
+  isolation: isolate;
+}
+html[data-board-theme="christmas"] #board-2d {
+  background:
+    radial-gradient(ellipse at 18% 20%, rgba(229, 185, 92, .12), transparent 30%),
+    radial-gradient(ellipse at 82% 76%, rgba(41, 107, 82, .22), transparent 38%),
+    linear-gradient(145deg, #0b1d27, #102a2c 55%, #091820);
+}
+html[data-board-theme="christmas"] #board-2d::before,
+html[data-board-theme="christmas"] #board-2d::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background-repeat: repeat;
+}
+html[data-board-theme="christmas"] #board-2d::before {
+  opacity: .58;
+  background-image:
+    radial-gradient(2px 2px at 24px 36px, rgba(255,255,255,.92) 98%, transparent),
+    radial-gradient(1.5px 1.5px at 108px 82px, rgba(231,244,255,.8) 98%, transparent),
+    radial-gradient(2px 2px at 174px 18px, rgba(255,255,255,.86) 98%, transparent);
+  background-size: 210px 190px, 250px 230px, 290px 260px;
+  animation: xess-christmas-snow 13s linear infinite;
+}
+html[data-board-theme="christmas"] #board-2d::after {
+  opacity: .34;
+  background-image:
+    radial-gradient(1px 1px at 42px 24px, rgba(255,255,255,.9) 98%, transparent),
+    radial-gradient(1.5px 1.5px at 150px 112px, rgba(255,255,255,.82) 98%, transparent);
+  background-size: 140px 160px, 220px 210px;
+  animation: xess-christmas-snow 19s linear infinite reverse;
+}
+@keyframes xess-christmas-snow {
+  from { background-position: 0 -30px, 0 -60px, 0 -20px; }
+  to { background-position: 75px 520px, -55px 610px, 40px 570px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-board-theme="christmas"] #board-2d::before,
+  html[data-board-theme="christmas"] #board-2d::after { animation: none; }
 }
 #board-3d { overflow: hidden; }
 #board-3d canvas { display: block; width: 100%; height: 100%; }
 
 .board2d-shell {
   position: relative;
+  z-index: 1;
   width: min(700px, 78vmin, calc(100vw - 360px), calc(100vh - 124px));
   aspect-ratio: 1;
   padding: clamp(9px, 1.5vmin, 14px);
@@ -1146,6 +1188,26 @@ select { cursor: pointer; }
 }
 #board-2d .board2d-shell[data-piece-skin="glass"] .board2d-piece.is-black {
   --piece-fill: #94a3b8; --piece-shade: #536477; --piece-highlight: #dbeafe; --piece-detail: #334155; --piece-outline-color: #263648;
+}
+#board-2d .board2d-shell[data-piece-skin="christmas"] .board2d-piece.is-white {
+  --piece-fill: #fff0d5; --piece-shade: #c9a96d; --piece-highlight: #fffdf4; --piece-detail: #8a672f; --piece-outline-color: #5a4327;
+  filter: drop-shadow(0 2px 0 rgba(28, 40, 52, .38)) drop-shadow(0 0 4px rgba(229, 185, 92, .18));
+}
+#board-2d .board2d-shell[data-piece-skin="christmas"] .board2d-piece.is-black {
+  --piece-fill: #1c634b; --piece-shade: #103d30; --piece-highlight: #8cc7a5; --piece-detail: #09291f; --piece-outline-color: #08261d;
+  filter: drop-shadow(0 2px 0 rgba(5, 22, 16, .48)) drop-shadow(0 0 4px rgba(229, 185, 92, .12));
+}
+#board-2d .board2d-shell[data-theme="christmas"] {
+  border-color: rgba(229, 185, 92, .46);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.065), transparent 34%),
+    var(--board2d-bg, #071521);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -2px 0 rgba(0,0,0,.24),
+    0 26px 72px rgba(0,0,0,.52),
+    0 0 0 1px rgba(229,185,92,.12),
+    0 0 34px rgba(32,102,75,.15);
 }
 
 @media (max-width: 900px) {

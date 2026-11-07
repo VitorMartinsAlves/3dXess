@@ -401,13 +401,14 @@ export function GameDialogs() { return (<><div id="promotion" className="modal h
 
       <div className="settings-group">
         <div className="field">
-          <label htmlFor="opt-theme">Tema do tabuleiro</label>
+          <label htmlFor="opt-theme">Tema do cenário e tabuleiro</label>
           <select id="opt-theme"></select>
         </div>
         <div className="field">
-          <label htmlFor="opt-skin">Skin das peças</label>
+          <label htmlFor="opt-skin">Acabamento das peças</label>
           <select id="opt-skin"></select>
         </div>
+        <p className="hint small">O tema Natal também aplica o acabamento especial às peças e ativa a neve e a decoração natalina no cenário 3D.</p>
       </div>
 
       <div className="settings-group">
