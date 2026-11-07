@@ -202,83 +202,6 @@
     return new THREE.Vector3(f - 3.5, 0, 3.5 - r);
   }
 
-
-  /* ------------------------------------------------------------
-     ILUMINAÇÃO FÍSICA / AMBIENTE DE ESTÚDIO
-     ------------------------------------------------------------ */
-  function buildStudioEnvironment() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 2048;
-    canvas.height = 1024;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Um ambiente panorâmico neutro fornece reflexos coerentes às
-    // superfícies físicas sem alterar o fundo visual de cada tema.
-    const backdrop = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    backdrop.addColorStop(0, '#151e29');
-    backdrop.addColorStop(0.2, '#293745');
-    backdrop.addColorStop(0.42, '#687582');
-    backdrop.addColorStop(0.5, '#aaa99f');
-    backdrop.addColorStop(0.59, '#65717d');
-    backdrop.addColorStop(1, '#111923');
-    ctx.fillStyle = backdrop;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const ambientGlow = ctx.createRadialGradient(
-      canvas.width * 0.5, canvas.height * 0.38, 10,
-      canvas.width * 0.5, canvas.height * 0.38, canvas.width * 0.48
-    );
-    ambientGlow.addColorStop(0, 'rgba(226, 233, 240, 0.38)');
-    ambientGlow.addColorStop(0.52, 'rgba(166, 184, 202, 0.12)');
-    ambientGlow.addColorStop(1, 'rgba(90, 110, 132, 0)');
-    ctx.fillStyle = ambientGlow;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    function addSoftbox(x, y, width, height, color) {
-      ctx.save();
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 76;
-      ctx.fillStyle = color;
-      ctx.fillRect(x, y, width, height);
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.78)';
-      ctx.fillRect(
-        x + width * 0.08,
-        y + height * 0.08,
-        width * 0.84,
-        height * 0.84
-      );
-      ctx.restore();
-    }
-
-    // Fontes largas e difusas, semelhantes a softboxes de fotografia.
-    ctx.globalCompositeOperation = 'screen';
-    addSoftbox(2048 * 0.13, 1024 * 0.24, 2048 * 0.13, 1024 * 0.2, '#fff0d6');
-    addSoftbox(2048 * 0.76, 1024 * 0.29, 2048 * 0.055, 1024 * 0.31, '#d9e9ff');
-    addSoftbox(2048 * 0.39, 1024 * 0.08, 2048 * 0.22, 1024 * 0.065, '#f3f6ff');
-    addSoftbox(2048 * 0.57, 1024 * 0.43, 2048 * 0.09, 1024 * 0.13, '#ffd9ad');
-    ctx.globalCompositeOperation = 'source-over';
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    texture.colorSpace = THREE.SRGBColorSpace;
-
-    let pmrem = null;
-    try {
-      pmrem = new THREE.PMREMGenerator(renderer);
-      pmrem.compileEquirectangularShader();
-      const environmentTarget = pmrem.fromEquirectangular(texture);
-      scene.environment = environmentTarget.texture;
-      scene.environmentIntensity = 0.78;
-    } catch (error) {
-      console.warn('Não foi possível preparar o ambiente de iluminação:', error);
-    } finally {
-      if (pmrem) pmrem.dispose();
-      texture.dispose();
-    }
-  }
-
   function part(geometry, material, options) {
     options = options || {};
     const mesh = new THREE.Mesh(geometry, material);
@@ -1509,9 +1432,8 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 1 : compact ? 1.25 : 1.5));
     renderer.shadowMap.enabled = !lowPower;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
+    renderer.toneMappingExposure = 1.05;
     container.appendChild(renderer.domElement);
 
     controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -1524,37 +1446,28 @@
     controls.minPolarAngle = 0.15;
     controls.maxPolarAngle = Math.PI * 0.46;
 
-    const ambientLight = new THREE.HemisphereLight(0xe4edf7, 0x29221c, 0.62);
-    ambientLight.position.set(0, 18, 0);
-    scene.add(ambientLight);
+    scene.add(new THREE.HemisphereLight(0xdfe9ff, 0x1a1410, 0.85));
 
-    // Luz principal quente e direcional: define volume e sombras de contato.
-    const keyLight = new THREE.DirectionalLight(0xffedda, 3.0);
-    keyLight.position.set(-6.5, 15, 8);
+    const keyLight = new THREE.DirectionalLight(0xfff2dd, 2.4);
+    keyLight.position.set(6, 14, 8);
     keyLight.castShadow = !lowPower;
-    const shadowSize = compact ? 2048 : 4096;
-    keyLight.shadow.mapSize.set(shadowSize, shadowSize);
+    keyLight.shadow.mapSize.set(compact ? 1024 : 2048, compact ? 1024 : 2048);
     keyLight.shadow.camera.left = -8;
     keyLight.shadow.camera.right = 8;
     keyLight.shadow.camera.top = 8;
     keyLight.shadow.camera.bottom = -8;
-    keyLight.shadow.camera.near = 0.5;
-    keyLight.shadow.camera.far = 36;
-    keyLight.shadow.bias = -0.00006;
+    keyLight.shadow.camera.near = 1;
+    keyLight.shadow.camera.far = 40;
     keyLight.shadow.normalBias = 0.02;
-    keyLight.shadow.radius = compact ? 2.5 : 3.5;
     scene.add(keyLight);
 
-    // Preenchimento frio e contraluz sutis preservam detalhes sem achatar volumes.
-    const fillLight = new THREE.DirectionalLight(0xb9cde8, 0.42);
-    fillLight.position.set(-8, 6, -7);
+    const fillLight = new THREE.DirectionalLight(0x88aaff, 0.7);
+    fillLight.position.set(-8, 7, -7);
     scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(0xffe2c4, 0.68);
-    rimLight.position.set(1, 7, -12);
+    const rimLight = new THREE.DirectionalLight(0x9ecbff, 1.1);
+    rimLight.position.set(0, 6, -12);
     scene.add(rimLight);
-
-    buildStudioEnvironment();
 
     boardGroup = new THREE.Group();
     scene.add(boardGroup);
