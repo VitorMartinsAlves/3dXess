@@ -4,6 +4,9 @@
 
   const C = global.Chess;
 
+  const REFERENCE_MODEL_URL = 'https://raw.githubusercontent.com/mrabhin03/3D-Chess-Game/4b66ca40261a3deff228db0038d8e7b59d086b1a/assets/ChessGLB.glb';
+  const REFERENCE_THREE_ADDONS = 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/';
+
   /* ------------------------------------------------------------
      TEMAS DO TABULEIRO
      ------------------------------------------------------------ */
@@ -134,6 +137,9 @@
   let frameMat = null;
   let groundMat = null;
   const pieceMaterials = {};
+  let referenceThree = null;
+  let referencePieceTemplates = null;
+  let referencePieceLoadPromise = null;
   let christmasGoldMat = null;
   let christmasPineMat = null;
   let christmasSnowMat = null;
@@ -338,18 +344,195 @@
     return g;
   }
 
-  function createPiece(type, color) {
-    const mat = pieceMaterials[color];
-    let group;
-    if (type === 'p') group = buildPawn(mat);
-    else if (type === 'r') group = buildRook(mat);
-    else if (type === 'n') group = buildKnight(mat);
-    else if (type === 'b') group = buildBishop(mat);
-    else if (type === 'q') group = buildQueen(mat);
-    else group = buildKing(mat);
+  function createReferenceMaterial(sourceMaterial, conf) {
+    const source = sourceMaterial || {};
+    const material = new referenceThree.MeshPhysicalMaterial({
+      color: conf.color,
+      map: source.map || null,
+      normalMap: source.normalMap || null,
+      roughnessMap: source.roughnessMap || null,
+      metalnessMap: source.metalnessMap || null,
+      aoMap: source.aoMap || null,
+      alphaMap: source.alphaMap || null,
+      emissiveMap: source.emissiveMap || null,
+      emissive: conf.emissive || 0x000000,
+      roughness: conf.roughness != null ? conf.roughness : 0.4,
+      metalness: conf.metalness != null ? conf.metalness : 0,
+      transmission: conf.transmission || 0,
+      thickness: conf.thickness || 0,
+      opacity: conf.opacity != null ? conf.opacity : 1,
+      transparent: Boolean(
+        (conf.transmission || 0) > 0 ||
+        (conf.opacity != null && conf.opacity < 1) ||
+        source.transparent
+      ),
+      side: source.side != null ? source.side : referenceThree.FrontSide,
+      clearcoat: source.clearcoat != null ? source.clearcoat : 0.55,
+      clearcoatRoughness: source.clearcoatRoughness != null ? source.clearcoatRoughness : 0.16,
+    });
+    if (source.name) material.name = source.name;
+    return material;
+  }
 
-    group.scale.setScalar(1.15);
-    group.userData = { kind: 'piece', type: type, color: color };
+  function applyReferencePieceSkin(piece) {
+    if (!referenceThree || !piece || !piece.traverse) return;
+    const skin = SKINS[currentSkin] || SKINS.classic;
+    piece.traverse(function (obj) {
+      if (!obj.isMesh || !obj.userData.referencePiecePart) return;
+      const conf = skin[obj.userData.referencePieceColor] || skin.w;
+      const source = obj.userData.referenceSourceMaterial;
+      const previous = obj.material;
+      obj.material = Array.isArray(source)
+        ? source.map(function (material) { return createReferenceMaterial(material, conf); })
+        : createReferenceMaterial(source, conf);
+      if (Array.isArray(previous)) previous.forEach(function (material) { material.dispose(); });
+      else if (previous) previous.dispose();
+    });
+  }
+
+  function createReferencePiece(type, color) {
+    const template = referencePieceTemplates && referencePieceTemplates[color + ':' + type];
+    if (!template || !referenceThree) return null;
+
+    const group = new referenceThree.Group();
+    const conf = (SKINS[currentSkin] || SKINS.classic)[color] || SKINS.classic[color];
+    const material = Array.isArray(template.material)
+      ? template.material.map(function (source) { return createReferenceMaterial(source, conf); })
+      : createReferenceMaterial(template.material, conf);
+    const mesh = new referenceThree.Mesh(template.geometry.clone(), material);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData.referencePiecePart = true;
+    mesh.userData.referencePieceColor = color;
+    mesh.userData.referenceSourceMaterial = template.material;
+    group.add(mesh);
+    group.userData = { kind: 'piece', type: type, color: color, referenceModel: true };
+    return group;
+  }
+
+  function loadReferencePieceModels() {
+    if (referencePieceLoadPromise) return referencePieceLoadPromise;
+
+    referencePieceLoadPromise = (async function () {
+      const modules = await Promise.all([
+        import('three'),
+        import(REFERENCE_THREE_ADDONS + 'loaders/GLTFLoader.js'),
+        import(REFERENCE_THREE_ADDONS + 'loaders/DRACOLoader.js'),
+      ]);
+      referenceThree = modules[0];
+      const GLTFLoader = modules[1].GLTFLoader;
+      const DRACOLoader = modules[2].DRACOLoader;
+
+      const draco = new DRACOLoader();
+      draco.setDecoderPath(REFERENCE_THREE_ADDONS + 'libs/draco/gltf/');
+      const loader = new GLTFLoader();
+      loader.setDRACOLoader(draco);
+
+      const gltf = await loader.loadAsync(REFERENCE_MODEL_URL);
+      const model = gltf.scene;
+      model.position.set(0, -1, 0);
+      model.updateMatrixWorld(true);
+
+      const typeNames = {
+        pawn: 'p',
+        rook: 'r',
+        knight: 'n',
+        bishop: 'b',
+        queen: 'q',
+        king: 'k',
+      };
+      const targetHeights = {
+        p: 0.72,
+        r: 0.91,
+        n: 0.92,
+        b: 0.96,
+        q: 1.04,
+        k: 1.1,
+      };
+      const templates = {};
+
+      model.traverse(function (node) {
+        if (!node.isMesh || !node.name || !node.name.includes('Piece')) return;
+
+        const parts = node.name.split('_');
+        if (parts.length < 2) return;
+
+        const sideName = (parts[0].split('-')[0] || '').toLowerCase();
+        const color = sideName === 'white' ? 'w' : sideName === 'black' ? 'b' : null;
+        const type = typeNames[(parts[1] || '').toLowerCase()];
+        if (!color || !type) return;
+
+        const key = color + ':' + type;
+        if (templates[key] || !node.geometry || !node.geometry.attributes.position) return;
+
+        const geometry = node.geometry.clone();
+        geometry.applyMatrix4(node.matrixWorld);
+        geometry.computeVertexNormals();
+        geometry.computeBoundingBox();
+
+        const bounds = geometry.boundingBox;
+        const size = bounds.getSize(new referenceThree.Vector3());
+        if (!size.y || !Number.isFinite(size.y)) {
+          geometry.dispose();
+          return;
+        }
+
+        const center = bounds.getCenter(new referenceThree.Vector3());
+        const footprint = Math.max(size.x, size.z);
+        const heightScale = targetHeights[type] / size.y;
+        const widthScale = footprint > 0.78 ? 0.78 / footprint : heightScale;
+        const scale = Math.min(heightScale, widthScale);
+
+        geometry.translate(-center.x, -bounds.min.y, -center.z);
+        geometry.scale(scale, scale, scale);
+        geometry.computeBoundingBox();
+        geometry.computeBoundingSphere();
+
+        templates[key] = {
+          geometry: geometry,
+          material: node.material,
+        };
+      });
+
+      const templateCount = Object.keys(templates).length;
+      if (templateCount < 6) {
+        Object.keys(templates).forEach(function (key) { templates[key].geometry.dispose(); });
+        throw new Error('O arquivo 3D não contém modelos de peças reconhecíveis.');
+      }
+
+      referencePieceTemplates = templates;
+      console.info('[3dXess] Modelos 3D de referência carregados:', templateCount);
+
+      if (currentState && currentState.board && piecesGroup) {
+        renderedBoardSnapshot = null;
+        rebuildPieces(false, null);
+        renderedBoardSnapshot = snapshotBoard(currentState.board);
+        renderHighlights();
+      }
+      return templateCount;
+    })().catch(function (error) {
+      console.warn('[3dXess] Não foi possível carregar os modelos 3D externos; usando as peças originais.', error);
+      return null;
+    });
+
+    return referencePieceLoadPromise;
+  }
+
+  function createPiece(type, color) {
+    let group = createReferencePiece(type, color);
+    if (!group) {
+      const mat = pieceMaterials[color];
+      if (type === 'p') group = buildPawn(mat);
+      else if (type === 'r') group = buildRook(mat);
+      else if (type === 'n') group = buildKnight(mat);
+      else if (type === 'b') group = buildBishop(mat);
+      else if (type === 'q') group = buildQueen(mat);
+      else group = buildKing(mat);
+
+      group.scale.setScalar(1.15);
+      group.userData = { kind: 'piece', type: type, color: color, referenceModel: false };
+    }
+
     syncPieceTrim(group);
     return group;
   }
@@ -776,7 +959,10 @@
     });
 
     if (piecesGroup) {
-      piecesGroup.children.forEach(syncPieceTrim);
+      piecesGroup.children.forEach(function (piece) {
+        if (piece.userData && piece.userData.referenceModel) applyReferencePieceSkin(piece);
+        syncPieceTrim(piece);
+      });
     }
     document.documentElement.dataset.pieceSkin = currentSkin;
   }
@@ -841,7 +1027,7 @@
     piece.traverse(function (obj) {
       if (!obj.isMesh) return;
       if (obj.geometry) obj.geometry.dispose();
-      if (obj.userData.motionOwnedMaterial && obj.material) {
+      if ((obj.userData.motionOwnedMaterial || obj.userData.referencePiecePart) && obj.material) {
         if (Array.isArray(obj.material)) obj.material.forEach(function (mat) { mat.dispose(); });
         else obj.material.dispose();
       }
@@ -1512,6 +1698,9 @@
 
     piecesGroup = new THREE.Group();
     scene.add(piecesGroup);
+
+    // Carrega apenas a geometria das peças; tabuleiro, regras e controles permanecem locais.
+    loadReferencePieceModels();
 
     highlightGroup = new THREE.Group();
     scene.add(highlightGroup);
