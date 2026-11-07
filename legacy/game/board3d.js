@@ -110,7 +110,7 @@
     christmas: {
       label: 'Natal',
       w: { color: 0xfff0d5, roughness: 0.27, metalness: 0.22, emissive: 0x5b3a0a, emissiveIntensity: 0.045 },
-      b: { color: 0x174536, roughness: 0.28, metalness: 0.24, emissive: 0x082419, emissiveIntensity: 0.08 },
+      b: { color: 0xa32639, roughness: 0.27, metalness: 0.2, emissive: 0x3b0812, emissiveIntensity: 0.09 },
     },
   };
 
@@ -359,18 +359,43 @@
     const existing = piece.getObjectByName('christmas-trim');
     if (existing) {
       piece.remove(existing);
-      if (existing.geometry) existing.geometry.dispose();
+      existing.traverse(function (child) {
+        if (child.geometry) child.geometry.dispose();
+      });
     }
     if (currentSkin !== 'christmas' || piece.userData.kind !== 'piece' || !christmasGoldMat) return;
 
-    const trim = new THREE.Mesh(
-      new THREE.TorusGeometry(0.205, 0.017, 8, 28),
-      christmasGoldMat
-    );
+    const trim = new THREE.Group();
     trim.name = 'christmas-trim';
-    trim.rotation.x = Math.PI / 2;
-    trim.position.y = 0.095;
-    trim.castShadow = true;
+
+    function addGoldBand(radius, thickness, height) {
+      const band = new THREE.Mesh(
+        new THREE.TorusGeometry(radius, thickness, 10, 40),
+        christmasGoldMat
+      );
+      band.rotation.x = Math.PI / 2;
+      band.position.y = height;
+      band.castShadow = true;
+      band.receiveShadow = true;
+      trim.add(band);
+    }
+
+    // An external base ring stays visible instead of being buried inside the piece base.
+    addGoldBand(0.275, 0.018, 0.075);
+
+    const type = piece.userData.type;
+    if (type === 'n') {
+      // A second collar gives the knight a visible gold detail beneath its head.
+      addGoldBand(0.19, 0.016, 0.18);
+    } else if (type === 'r') {
+      // The rook receives a band around the upper tower.
+      addGoldBand(0.225, 0.017, 0.525);
+    } else if (type === 'q' || type === 'k') {
+      // Queen and king have two collars, including one below the crown.
+      addGoldBand(0.17, 0.016, 0.25);
+      addGoldBand(0.18, 0.017, 0.665);
+    }
+
     piece.add(trim);
   }
 
@@ -610,7 +635,13 @@
   }
 
   function buildChristmasEnvironment(compact, lowPower) {
-    christmasGoldMat = new THREE.MeshStandardMaterial({ color: 0xd8b15a, roughness: 0.24, metalness: 0.84 });
+    christmasGoldMat = new THREE.MeshStandardMaterial({
+      color: 0xf0c96c,
+      emissive: 0x80551a,
+      emissiveIntensity: 0.18,
+      roughness: 0.2,
+      metalness: 0.68,
+    });
     christmasPineMat = new THREE.MeshStandardMaterial({ color: 0x123d31, roughness: 0.78, metalness: 0.02 });
     christmasSnowMat = new THREE.MeshStandardMaterial({ color: 0xf4f8fa, roughness: 0.92 });
     christmasRedMat = new THREE.MeshStandardMaterial({ color: 0xb73543, roughness: 0.28, metalness: 0.35 });
