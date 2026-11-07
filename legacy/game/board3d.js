@@ -5,6 +5,7 @@
   const C = global.Chess;
 
   const REFERENCE_MODEL_URL = new URL('legacy/game/assets/ChessGLB.glb', document.baseURI).href;
+  const REFERENCE_MODEL_FALLBACK_URL = 'https://raw.githubusercontent.com/mrabhin03/3D-Chess-Game/4b66ca40261a3deff228db0038d8e7b59d086b1a/assets/ChessGLB.glb';
   const REFERENCE_THREE_ADDONS = 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/';
 
   /* ------------------------------------------------------------
@@ -428,7 +429,13 @@
       const loader = new GLTFLoader();
       loader.setDRACOLoader(draco);
 
-      const gltf = await loader.loadAsync(REFERENCE_MODEL_URL);
+      let gltf;
+      try {
+        gltf = await loader.loadAsync(REFERENCE_MODEL_URL);
+      } catch (localError) {
+        console.info('[3dXess] Modelo local indisponível; carregando a cópia original.', localError);
+        gltf = await loader.loadAsync(REFERENCE_MODEL_FALLBACK_URL);
+      }
       const model = gltf.scene;
       model.position.set(0, -1, 0);
       model.updateMatrixWorld(true);
