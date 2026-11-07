@@ -747,11 +747,18 @@
     document.documentElement.style.setProperty('--accent', t.accent);
     document.documentElement.style.setProperty('--accent-2', t.accent2);
     document.documentElement.dataset.boardTheme = currentTheme;
+
+    // O tema natalino inclui obrigatoriamente o acabamento vermelho/dourado.
+    // Não depende de uma skin antiga salva nas configurações do usuário.
+    if (currentTheme === 'christmas') applySkin('christmas');
   }
 
   function applySkin(name) {
-    const s = SKINS[name] || SKINS.classic;
-    currentSkin = name in SKINS ? name : 'classic';
+    const effectiveSkin = currentTheme === 'christmas'
+      ? 'christmas'
+      : (name in SKINS ? name : 'classic');
+    const s = SKINS[effectiveSkin];
+    currentSkin = effectiveSkin;
 
     ['w', 'b'].forEach(function (color) {
       const mat = pieceMaterials[color];

@@ -256,6 +256,7 @@
   function applyTheme(name) {
     currentTheme = Object.prototype.hasOwnProperty.call(THEMES, name) ? name : 'classic';
     const theme = THEMES[currentTheme];
+    if (currentTheme === 'christmas') applySkin('christmas');
     if (!root) return;
     root.style.setProperty('--board2d-bg', theme.bg);
     root.style.setProperty('--board2d-light', theme.light);
@@ -269,7 +270,11 @@
   }
 
   function applySkin(name) {
-    currentSkin = Object.prototype.hasOwnProperty.call(SKINS, name) ? name : 'classic';
+    // O tema Natal sempre determina peças natalinas, mesmo que uma skin
+    // antiga/classic seja reaplicada ao alternar entre os renderizadores.
+    currentSkin = currentTheme === 'christmas'
+      ? 'christmas'
+      : (Object.prototype.hasOwnProperty.call(SKINS, name) ? name : 'classic');
     if (root) root.dataset.pieceSkin = currentSkin;
   }
 
