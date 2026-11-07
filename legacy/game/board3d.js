@@ -1234,7 +1234,7 @@
   }
 
   function refreshPickables() {
-    const pieces = piecesGroup
+    const pieces = piecesGroup && piecesGroup.visible
       ? piecesGroup.children.filter(function (piece) { return !piece.userData.effectGhost; })
       : [];
     pickables = squareMeshes.concat(pieces);
@@ -1704,10 +1704,16 @@
     pieceMaterials.b = new THREE.MeshPhysicalMaterial({ color: 0x3c4049, roughness: 0.44, metalness: 0.12 });
 
     piecesGroup = new THREE.Group();
+    // Não renderiza os modelos procedurais durante a carga do GLB para evitar a troca visual na abertura.
+    piecesGroup.visible = false;
     scene.add(piecesGroup);
 
-    // Carrega apenas a geometria das peças; tabuleiro, regras e controles permanecem locais.
-    loadReferencePieceModels();
+    // A promessa também pode já estar resolvida se o 3D foi pré-carregado no lobby.
+    loadReferencePieceModels().then(function () {
+      if (!piecesGroup) return;
+      piecesGroup.visible = true;
+      refreshPickables();
+    });
 
     highlightGroup = new THREE.Group();
     scene.add(highlightGroup);
@@ -1740,6 +1746,7 @@
     THEMES: THEMES,
     SKINS: SKINS,
     init: init,
+    prepare: loadReferencePieceModels,
     setActive: setActive,
     setState: function (state, opts) {
       opts = opts || {};
