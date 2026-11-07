@@ -325,6 +325,7 @@
   }
 
   function applyVisualSettings() {
+    if (settings.theme === 'christmas') settings.skin = 'christmas';
     if (boardReady) {
       B.setTheme(settings.theme);
       B.setSkin(settings.skin);
@@ -3698,6 +3699,12 @@
     const theme = $('opt-theme');
     const skin = $('opt-skin');
     const effects = $('opt-effects');
+    const previousTheme = B && typeof B.getTheme === 'function' ? B.getTheme() : settings.theme;
+    if (theme && theme.value === 'christmas' && skin) {
+      skin.value = 'christmas';
+    } else if (theme && theme.value !== 'christmas' && previousTheme === 'christmas' && skin && skin.value === 'christmas') {
+      skin.value = 'classic';
+    }
     if (theme) B.setTheme(theme.value);
     if (skin) B.setSkin(skin.value);
     if (effects) B.setEffects(effects.checked);
