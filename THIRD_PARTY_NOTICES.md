@@ -8,6 +8,6 @@
 - Crédito: `mrabhin03`
 - Licença declarada no README do projeto de origem: MIT.
 
-O README do projeto de origem declara a licença MIT, mas não havia um arquivo `LICENSE` na revisão consultada. O modelo é carregado diretamente da revisão fixada do repositório original. O 3dXess extrai somente os modelos das peças; o tabuleiro, o cenário, as regras, os controles, as animações e os recursos de partida permanecem implementados no 3dXess.
+O README do projeto de origem declara a licença MIT, mas não havia um arquivo `LICENSE` na revisão consultada. O modelo é baixado durante a preparação dos assets a partir da revisão fixada e servido pelo próprio 3dXess. O hash Git do arquivo é validado antes de copiá-lo. O 3dXess extrai somente os modelos das peças; o tabuleiro, o cenário, as regras, os controles, as animações e os recursos de partida permanecem implementados no 3dXess.
 
 Caso o asset externo fique indisponível, o renderizador mantém as peças procedurais originais como alternativa.
