@@ -4,7 +4,7 @@
 
   const C = global.Chess;
 
-  const REFERENCE_MODEL_URL = 'https://raw.githubusercontent.com/mrabhin03/3D-Chess-Game/4b66ca40261a3deff228db0038d8e7b59d086b1a/assets/ChessGLB.glb';
+  const REFERENCE_MODEL_URL = new URL('legacy/game/assets/ChessGLB.glb', document.baseURI).href;
   const REFERENCE_THREE_ADDONS = 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/';
 
   /* ------------------------------------------------------------
