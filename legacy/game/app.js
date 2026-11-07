@@ -2247,14 +2247,19 @@
   }
 
   function loadBoard3DAssets() {
-    if (window.Board3D) return Promise.resolve(window.Board3D);
+    if (window.Board3D) {
+      return window.Board3D.prepare().then(function () { return window.Board3D; });
+    }
     if (board3DLoadPromise) return board3DLoadPromise;
 
     board3DLoadPromise = board3DScripts.reduce(function (chain, src) {
       return chain.then(function () { return loadScript(src); });
     }, Promise.resolve()).then(function () {
       if (!window.Board3D) throw new Error('O renderizador 3D não foi inicializado.');
-      return window.Board3D;
+      // Prepara os modelos ainda no lobby para que a partida já abra com as peças definitivas.
+      return window.Board3D.prepare().then(function () {
+        return window.Board3D;
+      });
     }).catch(function (error) {
       board3DLoadPromise = null;
       throw error;
