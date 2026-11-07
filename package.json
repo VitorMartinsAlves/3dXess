@@ -6,7 +6,7 @@
     "node": ">=24.12.0"
   },
   "scripts": {
-    "dev": "node scripts/restore-index-template.mjs && vite --host 0.0.0.0",
+    "dev": "node scripts/restore-index-template.mjs && node scripts/prepare-public.mjs && vite --host 0.0.0.0",
     "build": "node scripts/restore-index-template.mjs && node scripts/prepare-public.mjs && vite build && node scripts/prerender-routes.mjs && node scripts/generate-routes.mjs && node scripts/verify-prerender.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "check": "node --check src/app/routes.js && node --check src/shared/i18n/index.js && node --check legacy/game/app.js && node --check legacy/game/engine.js && node --check legacy/game/bot.js && node --check legacy/game/bot-worker.js && node --check legacy/game/board2d.js && node --check legacy/game/board3d.js && node --check legacy/game/game-i18n.js && node --check legacy/training/practice.js",
