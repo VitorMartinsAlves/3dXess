@@ -29,7 +29,7 @@ try {
 
   const model = Buffer.from(await response.arrayBuffer());
   const actualGitBlobSha = createHash("sha1")
-    .update(Buffer.concat([Buffer.from(`blob ${model.length}\\0`), model]))
+    .update(Buffer.concat([Buffer.from("blob " + model.length + String.fromCharCode(0)), model]))
     .digest("hex");
 
   if (actualGitBlobSha !== expectedGitBlobSha) {
